@@ -29,10 +29,7 @@ import {
   AccordionContent,
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
-import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { Checkbox } from '@/components/common/Checkbox';
-import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
-import { Layers, X } from 'lucide-react';
+import { NodeOtherSettingsFields, NodeNetworkFields } from './form-sections';
 import type {
   Node,
   UpdateNodeRequest,
@@ -439,56 +436,14 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
-                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* Server Address */}
-                  <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label htmlFor="serverAddress">{t('admin.nodes.form.serverAddress')}</Label>
-                    <Input
-                      id="serverAddress"
-                      value={formData.serverAddress || ''}
-                      onChange={(e) => handleChange('serverAddress', e.target.value)}
-                      error={!!errors.serverAddress}
-                    />
-                    {errors.serverAddress && (
-                      <p className="text-xs text-destructive">{errors.serverAddress}</p>
-                    )}
-                  </div>
-
-                  {/* Agent Port */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="agentPort">{t('admin.nodes.form.agentPort')}</Label>
-                    <Input
-                      id="agentPort"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      value={formData.agentPort || ''}
-                      onChange={(e) => handleChange('agentPort', parseInt(e.target.value, 10))}
-                      error={!!errors.agentPort}
-                    />
-                    {errors.agentPort && (
-                      <p className="text-xs text-destructive">{errors.agentPort}</p>
-                    )}
-                  </div>
-
-                  {/* Subscription Port */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="subscriptionPort">{t('admin.nodes.form.subscriptionPort')}</Label>
-                    <Input
-                      id="subscriptionPort"
-                      type="number"
-                      min={1}
-                      max={65535}
-                      placeholder={t('admin.nodes.form.subscriptionPortPlaceholder')}
-                      value={formData.subscriptionPort ?? ''}
-                      onChange={(e) => handleChange('subscriptionPort', e.target.value ? parseInt(e.target.value, 10) : undefined)}
-                      error={!!errors.subscriptionPort}
-                    />
-                    {errors.subscriptionPort && (
-                      <p className="text-xs text-destructive">{errors.subscriptionPort}</p>
-                    )}
-                  </div>
-                </div>
+                <NodeNetworkFields
+                  variant="desktop"
+                  serverAddress={formData.serverAddress}
+                  agentPort={formData.agentPort}
+                  subscriptionPort={formData.subscriptionPort}
+                  onFieldChange={handleChange}
+                  errors={errors}
+                />
               </AccordionContent>
             </AccordionItem>
 
@@ -620,164 +575,37 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                 </div>
               </AccordionTrigger>
               <AccordionContent className="@container">
-                <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
-                  {/* Region */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="region">{t('admin.nodes.form.region')}</Label>
-                    <Input
-                      id="region"
-                      value={formData.region || ''}
-                      onChange={(e) => handleChange('region', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Sort Order */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="sortOrder">{t('common.fields.sortOrder')}</Label>
-                    <Input
-                      id="sortOrder"
-                      type="number"
-                      value={formData.sortOrder ?? 0}
-                      onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
-                    />
-                    <p className="text-xs text-muted-foreground">{t('admin.nodes.form.sortOrderHint')}</p>
-                  </div>
-
-                  {/* Tags */}
-                  <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label htmlFor="tagsInput">{t('admin.nodes.form.tags')}</Label>
-                    <Input
-                      id="tagsInput"
-                      placeholder={t('admin.nodes.form.tagsPlaceholder')}
-                      value={formData.tagsInput ?? ''}
-                      onChange={(e) => handleChange('tagsInput', e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('admin.nodes.form.tagsHint')}
-                    </p>
-                  </div>
-
-                  {/* Resource Groups (multi-select) */}
-                  <div className="flex flex-col gap-2 @md:col-span-2">
-                    <Label>{t('admin.nodes.form.resourceGroup')}</Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t('admin.nodes.form.resourceGroupSelectHint')}
-                    </p>
-
-                    {/* Selected groups chips */}
-                    {formData.groupSids.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {formData.groupSids.map((sid) => {
-                          const group = filteredResourceGroups.find((g) => g.sid === sid);
-                          return (
-                            <Badge key={sid} variant="secondary" className="gap-1 pr-1">
-                              <Layers className="size-3" />
-                              {group?.name ?? sid}
-                              <button
-                                type="button"
-                                onClick={() => form.setFormData((prev) => ({
-                                  ...prev,
-                                  groupSids: prev.groupSids.filter((id) => id !== sid),
-                                }))}
-                                className="ml-0.5 rounded-full p-0.5 hover:bg-muted"
-                              >
-                                <X className="size-3" />
-                              </button>
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Group selection list */}
-                    <div className="border rounded-lg max-h-[120px] overflow-y-auto">
-                      {isLoadingGroups || isLoadingPlans ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">{t('common.table.loading')}</div>
-                      ) : filteredResourceGroups.length === 0 ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
-                      ) : (
-                        <div className="divide-y">
-                          {filteredResourceGroups.map((group) => (
-                            <label
-                              key={group.sid}
-                              className="flex items-center gap-3 p-2.5 hover:bg-muted/50 cursor-pointer transition-colors"
-                            >
-                              <Checkbox
-                                checked={formData.groupSids.includes(group.sid)}
-                                onCheckedChange={(checked) => {
-                                  form.setFormData((prev) => ({
-                                    ...prev,
-                                    groupSids: checked
-                                      ? [...prev.groupSids, group.sid]
-                                      : prev.groupSids.filter((id) => id !== group.sid),
-                                  }));
-                                }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-sm">{group.name}</span>
-                                  <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                    {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
-                                  </Badge>
-                                </div>
-                                {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Mute Notification */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="muteNotification">{t('admin.nodes.form.muteNotification')}</Label>
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        id="muteNotification"
-                        checked={formData.muteNotification ?? false}
-                        onCheckedChange={(checked) => handleChange('muteNotification', checked)}
-                      >
-                        <SwitchThumb />
-                      </Switch>
-                      <span className="text-sm text-muted-foreground">
-                        {formData.muteNotification ? t('admin.nodes.form.muted') : t('admin.nodes.form.unmuted')}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t('admin.nodes.form.muteNotificationHint')}
-                    </p>
-                  </div>
-
-                  {/* Expiration time */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="expiresAt">{t('common.fields.expiresAt')}</Label>
-                    <ExpirationDatePicker
-                      value={formData.expiresAt}
-                      onChange={(value) => handleChange("expiresAt", value ?? "")}
-                      emptyValue=""
-                      id="expiresAt"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('admin.nodes.form.expiresAtHint')}
-                    </p>
-                  </div>
-
-                  {/* Cost label */}
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="costLabel">{t('common.fields.costLabel')}</Label>
-                    <Input
-                      id="costLabel"
-                      type="text"
-                      value={formData.costLabel ?? ""}
-                      onChange={(e) => handleCostLabelChange(e.target.value)}
-                      placeholder={t('common.costLabel.placeholder')}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('common.costLabel.hint')}
-                    </p>
-                  </div>
-                </div>
+                <NodeOtherSettingsFields
+                  variant="desktop"
+                  mode="edit"
+                  formData={{
+                    region: formData.region,
+                    sortOrder: formData.sortOrder,
+                    tagsInput: formData.tagsInput,
+                    groupSids: formData.groupSids,
+                    muteNotification: formData.muteNotification,
+                    expiresAt: formData.expiresAt,
+                    costLabel: formData.costLabel,
+                  }}
+                  onFieldChange={handleChange}
+                  onCostLabelChange={handleCostLabelChange}
+                  onGroupToggle={(sid, checked) => {
+                    form.setFormData((prev) => ({
+                      ...prev,
+                      groupSids: checked
+                        ? [...prev.groupSids, sid]
+                        : prev.groupSids.filter((id) => id !== sid),
+                    }));
+                  }}
+                  onGroupRemove={(sid) => {
+                    form.setFormData((prev) => ({
+                      ...prev,
+                      groupSids: prev.groupSids.filter((id) => id !== sid),
+                    }));
+                  }}
+                  filteredResourceGroups={filteredResourceGroups}
+                  isLoading={isLoadingGroups || isLoadingPlans}
+                />
               </AccordionContent>
             </AccordionItem>
 

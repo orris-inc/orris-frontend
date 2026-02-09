@@ -110,7 +110,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
               className="h-8 px-2"
             >
               {copiedField === 'address' ? (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -155,7 +155,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
               className="h-8 px-2"
             >
               {copiedField === 'amount' ? (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-success" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}

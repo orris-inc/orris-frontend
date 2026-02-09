@@ -73,10 +73,10 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-accent transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -94,7 +94,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
               {t('admin.users.actions.resetPassword')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => onDelete(user)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(user)} className="text-destructive">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>
@@ -110,7 +110,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
 
   if (users.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground">
         {t('admin.users.noData')}
       </div>
     );
@@ -134,7 +134,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* User name/email and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                    <span className="font-medium text-sm text-foreground truncate">
                       {user.name || user.email}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
@@ -143,12 +143,12 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                   </div>
 
                   {/* Email (if name exists) and role */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     {user.name && (
                       <>
-                        <Mail className="size-3 text-slate-400 flex-shrink-0" />
+                        <Mail className="size-3 text-muted-foreground flex-shrink-0" />
                         <span className="truncate">{user.email}</span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
+                        <span className="text-border">·</span>
                       </>
                     )}
                     <AdminBadge variant={roleConfig.variant} className="text-[10px] px-1.5 py-0">
@@ -163,9 +163,9 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onEdit(user)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-accent transition-colors"
                       >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                        <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{t('common.actions.edit')}</TooltipContent>
@@ -174,9 +174,9 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onAssignSubscription(user)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-accent transition-colors"
                       >
-                        <CreditCard className="size-3.5 text-slate-400 hover:text-blue-500" />
+                        <CreditCard className="size-3.5 text-muted-foreground hover:text-info" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{t('admin.users.actions.assignSubscription')}</TooltipContent>
@@ -187,35 +187,35 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t('admin.users.actions.details')}</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border/50 hover:no-underline hover:bg-muted/30">
+              <span className="text-xs text-muted-foreground">{t('admin.users.actions.details')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border/50 pt-2">
                 {/* ID */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">ID</span>
-                  <span className="text-xs font-mono text-slate-600 dark:text-slate-300 truncate">{user.id}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">ID</span>
+                  <span className="text-xs font-mono text-muted-foreground truncate">{user.id}</span>
                 </div>
 
                 {/* Email (always show in details) */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.emailShort')}</span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{user.email}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.emailShort')}</span>
+                  <span className="text-xs text-muted-foreground truncate">{user.email}</span>
                 </div>
 
                 {/* Name */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('common.fields.name')}</span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300">{user.name || '-'}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('common.fields.name')}</span>
+                  <span className="text-xs text-muted-foreground">{user.name || '-'}</span>
                 </div>
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.createdAt')}</span>
-                  <span className="text-xs text-slate-500">{formatDate(user.createdAt)}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.createdAt')}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(user.createdAt)}</span>
                 </div>
               </div>
             </AccordionContent>

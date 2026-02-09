@@ -151,8 +151,8 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                         'h-1 flex-1 rounded-full transition-colors',
                         i < form.strengthInfo!.passed
                           ? form.strengthInfo!.passed === form.strengthInfo!.total
-                            ? 'bg-emerald-500'
-                            : 'bg-yellow-500'
+                            ? 'bg-success'
+                            : 'bg-warning'
                           : 'bg-muted'
                       )}
                     />
@@ -160,7 +160,7 @@ export const CreateUserSheet: React.FC<CreateUserSheetProps> = ({
                 </div>
                 <span className={cn(
                   'text-xs',
-                  form.strengthInfo.passed === form.strengthInfo.total ? 'text-emerald-600' : 'text-muted-foreground'
+                  form.strengthInfo.passed === form.strengthInfo.total ? 'text-success' : 'text-muted-foreground'
                 )}>
                   {form.strengthInfo.passed === form.strengthInfo.total ? t('admin.users.create.passwordValid') : `${form.strengthInfo.passed}/${form.strengthInfo.total}`}
                 </span>

@@ -659,7 +659,7 @@ export const EditUserForwardRuleDialog: React.FC<EditUserForwardRuleDialogProps>
                     </p>
                   )}
                   {!isLoadingNodes && availableNodes.length === 0 && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <p className="text-xs text-warning">
                       {t('userForwardRules.form.noNodesAvailable')}
                     </p>
                   )}

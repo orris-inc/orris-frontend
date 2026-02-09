@@ -63,7 +63,7 @@ const MiniBar = memo(({ label, percent }: { label: string; percent: number }) =>
     <div className="w-6 h-1 rounded-full bg-muted/50 overflow-hidden">
       <div
         className={`h-full rounded-full transition-all duration-300 ${
-          percent >= 80 ? 'bg-red-500' : percent >= 60 ? 'bg-amber-500' : 'bg-emerald-500'
+          percent >= 80 ? 'bg-destructive' : percent >= 60 ? 'bg-warning' : 'bg-success'
         }`}
         style={{ width: `${Math.min(percent, 100)}%` }}
       />

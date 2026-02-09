@@ -216,20 +216,20 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             <h4 className="text-sm font-medium text-foreground mb-2">{t('subscription.statusInfo')}</h4>
             {/* Auto-renew item hidden - feature not complete */}
             <DetailItem
-              icon={subscription.isActive ? <CheckCircle className="size-4 text-emerald-500" /> : <XCircle className="size-4 text-red-500" />}
+              icon={subscription.isActive ? <CheckCircle className="size-4 text-success" /> : <XCircle className="size-4 text-destructive" />}
               label={t('subscription.isActive')}
               value={subscription.isActive ? t('common.yes') : t('common.no')}
               successMessage={t('common.messages.copySuccess')}
             />
             <DetailItem
-              icon={subscription.isExpired ? <XCircle className="size-4 text-red-500" /> : <CheckCircle className="size-4 text-emerald-500" />}
+              icon={subscription.isExpired ? <XCircle className="size-4 text-destructive" /> : <CheckCircle className="size-4 text-success" />}
               label={t('subscription.isExpired')}
               value={subscription.isExpired ? t('common.status.expired') : t('subscriptionStatus.notExpired')}
               successMessage={t('common.messages.copySuccess')}
             />
             {subscription.cancelledAt && (
               <DetailItem
-                icon={<XCircle className="size-4 text-red-500" />}
+                icon={<XCircle className="size-4 text-destructive" />}
                 label={t('subscription.cancelledAt')}
                 value={formatDate(subscription.cancelledAt)}
                 successMessage={t('common.messages.copySuccess')}
@@ -237,7 +237,7 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
             )}
             {subscription.cancelReason && (
               <DetailItem
-                icon={<XCircle className="size-4 text-red-500" />}
+                icon={<XCircle className="size-4 text-destructive" />}
                 label={t('subscription.cancelReason')}
                 value={subscription.cancelReason}
                 successMessage={t('common.messages.copySuccess')}

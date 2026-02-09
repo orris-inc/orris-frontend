@@ -7,6 +7,7 @@
  */
 
 import { cn } from '@/lib/utils';
+import { labelStyles } from '@/lib/ui-styles';
 import { Skeleton } from '@/components/common/Skeleton';
 
 /**
@@ -90,7 +91,7 @@ export const FormField = ({
     {/* Label column */}
     <div className="sm:pt-2">
       <div className="flex items-center gap-2 flex-wrap">
-        <label className="text-sm font-medium text-foreground">
+        <label className={cn(labelStyles, 'text-foreground')}>
           {label}
           {required && <span className="text-destructive ml-0.5">*</span>}
         </label>

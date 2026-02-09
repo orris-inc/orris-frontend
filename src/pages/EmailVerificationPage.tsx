@@ -91,8 +91,8 @@ export const EmailVerificationPage = () => {
         return (
           <div className="grid gap-6 text-center">
             <div className="flex justify-center">
-              <div className="p-4 bg-green-500/10 rounded-full">
-                <CircleCheck className="size-12 text-green-500" />
+              <div className="p-4 bg-success/10 rounded-full">
+                <CircleCheck className="size-12 text-success" />
               </div>
             </div>
             <div className="grid gap-2">
@@ -114,8 +114,8 @@ export const EmailVerificationPage = () => {
         return (
           <div className="grid gap-6 text-center">
             <div className="flex justify-center">
-              <div className="p-4 bg-blue-500/10 rounded-full">
-                <Info className="size-12 text-blue-500" />
+              <div className="p-4 bg-info/10 rounded-full">
+                <Info className="size-12 text-info" />
               </div>
             </div>
             <div className="grid gap-2">

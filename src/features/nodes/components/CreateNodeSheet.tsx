@@ -39,6 +39,7 @@ import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceG
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   CreateNodeRequest,
@@ -131,7 +132,7 @@ const StepSection: React.FC<StepSectionProps> = ({
   const Icon = step.icon;
 
   return (
-    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <button
         type="button"
         onClick={onToggle}

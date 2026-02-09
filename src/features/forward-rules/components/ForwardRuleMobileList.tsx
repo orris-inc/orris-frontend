@@ -82,63 +82,63 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
   direct: {
     labelKey: 'admin.forwardRules.ruleType.direct',
     shortLabelKey: 'admin.forwardRules.ruleType.directShort',
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   entry: {
     labelKey: 'admin.forwardRules.ruleType.entry',
     shortLabelKey: 'admin.forwardRules.ruleType.entryShort',
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   chain: {
     labelKey: 'admin.forwardRules.ruleType.chain',
     shortLabelKey: 'admin.forwardRules.ruleType.chainShort',
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
   direct_chain: {
     labelKey: 'admin.forwardRules.ruleType.directChain',
     shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
   external: {
     labelKey: 'admin.forwardRules.ruleType.external',
     shortLabelKey: 'admin.forwardRules.ruleType.externalShort',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
 };
 
 // Protocol configuration
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  tcp: { label: 'TCP', color: 'text-sky-600 dark:text-sky-400' },
-  udp: { label: 'UDP', color: 'text-orange-600 dark:text-orange-400' },
-  both: { label: 'TCP/UDP', color: 'text-violet-600 dark:text-violet-400' },
+  tcp: { label: 'TCP', color: 'text-info' },
+  udp: { label: 'UDP', color: 'text-warning' },
+  both: { label: 'TCP/UDP', color: 'text-relay' },
 };
 
 // Tunnel type configuration
 const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   ws: {
     label: 'WS',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   tls: {
     label: 'TLS',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   ws_smux: {
     label: 'WS+MUX',
-    color: 'text-violet-600 dark:text-violet-400',
-    bgColor: 'bg-violet-50 dark:bg-violet-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
   tls_smux: {
     label: 'TLS+MUX',
-    color: 'text-fuchsia-600 dark:text-fuchsia-400',
-    bgColor: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
 };
 
@@ -163,30 +163,30 @@ const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; i
 const MOBILE_NODE_CONFIG = {
   entry: {
     icon: Bot,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 dark:bg-green-900/30',
-    borderColor: 'border-green-300 dark:border-green-700',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/30',
     labelKey: 'admin.forwardRules.flowNode.entry',
   },
   relay: {
     icon: Bot,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/30',
-    borderColor: 'border-purple-300 dark:border-purple-700',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
+    borderColor: 'border-relay/30',
     labelKey: 'admin.forwardRules.flowNode.relay',
   },
   exit: {
     icon: Bot,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/30',
-    borderColor: 'border-orange-300 dark:border-orange-700',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/30',
     labelKey: 'admin.forwardRules.flowNode.exit',
   },
   target: {
     icon: Server,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
-    borderColor: 'border-blue-300 dark:border-blue-700',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/30',
     labelKey: 'admin.forwardRules.flowNode.target',
   },
 };
@@ -215,7 +215,7 @@ const MobileFlowNode: React.FC<{
 
 // Mobile flow arrow component
 const MobileFlowArrow: React.FC<{ color?: 'purple' | 'blue' }> = ({ color = 'blue' }) => (
-  <ArrowRight className={`size-2.5 flex-shrink-0 ${color === 'purple' ? 'text-purple-400' : 'text-blue-400'}`} />
+  <ArrowRight className={`size-2.5 flex-shrink-0 ${color === 'purple' ? 'text-relay' : 'text-info'}`} />
 );
 
 // Mobile flow path display - unified with desktop style
@@ -309,7 +309,10 @@ const FlowPathDisplayMobile: React.FC<{
               <MobileFlowArrow color="purple" />
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 cursor-pointer touch-manipulation">
+                  <button
+                    className="flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium rounded-full bg-relay/10 text-relay border border-relay/30 cursor-pointer touch-manipulation"
+                    aria-label={t('common.viewMore')}
+                  >
                     +{remainingRelays.length}
                   </button>
                 </PopoverTrigger>
@@ -322,20 +325,20 @@ const FlowPathDisplayMobile: React.FC<{
                       </span>
                     </div>
                     <div className="relative">
-                      <div className="absolute left-2 top-3 bottom-3 w-px bg-gradient-to-b from-green-400 via-purple-400 to-blue-400" />
+                      <div className="absolute left-2 top-3 bottom-3 w-px bg-gradient-to-b from-success via-relay to-info" />
                       <div className="space-y-1.5">
                         {/* Entry */}
                         <div className="flex items-center gap-1.5 relative">
-                          <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 flex items-center justify-center z-10">
-                            <Bot className="size-2.5 text-green-500" />
+                          <div className="w-4 h-4 rounded-full bg-success/10 border border-success/30 flex items-center justify-center z-10">
+                            <Bot className="size-2.5 text-success" />
                           </div>
                           <span className="text-[11px] font-medium truncate">{entryName}</span>
-                          <span className="text-[9px] px-1 py-0.5 rounded bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium">{t('admin.forwardRules.flowNode.entry')}</span>
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-success/10 text-success font-medium">{t('admin.forwardRules.flowNode.entry')}</span>
                         </div>
                         {/* Relays */}
                         {relayAgents.map((relay, index) => (
                           <div key={relay.id} className="flex items-center gap-1.5 relative">
-                            <div className="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-300 dark:border-purple-700 flex items-center justify-center text-[9px] font-bold text-purple-600 dark:text-purple-400 z-10">
+                            <div className="w-4 h-4 rounded-full bg-relay/10 border border-relay/30 flex items-center justify-center text-[9px] font-bold text-relay z-10">
                               {index + 1}
                             </div>
                             <span className="text-[11px] font-medium truncate">{relay.name}</span>
@@ -344,11 +347,11 @@ const FlowPathDisplayMobile: React.FC<{
                         {/* Target */}
                         {target && (
                           <div className="flex items-center gap-1.5 relative">
-                            <div className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 flex items-center justify-center z-10">
-                              <Server className="size-2.5 text-blue-500" />
+                            <div className="w-4 h-4 rounded-full bg-info/10 border border-info/30 flex items-center justify-center z-10">
+                              <Server className="size-2.5 text-info" />
                             </div>
                             <span className="text-[11px] font-medium truncate">{target.name}</span>
-                            <span className="text-[9px] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">{t('admin.forwardRules.flowNode.target')}</span>
+                            <span className="text-[9px] px-1 py-0.5 rounded bg-info/10 text-info font-medium">{t('admin.forwardRules.flowNode.target')}</span>
                           </div>
                         )}
                       </div>
@@ -438,7 +441,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
     }
 
     if (isPolling && !polledStatus && !rule.syncStatus) {
-      return <Loader2 className="size-3.5 animate-spin text-slate-400" />;
+      return <Loader2 className="size-3.5 animate-spin text-muted-foreground" />;
     }
 
     if (!syncStatus) return null;
@@ -454,7 +457,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
         className="flex items-center gap-1"
         title={`${isPolling ? `${t('common.loading.syncing')} / ` : ''}${t('admin.forwardRules.status.syncLabel')}: ${t(syncConfig.labelKey)} / ${t('admin.forwardRules.status.runLabel')}: ${t(runConfig.labelKey)}`}
       >
-        {isPolling && <Loader2 className="size-3 animate-spin text-blue-400" />}
+        {isPolling && <Loader2 className="size-3 animate-spin text-info" />}
         <SyncIcon className={`size-3.5 ${syncConfig.className}`} />
         <RunIcon className={`size-3.5 ${runConfig.className}`} />
       </div>
@@ -470,11 +473,11 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
+            className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation"
             onClick={(e) => e.stopPropagation()}
             aria-label={t('common.actions.more')}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -518,7 +521,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                 {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-destructive">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>
@@ -534,7 +537,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
 
   if (rules.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground">
         {t('admin.forwardRules.noData')}
       </div>
     );
@@ -599,10 +602,10 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <span className={`font-mono text-[10px] ${protocolConfig.color}`}>{protocolConfig.label}</span>
                     <span className="text-border">·</span>
-                    <Bot className="size-3 text-green-500 flex-shrink-0" />
+                    <Bot className="size-3 text-success flex-shrink-0" />
                     <span className="truncate max-w-[70px]">{agentName}</span>
                     <span className="text-border">·</span>
-                    <CopyableAddress address={entryAddress} className="text-blue-600 dark:text-blue-400" />
+                    <CopyableAddress address={entryAddress} className="text-info" />
                   </div>
                 </div>
 
@@ -610,43 +613,43 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                 <div className="flex items-center gap-0.5 flex-shrink-0">
                   <button
                     onClick={() => onEdit(rule)}
-                    className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors touch-manipulation"
+                    className="p-1.5 rounded hover:bg-accent transition-colors touch-manipulation"
                     title={t('common.actions.edit')}
                     aria-label={t('common.actions.edit')}
                   >
-                    <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                    <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
                   </button>
                   <button
                     onClick={() => rule.status === 'enabled' && onProbe(rule)}
                     disabled={rule.status !== 'enabled' || probingRuleId === rule.id}
                     className={`p-1.5 rounded transition-colors touch-manipulation ${
                       rule.status === 'enabled' && probingRuleId !== rule.id
-                        ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        ? 'hover:bg-info/10'
                         : 'opacity-50 cursor-not-allowed'
                     }`}
                     title={probingRuleId === rule.id ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                     aria-label={probingRuleId === rule.id ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                   >
                     {probingRuleId === rule.id ? (
-                      <Loader2 className="size-3.5 text-blue-500 animate-spin" />
+                      <Loader2 className="size-3.5 text-info animate-spin" />
                     ) : (
-                      <Activity className="size-3.5 text-slate-400 hover:text-blue-500" />
+                      <Activity className="size-3.5 text-muted-foreground hover:text-info" />
                     )}
                   </button>
                   <button
                     onClick={() => rule.status === 'enabled' ? onDisable(rule) : onEnable(rule)}
                     className={`p-1.5 rounded transition-colors touch-manipulation ${
                       rule.status === 'enabled'
-                        ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                        : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                        ? 'hover:bg-destructive/10'
+                        : 'hover:bg-success/10'
                     }`}
                     title={rule.status === 'enabled' ? t('admin.forwardRules.actions.clickToDisable') : t('admin.forwardRules.actions.clickToEnable')}
                     aria-label={rule.status === 'enabled' ? t('common.actions.disable') : t('common.actions.enable')}
                   >
                     {rule.status === 'enabled' ? (
-                      <PowerOff className="size-3.5 text-slate-400 hover:text-red-500" />
+                      <PowerOff className="size-3.5 text-muted-foreground hover:text-destructive" />
                     ) : (
-                      <Power className="size-3.5 text-slate-400 hover:text-green-500" />
+                      <Power className="size-3.5 text-muted-foreground hover:text-success" />
                     )}
                   </button>
                   {renderDropdownMenu(rule)}
@@ -655,13 +658,13 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.actions.view')}</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-accent">
+              <span className="text-xs text-muted-foreground">{t('common.actions.view')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* Flow path visualization - unified style */}
                 <div className="flex items-start gap-2">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-1 flex-shrink-0">{t('admin.forwardRules.columns.path')}</span>
@@ -688,11 +691,11 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                     {/* Mini traffic bar */}
                     <div className="flex-1 max-w-16 h-1 bg-muted rounded-full overflow-hidden flex">
                       <div
-                        className="h-full bg-green-500"
+                        className="h-full bg-success"
                         style={{ width: `${uploadRatio}%` }}
                       />
                       <div
-                        className="h-full bg-blue-500"
+                        className="h-full bg-info"
                         style={{ width: `${100 - uploadRatio}%` }}
                       />
                     </div>
@@ -712,7 +715,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         {groups.map((g) => (
                           <span
                             key={g.sid}
-                            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                            className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
                           >
                             {g.name}
                           </span>
@@ -725,8 +728,8 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                 {/* Remark - Inline */}
                 {rule.remark && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{rule.remark}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-6 pt-0.5 flex-shrink-0">{t('common.fields.remark')}</span>
+                    <span className="text-xs text-muted-foreground flex-1">{rule.remark}</span>
                   </div>
                 )}
               </div>

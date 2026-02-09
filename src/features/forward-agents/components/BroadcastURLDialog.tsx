@@ -149,9 +149,9 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isSingleMode ? (
-              <Cpu className="size-5 text-blue-500" />
+              <Cpu className="size-5 text-info" />
             ) : (
-              <Radio className="size-5 text-blue-500" />
+              <Radio className="size-5 text-info" />
             )}
             {isSingleMode ? t('admin.forwardAgents.dialog.notifyTitle') : t('admin.forwardAgents.dialog.broadcastTitle')}
           </DialogTitle>
@@ -242,23 +242,23 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
           <div className="space-y-5">
             {/* Warning header - Enhanced visual hierarchy */}
             <div
-              className="relative overflow-hidden rounded-xl border border-orange-200 dark:border-orange-800/60 bg-gradient-to-br from-orange-50 via-orange-50 to-amber-50 dark:from-orange-950/40 dark:via-orange-900/30 dark:to-amber-950/20"
+              className="relative overflow-hidden rounded-xl border border-warning/30 bg-warning/5"
               role="alert"
               aria-labelledby="warning-title"
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/60 dark:to-amber-900/40 shadow-sm">
-                    <ShieldAlert className="size-5 text-orange-600 dark:text-orange-400" />
+                  <div className="flex size-10 items-center justify-center rounded-full bg-warning/15 shadow-sm">
+                    <ShieldAlert className="size-5 text-warning" />
                   </div>
                   <div className="flex-1 min-w-0 pt-0.5">
                     <h4
                       id="warning-title"
-                      className="text-base font-semibold text-orange-900 dark:text-orange-100"
+                      className="text-base font-semibold text-foreground"
                     >
                       {t('admin.forwardAgents.broadcast.dangerWarningTitle')}
                     </h4>
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1 leading-relaxed">
+                    <p className="text-sm text-warning mt-1 leading-relaxed">
                       {t('admin.forwardAgents.broadcast.dangerWarningDesc', {
                         target: isSingleMode
                           ? t('admin.forwardAgents.broadcast.dangerWarningTargetNode')
@@ -275,15 +275,15 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
               <p className="text-sm font-medium text-foreground">{t('admin.forwardAgents.broadcast.impactTitle')}</p>
               <ul className="space-y-2.5" aria-label={t('admin.forwardAgents.broadcast.impactTitle')}>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact1')}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact2')}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.forwardAgents.broadcast.impact3')}</span>
                 </li>
               </ul>
@@ -316,13 +316,13 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 {isSingleMode ? (
                   <>
                     {t('admin.forwardAgents.broadcast.confirmInputNodeNamePrefix')}
-                    <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-semibold text-orange-700 dark:text-orange-300">{targetAgent?.name}</span>
+                    <span className="inline-flex items-center rounded-md bg-warning/15 px-2 py-0.5 font-semibold text-warning">{targetAgent?.name}</span>
                     {t('admin.forwardAgents.broadcast.confirmInputNodeNameSuffix')}
                   </>
                 ) : (
                   <>
                     {t('admin.forwardAgents.broadcast.confirmInputNodeCountPrefix')}
-                    <span className="inline-flex items-center rounded-md bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 font-mono font-semibold text-orange-700 dark:text-orange-300">{onlineCount}</span>
+                    <span className="inline-flex items-center rounded-md bg-warning/15 px-2 py-0.5 font-mono font-semibold text-warning">{onlineCount}</span>
                     {t('admin.forwardAgents.broadcast.confirmInputNodeCountSuffix')}
                   </>
                 )}
@@ -334,14 +334,14 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 placeholder={expectedConfirmText}
                 className={cn(
                   'transition-colors',
-                  confirmText && !isConfirmValid && 'border-orange-300 dark:border-orange-700 focus-visible:ring-orange-500/20',
-                  confirmText && isConfirmValid && 'border-green-300 dark:border-green-700 focus-visible:ring-green-500/20'
+                  confirmText && !isConfirmValid && 'border-warning/50 focus-visible:ring-warning/20',
+                  confirmText && isConfirmValid && 'border-success/50 focus-visible:ring-success/20'
                 )}
                 autoComplete="off"
                 aria-describedby="confirm-hint"
               />
               {confirmText && !isConfirmValid && (
-                <p id="confirm-hint" className="text-xs text-orange-600 dark:text-orange-400" role="status">
+                <p id="confirm-hint" className="text-xs text-warning" role="status">
                   {t('admin.forwardAgents.broadcast.inputMismatch')}
                 </p>
               )}
@@ -443,7 +443,7 @@ export const BroadcastURLDialog: React.FC<BroadcastURLDialogProps> = ({
                 variant="destructive"
                 onClick={handleConfirmedSubmit}
                 disabled={!isConfirmValid || isLoading}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-warning hover:bg-warning/90"
               >
                 {isLoading ? (
                   <>

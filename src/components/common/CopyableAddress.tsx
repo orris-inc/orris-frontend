@@ -66,7 +66,7 @@ export const CopyableAddress: React.FC<CopyableAddressProps> = ({
         title={copied ? t('common.copied') : resolvedCopyTitle}
       >
         {copied ? (
-          <Check className="size-3 text-green-500" />
+          <Check className="size-3 text-success" />
         ) : (
           <Copy className="size-3 text-muted-foreground hover:text-foreground" />
         )}

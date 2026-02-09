@@ -263,8 +263,8 @@ export const EditResourceGroupSheet: React.FC<EditResourceGroupSheetProps> = ({
       <SheetContent>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <FolderEdit className="size-5 text-blue-500" />
+            <div className="size-10 rounded-full bg-info/10 flex items-center justify-center">
+              <FolderEdit className="size-5 text-info" />
             </div>
             <span>{t('resourceGroups.editTitle')}</span>
           </SheetTitle>

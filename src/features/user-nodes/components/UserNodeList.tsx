@@ -35,6 +35,7 @@ import {
 } from '@/components/common/DropdownMenu';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type { UserNode } from '@/api/node';
 
 interface UserNodeListProps {
@@ -137,7 +138,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
       <div className="@container">
         <div className="grid grid-cols-1 @md:grid-cols-2 gap-3 @sm:gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="p-4 @sm:p-5 rounded-xl bg-card ring-1 ring-border">
+            <div key={i} className={cn('p-4 @sm:p-5', cardStyles)}>
               <div className="flex items-start gap-3 mb-3">
                 <Skeleton className="size-10 rounded-lg shrink-0" />
                 <div className="flex-1 min-w-0 space-y-2">
@@ -160,7 +161,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
   if (nodes.length === 0) {
     return (
       <div className="@container">
-        <div className="flex flex-col items-center justify-center py-12 @sm:py-16 px-4 rounded-xl bg-card ring-1 ring-border">
+        <div className={cn('flex flex-col items-center justify-center py-12 @sm:py-16 px-4', cardStyles)}>
           <div className="size-16 @sm:size-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
             <Server className="size-8 @sm:size-10 text-muted-foreground/50" />
           </div>
@@ -186,7 +187,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
               className={cn(
                 'relative p-4 @sm:p-5 rounded-xl cursor-pointer touch-target',
                 'transition-all duration-200 group',
-                'bg-card ring-1 hover:shadow-md',
+                cardStyles, 'hover:shadow-md',
                 node.isOnline
                   ? 'ring-success/20 hover:ring-success/40'
                   : 'ring-border hover:ring-border/80',

@@ -86,7 +86,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
           <span className="text-muted-foreground/60">/{overview.totalNodes}</span>
         </span>
         <span className="flex items-center gap-1 text-muted-foreground">
-          <Cpu className="size-3 text-violet-500" />
+          <Cpu className="size-3 text-relay" />
           <span className="font-semibold text-foreground">{overview.onlineAgents}</span>
           <span className="text-muted-foreground/60">/{overview.totalAgents}</span>
         </span>
@@ -364,7 +364,7 @@ export const MonitorMobileView = memo(({
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1 active:scale-[0.98]',
               entityFilter === 'agent'
-                ? 'bg-violet-500 text-white'
+                ? 'bg-relay text-white'
                 : 'bg-muted/60 text-muted-foreground'
             )}
           >

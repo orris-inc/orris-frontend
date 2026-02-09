@@ -57,7 +57,7 @@ const CopyButton = ({
     <Button variant="ghost" size="sm" onClick={onCopy} className="h-7 px-2">
       {copied ? (
         <>
-          <Check className="size-3.5 mr-1 text-green-500" />
+          <Check className="size-3.5 mr-1 text-success" />
           {t('common.copied')}
         </>
       ) : (
@@ -82,13 +82,13 @@ const CodeBlock = ({
 }) => {
   if (variant === 'dark') {
     return (
-      <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-blue-500 selection:text-white">
+      <pre className="p-3 rounded-lg bg-[--color-code-bg,#0f172a] text-[--color-code-fg,#e2e8f0] text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-primary selection:text-primary-foreground">
         {children}
       </pre>
     );
   }
   return (
-    <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-mono break-all">
+    <div className="p-3 rounded-lg bg-muted text-sm font-mono break-all">
       {children}
     </div>
   );

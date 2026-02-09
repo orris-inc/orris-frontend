@@ -8,6 +8,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 type IconVariant = 'primary' | 'success' | 'warning' | 'info' | 'muted';
 
@@ -92,11 +93,9 @@ export const HeroStatCard = ({
   return (
     <div
       className={cn(
-        // Base card styles
-        'rounded-xl ring-1 ring-border bg-card/80 backdrop-blur-sm',
-        // Mobile: compact padding p-3; sm+: p-4
+        cardStyles,
+        'bg-card/80 backdrop-blur-sm',
         'p-3 sm:p-4',
-        // Full width variant for single-row items
         fullWidth && 'col-span-2',
         className
       )}

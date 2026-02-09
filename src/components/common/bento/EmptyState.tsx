@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 type ColorVariant = 'primary' | 'warning' | 'muted';
 
@@ -56,8 +57,9 @@ export const EmptyState = ({
   return (
     <div
       className={cn(
+        cardStyles,
         '@container flex flex-col items-center justify-center',
-        'py-12 @sm:py-16 px-4 rounded-xl bg-card ring-1 ring-border',
+        'py-12 @sm:py-16 px-4',
         className
       )}
     >

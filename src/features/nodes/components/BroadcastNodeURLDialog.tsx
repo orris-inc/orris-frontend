@@ -148,9 +148,9 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isSingleMode ? (
-              <Server className="size-5 text-blue-500" />
+              <Server className="size-5 text-info" />
             ) : (
-              <Radio className="size-5 text-blue-500" />
+              <Radio className="size-5 text-info" />
             )}
             {isSingleMode ? t('admin.nodes.broadcast.notifyTitle') : t('admin.nodes.broadcast.broadcastTitle')}
           </DialogTitle>
@@ -176,8 +176,8 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{targetNode?.name}</span>
                     {targetNode?.isOnline ? (
-                      <span className="flex items-center gap-1 text-xs text-green-600">
-                        <span className="size-2 rounded-full bg-green-500" />
+                      <span className="flex items-center gap-1 text-xs text-success">
+                        <span className="size-2 rounded-full bg-success" />
                         {t('common.status.online')}
                       </span>
                     ) : (
@@ -194,9 +194,9 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
             </div>
 
             {!isTargetAvailable ? (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="size-4 text-yellow-500" />
-                <span className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg">
+                <AlertTriangle className="size-4 text-warning" />
+                <span className="text-sm text-warning">
                   {isSingleMode ? t('admin.nodes.broadcast.nodeOffline') : t('admin.nodes.broadcast.noOnlineNodes')}
                 </span>
               </div>
@@ -227,9 +227,9 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <AlertTriangle className="size-4 text-blue-500 flex-shrink-0" />
-                  <span className="text-xs text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 p-3 bg-info/10 rounded-lg">
+                  <AlertTriangle className="size-4 text-info flex-shrink-0" />
+                  <span className="text-xs text-info">
                     {t('admin.nodes.broadcast.nodeAutoUpdateHint')}
                   </span>
                 </div>
@@ -241,23 +241,23 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
           <div className="space-y-5">
             {/* Warning header - Enhanced visual hierarchy */}
             <div
-              className="relative overflow-hidden rounded-xl border border-orange-200 dark:border-orange-800/60 bg-gradient-to-br from-orange-50 via-orange-50 to-amber-50 dark:from-orange-950/40 dark:via-orange-900/30 dark:to-amber-950/20"
+              className="relative overflow-hidden rounded-xl border border-warning/30 bg-warning/5"
               role="alert"
               aria-labelledby="warning-title"
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/60 dark:to-amber-900/40 shadow-sm">
-                    <ShieldAlert className="size-5 text-orange-600 dark:text-orange-400" />
+                  <div className="flex size-10 items-center justify-center rounded-full bg-warning/10 shadow-sm">
+                    <ShieldAlert className="size-5 text-warning" />
                   </div>
                   <div className="flex-1 min-w-0 pt-0.5">
                     <h4
                       id="warning-title"
-                      className="text-base font-semibold text-orange-900 dark:text-orange-100"
+                      className="text-base font-semibold text-foreground"
                     >
                       {t('admin.nodes.broadcast.dangerWarningTitle')}
                     </h4>
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1 leading-relaxed">
+                    <p className="text-sm text-warning mt-1 leading-relaxed">
                       {isSingleMode
                         ? t('admin.nodes.broadcast.dangerWarningDescSingle')
                         : t('admin.nodes.broadcast.dangerWarningDescAll', { count: onlineCount })}
@@ -272,15 +272,15 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
               <p className="text-sm font-medium text-foreground">{t('admin.nodes.broadcast.impactTitle')}</p>
               <ul className="space-y-2.5" aria-label={t('admin.nodes.broadcast.impactTitle')}>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.nodes.broadcast.impact1')}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.nodes.broadcast.impact2')}</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-500/20" aria-hidden="true" />
+                  <span className="mt-1.5 flex size-2 items-center justify-center rounded-full bg-warning ring-4 ring-warning/20" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground leading-relaxed">{t('admin.nodes.broadcast.impact3')}</span>
                 </li>
               </ul>
@@ -323,14 +323,14 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
                 placeholder={expectedConfirmText}
                 className={cn(
                   'transition-colors',
-                  confirmText && !isConfirmValid && 'border-orange-300 dark:border-orange-700 focus-visible:ring-orange-500/20',
-                  confirmText && isConfirmValid && 'border-green-300 dark:border-green-700 focus-visible:ring-green-500/20'
+                  confirmText && !isConfirmValid && 'border-warning/50 focus-visible:ring-warning/20',
+                  confirmText && isConfirmValid && 'border-success/50 focus-visible:ring-success/20'
                 )}
                 autoComplete="off"
                 aria-describedby="confirm-hint"
               />
               {confirmText && !isConfirmValid && (
-                <p id="confirm-hint" className="text-xs text-orange-600 dark:text-orange-400" role="status">
+                <p id="confirm-hint" className="text-xs text-warning" role="status">
                   {t('admin.nodes.broadcast.inputMismatch')}
                 </p>
               )}
@@ -340,22 +340,22 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
           // Single node result
           <div className="space-y-4">
             {singleResult.notified ? (
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-8 text-green-500 mx-auto mb-3" />
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              <div className="p-4 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-8 text-success mx-auto mb-3" />
+                <p className="text-lg font-semibold text-success">
                   {t('admin.nodes.broadcast.notifySuccess')}
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                <p className="text-sm text-success mt-1">
                   {t('admin.nodes.broadcast.notifySuccessDesc', { name: targetNode?.name })}
                 </p>
               </div>
             ) : (
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                <AlertTriangle className="size-8 text-yellow-500 mx-auto mb-3" />
-                <p className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
+              <div className="p-4 bg-warning/10 rounded-lg text-center">
+                <AlertTriangle className="size-8 text-warning mx-auto mb-3" />
+                <p className="text-lg font-semibold text-warning">
                   {t('admin.nodes.broadcast.notifyFailed')}
                 </p>
-                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
+                <p className="text-sm text-warning mt-1">
                   {t('admin.nodes.broadcast.notifyFailedDesc')}
                 </p>
               </div>
@@ -365,35 +365,35 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
           // Broadcast result
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-6 text-green-500 mx-auto mb-2" />
-                <p className="text-2xl font-semibold text-green-700 dark:text-green-300">
+              <div className="p-4 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-6 text-success mx-auto mb-2" />
+                <p className="text-2xl font-semibold text-success">
                   {broadcastResult.nodesNotified}
                 </p>
-                <p className="text-sm text-green-600 dark:text-green-400">{t('admin.nodes.broadcast.notified')}</p>
+                <p className="text-sm text-success">{t('admin.nodes.broadcast.notified')}</p>
               </div>
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-                <Radio className="size-6 text-blue-500 mx-auto mb-2" />
-                <p className="text-2xl font-semibold text-blue-700 dark:text-blue-300">
+              <div className="p-4 bg-info/10 rounded-lg text-center">
+                <Radio className="size-6 text-info mx-auto mb-2" />
+                <p className="text-2xl font-semibold text-info">
                   {broadcastResult.nodesOnline}
                 </p>
-                <p className="text-sm text-blue-600 dark:text-blue-400">{t('admin.nodes.broadcast.onlineNodes')}</p>
+                <p className="text-sm text-info">{t('admin.nodes.broadcast.onlineNodes')}</p>
               </div>
             </div>
 
             {broadcastResult.nodesNotified > 0 && (
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <CheckCircle2 className="size-4 text-green-500 flex-shrink-0" />
-                <span className="text-sm text-green-700 dark:text-green-300">
+              <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg">
+                <CheckCircle2 className="size-4 text-success flex-shrink-0" />
+                <span className="text-sm text-success">
                   {t('admin.nodes.broadcast.notifySuccessSummary', { count: broadcastResult.nodesNotified })}
                 </span>
               </div>
             )}
 
             {broadcastResult.nodesNotified === 0 && broadcastResult.nodesOnline === 0 && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <AlertTriangle className="size-4 text-yellow-500 flex-shrink-0" />
-                <span className="text-sm text-yellow-700 dark:text-yellow-300">
+              <div className="flex items-center gap-2 p-3 bg-warning/10 rounded-lg">
+                <AlertTriangle className="size-4 text-warning flex-shrink-0" />
+                <span className="text-sm text-warning">
                   {t('admin.nodes.broadcast.noOnlineNodesToNotify')}
                 </span>
               </div>
@@ -432,7 +432,7 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
                 variant="destructive"
                 onClick={handleConfirmedSubmit}
                 disabled={!isConfirmValid || isLoading}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-warning hover:bg-warning/90"
               >
                 {isLoading ? (
                   <>

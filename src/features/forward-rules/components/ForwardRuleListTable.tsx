@@ -68,58 +68,58 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
   direct: {
     labelKey: 'admin.forwardRules.ruleType.direct',
     shortLabelKey: 'admin.forwardRules.ruleType.directShort',
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   entry: {
     labelKey: 'admin.forwardRules.ruleType.entry',
     shortLabelKey: 'admin.forwardRules.ruleType.entryShort',
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   chain: {
     labelKey: 'admin.forwardRules.ruleType.chain',
     shortLabelKey: 'admin.forwardRules.ruleType.chainShort',
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
   direct_chain: {
     labelKey: 'admin.forwardRules.ruleType.directChain',
     shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
   external: {
     labelKey: 'admin.forwardRules.ruleType.external',
     shortLabelKey: 'admin.forwardRules.ruleType.externalShort',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
 };
 
 // Protocol configuration
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  tcp: { label: 'TCP', color: 'text-sky-600 dark:text-sky-400' },
-  udp: { label: 'UDP', color: 'text-orange-600 dark:text-orange-400' },
-  both: { label: 'TCP/UDP', color: 'text-violet-600 dark:text-violet-400' },
+  tcp: { label: 'TCP', color: 'text-info' },
+  udp: { label: 'UDP', color: 'text-warning' },
+  both: { label: 'TCP/UDP', color: 'text-relay' },
 };
 
 // Tunnel type configuration
 const TUNNEL_TYPE_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   ws: {
     label: 'WS',
-    color: 'text-cyan-600 dark:text-cyan-400',
-    bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   tls: {
     label: 'TLS',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   ws_smux: {
     label: 'WS+MUX',
-    color: 'text-violet-600 dark:text-violet-400',
-    bgColor: 'bg-violet-50 dark:bg-violet-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
   tls_smux: {
     label: 'TLS+MUX',
@@ -147,14 +147,14 @@ const RUN_STATUS_CONFIG: Record<RuleRunStatus | 'unknown', { labelKey: string; i
 // Flow arrow component for chain visualization
 const FlowArrow: React.FC<{ className?: string; color?: 'purple' | 'blue' | 'green' }> = ({ className = '', color = 'purple' }) => {
   const colorClasses = {
-    purple: 'from-purple-300 to-purple-400 dark:from-purple-600 dark:to-purple-400',
-    blue: 'from-blue-300 to-blue-400 dark:from-blue-600 dark:to-blue-400',
-    green: 'from-green-300 to-green-400 dark:from-green-600 dark:to-green-400',
+    purple: 'from-relay/40 to-relay/50',
+    blue: 'from-info/40 to-info/50',
+    green: 'from-success/40 to-success/50',
   };
   const arrowColor = {
-    purple: 'text-purple-400 dark:text-purple-400',
-    blue: 'text-blue-400 dark:text-blue-400',
-    green: 'text-green-400 dark:text-green-400',
+    purple: 'text-relay',
+    blue: 'text-info',
+    green: 'text-success',
   };
   return (
     <div className={`flex items-center justify-center flex-shrink-0 ${className}`}>
@@ -178,30 +178,30 @@ interface FlowNodeProps {
 const FLOW_NODE_CONFIG = {
   entry: {
     icon: Bot,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 dark:bg-green-900/30',
-    borderColor: 'border-green-300 dark:border-green-700',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/50',
     labelKey: 'admin.forwardRules.flowNode.entry',
   },
   relay: {
     icon: Bot,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/30',
-    borderColor: 'border-purple-300 dark:border-purple-700',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
+    borderColor: 'border-relay/50',
     labelKey: 'admin.forwardRules.flowNode.relay',
   },
   exit: {
     icon: Bot,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/30',
-    borderColor: 'border-orange-300 dark:border-orange-700',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/50',
     labelKey: 'admin.forwardRules.flowNode.exit',
   },
   target: {
     icon: Server,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
-    borderColor: 'border-blue-300 dark:border-blue-700',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/50',
     labelKey: 'admin.forwardRules.flowNode.target',
   },
 };
@@ -288,12 +288,12 @@ interface RelayItemProps {
 const RelayItem: React.FC<RelayItemProps> = ({ agent, index, t }) => {
   return (
     <div className="flex items-start gap-2 text-sm py-1.5">
-      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-[10px] font-bold text-purple-600 dark:text-purple-400 flex items-center justify-center mt-0.5">
+      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-relay/10 text-[10px] font-bold text-relay flex items-center justify-center mt-0.5">
         {index + 1}
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <Bot className="size-3 text-purple-500 flex-shrink-0" />
+          <Bot className="size-3 text-relay flex-shrink-0" />
           <span className="truncate font-medium text-foreground">{agent.name}</span>
         </div>
         {agent.address && (
@@ -319,7 +319,7 @@ const CollapsedRelays: React.FC<CollapsedRelaysWithTranslationProps> = ({ count,
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors cursor-pointer">
+        <button className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-relay/10 text-relay text-relay border border-relay/20 hover:bg-relay/20 transition-colors cursor-pointer">
           +{count}
         </button>
       </PopoverTrigger>
@@ -349,7 +349,7 @@ const LoadBalancedExitItem: React.FC<{ agent: RelayAgentInfo; t: (key: string) =
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <Bot className="size-3 text-orange-500 flex-shrink-0" />
+            <Bot className="size-3 text-warning flex-shrink-0" />
             <span className="truncate font-medium text-foreground">{agent.name}</span>
           </div>
           {agent.weight !== undefined && (
@@ -393,7 +393,7 @@ const LoadBalancedExitNodes: React.FC<LoadBalancedExitNodesProps> = ({ agents, t
           <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
           <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{firstAgent.name}</span>
           {hasMultiple && (
-            <span className="flex items-center gap-0.5 px-1 py-0 text-[9px] font-semibold rounded bg-orange-200 dark:bg-orange-800/50 text-orange-700 dark:text-orange-300">
+            <span className="flex items-center gap-0.5 px-1 py-0 text-[9px] font-semibold rounded bg-warning/15 text-warning">
               LB {agents.length}
             </span>
           )}
@@ -404,7 +404,7 @@ const LoadBalancedExitNodes: React.FC<LoadBalancedExitNodesProps> = ({ agents, t
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
             {hasMultiple && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-warning/10 text-warning font-medium">
                 {t('admin.forwardRules.exitAgents.loadBalancing')}
               </span>
             )}
@@ -630,7 +630,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             {t('common.actions.enable')}
           </ContextMenuItem>
         )}
-        <ContextMenuItem onClick={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+        <ContextMenuItem onClick={() => onDelete(rule)} className="text-destructive">
           <Trash2 className="mr-2 size-4" />
           {t('common.actions.delete')}
         </ContextMenuItem>
@@ -661,7 +661,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-red-600 dark:text-red-400">
+      <DropdownMenuItem onSelect={() => onDelete(rule)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
         {t('common.actions.delete')}
       </DropdownMenuItem>
@@ -824,7 +824,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
           return (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="text-xs text-cyan-600 dark:text-cyan-400 cursor-default whitespace-nowrap">
+                <span className="text-xs text-info cursor-default whitespace-nowrap">
                   {t('admin.forwardRules.traffic.external')}
                 </span>
               </TooltipTrigger>
@@ -854,9 +854,9 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             contentClassName="w-48"
           >
             <div className="grid grid-cols-[10px_1fr] gap-x-1 gap-y-0.5 text-xs font-mono whitespace-nowrap">
-              <span className="text-green-500">↑</span>
+              <span className="text-success">↑</span>
               <span className="text-foreground tabular-nums">{formatBytesGB(uploadBytes)}</span>
-              <span className="text-blue-500">↓</span>
+              <span className="text-info">↓</span>
               <span className="text-foreground tabular-nums">{formatBytesGB(downloadBytes)}</span>
             </div>
           </TableHoverCardList>
@@ -917,7 +917,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         // Determine overall health status
         const getHealthConfig = () => {
           if (isPolling && !polledStatus && !rule.syncStatus) {
-            return { labelKey: 'common.status.syncing', colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', showPulse: true };
+            return { labelKey: 'common.status.syncing', colorClass: 'text-info', bgClass: 'bg-info/10', showPulse: true };
           }
           if (!syncStatus) {
             return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
@@ -1009,7 +1009,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onViewDetail(rule)}
-                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted hover:bg-accent transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
                   aria-label={t('admin.forwardRules.actions.viewDetail')}
                 >
                   <Eye className="size-4" />
@@ -1021,7 +1021,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => onEdit(rule)}
-                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted hover:bg-accent transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
                   aria-label={t('common.actions.edit')}
                 >
                   <Edit className="size-4" />
@@ -1034,7 +1034,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                 <button
                   onClick={() => canProbe && onProbe(rule)}
                   disabled={!canProbe}
-                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed after:absolute after:inset-[-6px] after:content-['']"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-info hover:text-info hover:bg-info/10 hover:bg-info/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed after:absolute after:inset-[-6px] after:content-['']"
                   aria-label={isProbing ? t('admin.forwardRules.actions.probing') : t('admin.forwardRules.actions.probe')}
                 >
                   {isProbing ? (
@@ -1051,7 +1051,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
+                  className="relative inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted hover:bg-accent transition-all duration-200 after:absolute after:inset-[-6px] after:content-['']"
                   aria-label={t('common.actions.more')}
                 >
                   <MoreHorizontal className="size-4" />

@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { ArrowUp, ArrowDown, Activity, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { cardStyles } from "@/lib/ui-styles";
 import { getTrafficStats } from "@/api/subscription";
 import type {
   Subscription,
@@ -366,7 +367,7 @@ const TimeRangeSelector = ({
  * Loading skeleton
  */
 const ChartSkeleton = () => (
-  <div className="@container p-4 rounded-xl bg-card ring-1 ring-border">
+  <div className={cn("@container p-4", cardStyles)}>
     <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
       <Skeleton className="h-10 w-32" />
       <Skeleton className="h-8 w-24" />
@@ -459,7 +460,7 @@ export const SubscriptionTrafficChart: React.FC<
   }
 
   return (
-    <div className="@container p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
+    <div className={cn("@container p-3 @sm:p-4", cardStyles)}>
       {/* Header - compact on mobile */}
       <div className="flex items-center justify-between gap-2 mb-3 @sm:mb-4">
         <div className="flex items-center gap-2 @sm:gap-3 shrink-0">

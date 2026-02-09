@@ -54,9 +54,9 @@ const getStatusConfig = (status: string) => {
       return {
         labelKey: "common.status.enabled",
         variant: "success" as const,
-        color: "text-emerald-600 dark:text-emerald-400",
-        bgColor: "bg-emerald-500/10",
-        ringColor: "ring-emerald-500/20",
+        color: "text-success",
+        bgColor: "bg-success/10",
+        ringColor: "ring-success/20",
       };
     case "expired":
       return {
@@ -78,17 +78,17 @@ const getStatusConfig = (status: string) => {
       return {
         labelKey: "subscriptionStatus.pending",
         variant: "secondary" as const,
-        color: "text-amber-600 dark:text-amber-400",
-        bgColor: "bg-amber-500/10",
-        ringColor: "ring-amber-500/20",
+        color: "text-warning",
+        bgColor: "bg-warning/10",
+        ringColor: "ring-warning/20",
       };
     case "renewed":
       return {
         labelKey: "subscriptionStatus.renewed",
         variant: "success" as const,
-        color: "text-emerald-600 dark:text-emerald-400",
-        bgColor: "bg-emerald-500/10",
-        ringColor: "ring-emerald-500/20",
+        color: "text-success",
+        bgColor: "bg-success/10",
+        ringColor: "ring-success/20",
       };
     default:
       return {
@@ -424,7 +424,7 @@ export const SubscriptionOverviewTab: React.FC<
                     className={cn(
                       "h-full rounded-full transition-all duration-700 ease-out",
                       subscription.isActive
-                        ? "bg-emerald-500"
+                        ? "bg-success"
                         : "bg-muted-foreground"
                     )}
                     style={{ width: `${periodProgress}%` }}

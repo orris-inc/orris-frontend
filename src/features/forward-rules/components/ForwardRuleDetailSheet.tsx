@@ -50,6 +50,7 @@ import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type {
   ForwardRule,
@@ -150,7 +151,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
     <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5 px-0.5">
       {title}
     </h3>
-    <div className="rounded-xl ring-1 ring-border bg-card overflow-hidden">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
@@ -271,7 +272,7 @@ const ForwardPath = ({
                 {node.name}
                 {node.port ? <span className="text-muted-foreground">:{node.port}</span> : null}
                 {node.badge && (
-                  <span className="px-1 py-0 text-[9px] font-semibold rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                  <span className="px-1 py-0 text-[9px] font-semibold rounded bg-warning/10 text-warning">
                     {node.badge}
                   </span>
                 )}
@@ -290,7 +291,7 @@ const ForwardPath = ({
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-semibold text-muted-foreground">{t('admin.forwardRules.flowNode.exit')}</h4>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-warning/10 text-warning font-medium">
                           {t('admin.forwardRules.exitAgents.loadBalancing')}
                         </span>
                       </div>
@@ -298,7 +299,7 @@ const ForwardPath = ({
                         {exitAgentsWithPercent.map((agent, idx) => (
                           <div key={agent.id} className="flex items-center justify-between gap-2 p-1.5 rounded bg-muted/50">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-900/30 text-[9px] font-bold text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-warning/10 text-[9px] font-bold text-warning flex items-center justify-center">
                                 {idx + 1}
                               </span>
                               <span className="text-xs font-medium truncate">{agent.name}</span>

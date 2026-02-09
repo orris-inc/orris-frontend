@@ -67,8 +67,8 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
           {/* Rule count */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="p-1 rounded-md bg-blue-500/10">
-                <Server className="h-3.5 w-3.5 text-blue-500" />
+              <div className="p-1 rounded-md bg-info/10">
+                <Server className="h-3.5 w-3.5 text-info" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.rules')}</span>
             </div>
@@ -79,7 +79,7 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
             {usage.ruleLimit > 0 && (
               <div className="w-full bg-muted rounded-full h-1 mt-1.5 overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 transition-all duration-300"
+                  className="h-full bg-info transition-all duration-300"
                   style={{ width: `${Math.min(ruleUsagePercent, 100)}%` }}
                 />
               </div>
@@ -89,8 +89,8 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
           {/* Traffic usage */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="p-1 rounded-md bg-emerald-500/10">
-                <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <div className="p-1 rounded-md bg-success/10">
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.traffic')}</span>
             </div>
@@ -104,7 +104,7 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
             {usage.trafficLimit > 0 && (
               <div className="w-full bg-muted rounded-full h-1 mt-1.5 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-300"
+                  className="h-full bg-success transition-all duration-300"
                   style={{ width: `${Math.min(trafficUsagePercent, 100)}%` }}
                 />
               </div>
@@ -114,8 +114,8 @@ export const UserForwardUsageCard: React.FC<UserForwardUsageCardProps> = ({
           {/* Allowed rule types */}
           <div className="flex-shrink-0 w-[140px] @sm:w-auto p-2.5 @sm:p-3 rounded-xl bg-muted/50 glass-elevated">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="p-1 rounded-md bg-purple-500/10">
-                <Layers className="h-3.5 w-3.5 text-purple-500" />
+              <div className="p-1 rounded-md bg-relay/10">
+                <Layers className="h-3.5 w-3.5 text-relay" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.types')}</span>
             </div>

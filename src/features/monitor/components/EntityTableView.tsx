@@ -18,6 +18,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Server, Cpu, ChevronUp, ChevronDown, ChevronsUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatBitRate } from '@/shared/utils/format-utils';
 import { getResourceBgClass, getResourceMutedTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
@@ -355,7 +356,7 @@ export const EntityTableView = memo(({
     return (
       <div
         ref={tableContainerRef}
-        className="overflow-auto bg-card rounded-xl ring-1 ring-border"
+        className={cn(cardStyles, 'overflow-auto')}
         style={{ maxHeight }}
       >
         <table className="w-full text-sm border-separate border-spacing-0">
@@ -396,7 +397,7 @@ export const EntityTableView = memo(({
 
   // Non-virtualized table (for small datasets)
   return (
-    <div className="overflow-x-auto bg-card rounded-xl ring-1 ring-border">
+    <div className={cn(cardStyles, 'overflow-x-auto')}>
       <table className="w-full text-sm border-separate border-spacing-0">
         {renderHeader()}
         <tbody className="divide-y divide-border/40">

@@ -7,7 +7,6 @@ export type { BreakpointKey } from './useBreakpoint';
 
 export {
   useViewTransition,
-  useViewTransitionHandler,
   supportsViewTransitions,
 } from './useViewTransition';
 export type { TransitionDirection } from './useViewTransition';
@@ -25,8 +24,6 @@ export {
 
 export {
   useNetworkStatus,
-  useShouldReduceData,
-  useAdaptiveQuality,
 } from './useNetworkStatus';
 export type { NetworkStatus, ConnectionEffectiveType } from './useNetworkStatus';
 

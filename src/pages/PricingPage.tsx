@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 
 import type { SubscriptionPlan, BillingCycle } from '@/api/subscription/types';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import { PlanCardList } from '@/features/subscription-plans/components/PlanCardList';
 import { BillingCycleToggle } from '@/features/subscription-plans/components/BillingCycleToggle';
 import { SubscriptionConfirmDialog } from '@/features/subscription-plans/components/SubscriptionConfirmDialog';
@@ -87,7 +89,7 @@ export const PricingPage = () => {
 
         {/* Features Highlight */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
+          <div className={cn('flex items-center gap-3 p-4', cardStyles)}>
             <div className="p-2 rounded-lg bg-success/10 ring-1 ring-success/20 shrink-0">
               <Zap className="size-4 text-success" />
             </div>
@@ -101,7 +103,7 @@ export const PricingPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
+          <div className={cn('flex items-center gap-3 p-4', cardStyles)}>
             <div className="p-2 rounded-lg bg-primary/10 ring-1 ring-primary/20 shrink-0">
               <Shield className="size-4 text-primary" />
             </div>
@@ -115,7 +117,7 @@ export const PricingPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-card ring-1 ring-border">
+          <div className={cn('flex items-center gap-3 p-4', cardStyles)}>
             <div className="p-2 rounded-lg bg-warning/10 ring-1 ring-warning/20 shrink-0">
               <Headphones className="size-4 text-warning" />
             </div>

@@ -54,6 +54,7 @@ import {
 } from '@/components/common/sheet/Sheet';
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardAgent, AgentSystemStatus, BlockedProtocol } from '@/api/forward';
@@ -159,7 +160,7 @@ const DetailSection = memo(({
     <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
       {title}
     </h3>
-    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <dl className="divide-y divide-border">{children}</dl>
     </div>
   </div>
@@ -314,7 +315,7 @@ const SystemStatusSection = memo(({
         {t('admin.forwardAgents.detail.systemStatus')}
       </h3>
 
-      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border divide-y divide-border">
+      <div className={cn(cardStyles, 'overflow-hidden divide-y divide-border')}>
         {/* Connection & Version row */}
         <div className="px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -17,6 +17,7 @@ import {
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { TelegramBindingCard, useTelegramBinding } from '@/features/telegram';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import {
   BentoStatCard,
@@ -70,7 +71,7 @@ export const NotificationsPage = () => {
         {/* Stats Grid */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Telegram Status Card - Custom layout */}
-          <div className="col-span-2 p-4 sm:p-5 rounded-xl bg-card ring-1 ring-border transition-shadow hover:shadow-md">
+          <div className={cn('col-span-2 p-4 sm:p-5 transition-shadow hover:shadow-md', cardStyles)}>
             <div className="flex items-center gap-3 mb-3">
               <div
                 className={cn(
@@ -125,7 +126,7 @@ export const NotificationsPage = () => {
           </div>
 
           {/* Active Notifications - Custom with dynamic icon */}
-          <div className="p-4 sm:p-5 rounded-xl bg-card ring-1 ring-border transition-shadow hover:shadow-md">
+          <div className={cn('p-4 sm:p-5 transition-shadow hover:shadow-md', cardStyles)}>
             <div className="flex items-center gap-2 mb-3">
               <div
                 className={cn(
@@ -171,10 +172,10 @@ export const NotificationsPage = () => {
             {/* Expiry Reminder Card */}
             <div
               className={cn(
-                'p-4 sm:p-5 rounded-xl cursor-default',
+                'p-4 sm:p-5 cursor-default',
                 'transition-all duration-200',
-                'bg-card ring-1',
-                notificationStats.hasExpiringNotify ? 'ring-warning/20' : 'ring-border'
+                cardStyles,
+                notificationStats.hasExpiringNotify && 'ring-warning/20'
               )}
             >
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -226,10 +227,10 @@ export const NotificationsPage = () => {
             {/* Traffic Alert Card */}
             <div
               className={cn(
-                'p-4 sm:p-5 rounded-xl cursor-default',
+                'p-4 sm:p-5 cursor-default',
                 'transition-all duration-200',
-                'bg-card ring-1',
-                notificationStats.hasTrafficNotify ? 'ring-primary/20' : 'ring-border'
+                cardStyles,
+                notificationStats.hasTrafficNotify && 'ring-primary/20'
               )}
             >
               <div className="flex items-start justify-between gap-3 mb-3">

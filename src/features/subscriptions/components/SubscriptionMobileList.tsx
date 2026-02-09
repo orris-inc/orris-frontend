@@ -43,6 +43,8 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
@@ -70,7 +72,7 @@ interface SubscriptionMobileListProps {
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="rounded-xl ring-1 ring-border p-4 space-y-3">
+      <div key={i} className={cn(cardStyles, 'p-4 space-y-3')}>
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -205,10 +207,10 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
+            className="p-1.5 rounded-lg hover:bg-accent active:scale-[0.98] transition-all"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -283,7 +285,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
   if (subscriptions.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground dark:text-muted-foreground">
         {t('subscription.noData')}
       </div>
     );
@@ -304,7 +306,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             <ContextMenuTrigger asChild>
               <AccordionItem
                 value={subscription.id}
-                className="rounded-xl ring-1 ring-border bg-card overflow-hidden"
+                className={cn(cardStyles, 'overflow-hidden')}
               >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -315,7 +317,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                     {isUserLoading ? (
                       <Skeleton className="h-4 w-24" />
                     ) : (
-                      <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                      <span className="font-medium text-sm text-foreground truncate">
                         {user?.name || user?.email || `User #${subscription.userId}`}
                       </span>
                     )}
@@ -325,9 +327,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                   </div>
 
                   {/* Plan name */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                     <span className="truncate">{plan?.name || t('subscription.unknownPlan')}</span>
-                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <span className="text-muted-foreground/50">·</span>
                     <span className="flex items-center gap-0.5">
                       <Calendar className="size-3" />
                       {formatDate(subscription.startDate)}
@@ -342,9 +344,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => onActivate(subscription)}
-                          className="p-1.5 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 active:scale-[0.98] transition-all"
+                          className="p-1.5 rounded-lg hover:bg-success/10 active:scale-[0.98] transition-all"
                         >
-                          <Play className="size-3.5 text-green-500 hover:text-green-600" />
+                          <Play className="size-3.5 text-success hover:text-success" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>{t('common.actions.enable')}</TooltipContent>
@@ -355,9 +357,9 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => onViewDetail(subscription)}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
+                          className="p-1.5 rounded-lg hover:bg-accent active:scale-[0.98] transition-all"
                         >
-                          <Eye className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                          <Eye className="size-3.5 text-muted-foreground hover:text-foreground" />
                         </button>
                       </TooltipTrigger>
                       <TooltipContent>{t('subscription.viewDetails')}</TooltipContent>
@@ -369,27 +371,27 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t('subscription.viewDetails')}</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-muted">
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">{t('subscription.viewDetails')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* Subscription ID */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">ID</span>
-                  <span className="text-xs font-mono text-slate-600 dark:text-slate-300 truncate">{subscription.id}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">ID</span>
+                  <span className="text-xs font-mono text-muted-foreground truncate">{subscription.id}</span>
                 </div>
 
                 {/* User info */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.role.user')}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('common.role.user')}</span>
                   {isUserLoading ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
-                    <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 min-w-0">
-                      <User className="size-3 text-slate-400 flex-shrink-0" />
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                      <User className="size-3 text-muted-foreground flex-shrink-0" />
                       <span className="truncate">{user?.email || `ID: ${subscription.userId}`}</span>
                     </div>
                   )}
@@ -397,14 +399,14 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* Plan */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('tableColumns.plan')}</span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300">{plan?.name || t('subscription.unknownPlan')}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('tableColumns.plan')}</span>
+                  <span className="text-xs text-muted-foreground">{plan?.name || t('subscription.unknownPlan')}</span>
                 </div>
 
                 {/* Date range */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.dateInfo')}</span>
-                  <span className="text-xs text-slate-600 dark:text-slate-300">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.dateInfo')}</span>
+                  <span className="text-xs text-muted-foreground">
                     {formatDate(subscription.startDate)} ~ {subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}
                   </span>
                 </div>
@@ -413,8 +415,8 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.fields.createdAt')}</span>
-                  <span className="text-xs text-slate-500">{formatDate(subscription.createdAt)}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('common.fields.createdAt')}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(subscription.createdAt)}</span>
                 </div>
               </div>
             </AccordionContent>

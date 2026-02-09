@@ -139,7 +139,7 @@ const ProviderSection = ({
           <span
             className={cn(
               'text-foreground',
-              name === 'google' && 'text-red-500'
+              name === 'google' && 'text-destructive'
             )}
           >
             {icon}

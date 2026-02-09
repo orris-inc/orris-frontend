@@ -56,14 +56,14 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               size="sm"
               onClick={onBatchEnable}
               disabled={isLoading}
-              className="h-8 px-2.5 gap-1.5 border-green-500/30 hover:border-green-500/50 hover:bg-green-500/10"
+              className="h-8 px-2.5 gap-1.5 border-success/30 hover:border-success/50 hover:bg-success/10"
             >
               {isTogglingStatus ? (
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <Power className="size-3.5 text-green-500" />
+                <Power className="size-3.5 text-success" />
               )}
-              <span className="hidden @lg:inline text-green-600 dark:text-green-400">{t('common.actions.enable')}</span>
+              <span className="hidden @lg:inline text-success">{t('common.actions.enable')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.enableTooltip')}</TooltipContent>
@@ -76,14 +76,14 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               size="sm"
               onClick={onBatchDisable}
               disabled={isLoading}
-              className="h-8 px-2.5 gap-1.5 border-orange-500/30 hover:border-orange-500/50 hover:bg-orange-500/10"
+              className="h-8 px-2.5 gap-1.5 border-warning/30 hover:border-warning/50 hover:bg-warning/10"
             >
               {isTogglingStatus ? (
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <PowerOff className="size-3.5 text-orange-500" />
+                <PowerOff className="size-3.5 text-warning" />
               )}
-              <span className="hidden @lg:inline text-orange-600 dark:text-orange-400">{t('common.actions.disable')}</span>
+              <span className="hidden @lg:inline text-warning">{t('common.actions.disable')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.disableTooltip')}</TooltipContent>
@@ -96,14 +96,14 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
               size="sm"
               onClick={onBatchUpdate}
               disabled={isLoading}
-              className="h-8 px-2.5 gap-1.5 border-blue-500/30 hover:border-blue-500/50 hover:bg-blue-500/10"
+              className="h-8 px-2.5 gap-1.5 border-info/30 hover:border-info/50 hover:bg-info/10"
             >
               {isUpdating ? (
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <Pencil className="size-3.5 text-blue-500" />
+                <Pencil className="size-3.5 text-info" />
               )}
-              <span className="hidden @lg:inline text-blue-600 dark:text-blue-400">{t('admin.forwardRules.batch.update')}</span>
+              <span className="hidden @lg:inline text-info">{t('admin.forwardRules.batch.update')}</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t('admin.forwardRules.batch.updateTooltip')}</TooltipContent>

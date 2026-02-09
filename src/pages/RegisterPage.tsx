@@ -26,6 +26,7 @@ import {
   usePasswordPolicy,
   usePublicBranding,
 } from '@/features/settings';
+import { getButtonClass } from '@/lib/ui-styles';
 
 // Register form data type
 type RegisterFormData = {
@@ -371,7 +372,7 @@ export const RegisterPage = () => {
                   </p>
                   <RouterLink
                     to="/login"
-                    className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground ring-1 ring-primary/20 transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    className={getButtonClass('default', 'default', 'h-11 px-6 font-semibold')}
                   >
                     {t('auth.register.signIn')}
                   </RouterLink>
@@ -404,7 +405,7 @@ export const RegisterPage = () => {
                   type="button"
                   onClick={() => handleOAuthRegister('google')}
                   disabled={isLoading}
-                  className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                  className={getButtonClass('outline', 'default', 'h-11 w-full gap-3 [@media(max-height:982px)]:h-10')}
                 >
                   <GoogleIcon className="size-5" />
                   {t('auth.register.continueWithGoogle')}
@@ -413,7 +414,7 @@ export const RegisterPage = () => {
                   type="button"
                   onClick={() => handleOAuthRegister('github')}
                   disabled={isLoading}
-                  className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                  className={getButtonClass('outline', 'default', 'h-11 w-full gap-3 [@media(max-height:982px)]:h-10')}
                 >
                   <GitHubIcon className="size-5" />
                   {t('auth.register.continueWithGithub')}
@@ -433,7 +434,7 @@ export const RegisterPage = () => {
                         setShowPasskeyForm(true);
                       }}
                       disabled={isLoading || isPasskeyLoading}
-                      className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                      className={getButtonClass('outline', 'default', 'h-11 w-full gap-3 [@media(max-height:982px)]:h-10')}
                     >
                       <Fingerprint className="size-5" />
                       {t('auth.register.signUpWithPasskey')}
@@ -469,7 +470,7 @@ export const RegisterPage = () => {
                         <button
                           type="submit"
                           disabled={isPasskeyLoading}
-                          className="flex h-11 flex-1 items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground ring-1 ring-primary/20 transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                          className={getButtonClass('default', 'default', 'h-11 flex-1 font-semibold [@media(max-height:982px)]:h-10')}
                         >
                           {isPasskeyLoading ? (
                             <>
@@ -489,7 +490,7 @@ export const RegisterPage = () => {
                             setShowPasskeyForm(false);
                             clearPasskeyError();
                           }}
-                          className="flex h-11 flex-1 items-center justify-center rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                          className={getButtonClass('outline', 'default', 'h-11 flex-1 [@media(max-height:982px)]:h-10')}
                         >
                           {t('common.actions.cancel')}
                         </button>
@@ -604,7 +605,7 @@ export const RegisterPage = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground ring-1 ring-primary/20 transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [@media(max-height:982px)]:h-10"
+                  className={getButtonClass('default', 'default', 'h-11 w-full font-semibold [@media(max-height:982px)]:h-10')}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('auth.register.signUp')}

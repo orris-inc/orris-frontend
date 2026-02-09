@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/common/Button';
 import { MobileFormInput } from '@/components/common/mobile-form';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type { BroadcastAPIURLChangedResponse } from '@/api/forward';
 
 interface BroadcastURLSheetProps {
@@ -190,7 +191,7 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               </div>
 
               {/* Summary */}
-              <div className="rounded-xl ring-1 ring-border divide-y">
+              <div className={cn(cardStyles, 'divide-y')}>
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.newAddress')}</span>
                   <span className="font-mono text-sm truncate max-w-[180px]" title={newUrl}>

@@ -164,35 +164,3 @@ export const useViewTransition = (): UseViewTransitionReturn => {
     currentPath: location.pathname,
   };
 };
-
-type ViewTransitionNavigateHandler = (
-  to: string,
-  options?: ViewTransitionOptions
-) => void;
-
-/**
- * Hook to handle navigation with View Transitions for mobile tab/menu clicks
- *
- * @example
- * ```tsx
- * const handleNavigation = useViewTransitionHandler();
- *
- * <button onClick={() => handleNavigation('/dashboard')}>
- *   Dashboard
- * </button>
- * ```
- */
-export const useViewTransitionHandler = (): ViewTransitionNavigateHandler => {
-  const { navigateWithTransition } = useViewTransition();
-
-  return useCallback(
-    (to: string, options?: ViewTransitionOptions) => {
-      // Trigger haptic feedback on mobile
-      if ('vibrate' in navigator) {
-        navigator.vibrate(10);
-      }
-      navigateWithTransition(to, options);
-    },
-    [navigateWithTransition]
-  );
-};

@@ -115,7 +115,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
                       {agent.allowedPortRange && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                          className="text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                         >
                           {agent.allowedPortRange}
                         </Badge>
@@ -160,7 +160,7 @@ export const SortableChainAgentList: React.FC<SortableChainAgentListProps> = ({
                   {agent.allowedPortRange && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400 shrink-0"
+                      className="text-[10px] px-1.5 py-0 border-warning/50 text-warning shrink-0"
                     >
                       {agent.allowedPortRange}
                     </Badge>

@@ -31,6 +31,7 @@ import { Label } from '@/components/common/Label';
 import { SortableChainAgentList } from './SortableChainAgentList';
 import { ExitAgentList } from './ExitAgentList';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import { useEditForwardRuleForm } from '../hooks/useEditForwardRuleForm';
 import type {
@@ -230,7 +231,7 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
         <SheetBody className="space-y-4 py-4">
           {/* Read-only Info */}
-          <div className="rounded-xl ring-1 ring-border bg-muted/30 px-3 divide-y divide-border">
+          <div className={cn(cardStyles, 'bg-muted/30 px-3 divide-y divide-border')}>
             <InfoRow label={t('common.labels.id')} value={<span className="font-mono text-xs truncate max-w-[200px]">{rule.id}</span>} />
             <InfoRow
               label={t('admin.forwardRules.form.ruleType')}

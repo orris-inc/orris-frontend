@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { formatTrafficBytes } from '@/api/admin';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 // ============================================================================
 // Types
@@ -70,7 +71,7 @@ function StatCard({
 }: StatCardProps) {
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-xl bg-card px-4 py-5 ring-1 ring-border sm:p-6">
+      <div className={cn('overflow-hidden px-4 py-5 sm:p-6', cardStyles)}>
         <div className="animate-pulse">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-lg bg-muted" />
@@ -105,7 +106,8 @@ function StatCard({
   );
 
   const baseClassName = cn(
-    'overflow-hidden rounded-xl bg-card px-4 py-5 ring-1 ring-border sm:p-6',
+    'overflow-hidden px-4 py-5 sm:p-6',
+    cardStyles,
     'transition-all duration-200',
     'active:scale-[0.98]',
     onClick && 'cursor-pointer group hover:ring-primary/30 hover:shadow-md'

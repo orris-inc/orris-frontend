@@ -52,7 +52,7 @@ export function NetworkStatusIndicator({
           className
         )}
       >
-        <div className="flex items-center gap-2 rounded-full bg-amber-500/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm">
+        <div className="flex items-center gap-2 rounded-full bg-warning/90 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur-sm">
           <Wifi className="h-3.5 w-3.5" />
           <span>{t('common.network.slowConnection')}</span>
         </div>
@@ -86,7 +86,7 @@ export function NetworkStatusIndicator({
       {showReconnected && isOnline && (
         <div
           className={cn(
-            'flex items-center justify-center gap-2 bg-green-600 px-4 py-2 text-sm font-medium text-white',
+            'flex items-center justify-center gap-2 bg-success px-4 py-2 text-sm font-medium text-white',
             position === 'top' && 'pt-[calc(env(safe-area-inset-top)+0.5rem)]',
             position === 'bottom' && 'pb-[calc(env(safe-area-inset-bottom)+0.5rem)]'
           )}

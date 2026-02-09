@@ -212,7 +212,7 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileJson className="size-5 text-blue-500" />
+            <FileJson className="size-5 text-info" />
             {t('admin.forwardRules.batch.createTitle')}
           </DialogTitle>
           <DialogDescription>
@@ -261,11 +261,11 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
 
             {/* Validation errors */}
             {validation.errors.length > 0 && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
+              <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/30">
+                <p className="text-sm font-medium text-destructive mb-2">
                   {t('admin.forwardRules.batch.validationError')}
                 </p>
-                <ul className="text-xs text-red-600 dark:text-red-400 space-y-1 max-h-[100px] overflow-y-auto">
+                <ul className="text-xs text-destructive space-y-1 max-h-[100px] overflow-y-auto">
                   {validation.errors.slice(0, 10).map((error, i) => (
                     <li key={i}>{error}</li>
                   ))}
@@ -278,8 +278,8 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
 
             {/* Preview info */}
             {validation.valid && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                <p className="text-sm text-green-700 dark:text-green-300">
+              <div className="p-3 bg-success/10 rounded-lg border border-success/30">
+                <p className="text-sm text-success">
                   <CheckCircle2 className="size-4 inline-block mr-1.5 -mt-0.5" />
                   {t('admin.forwardRules.batch.jsonValid', { count: validation.rules.length })}
                 </p>
@@ -290,36 +290,36 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
           <div className="space-y-4">
             {/* Result stats */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-5 text-green-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              <div className="p-3 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-5 text-success mx-auto mb-1" />
+                <p className="text-lg font-semibold text-success">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
+                <p className="text-xs text-success">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
-                <XCircle className="size-5 text-red-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-red-700 dark:text-red-300">
+              <div className="p-3 bg-destructive/10 rounded-lg text-center">
+                <XCircle className="size-5 text-destructive mx-auto mb-1" />
+                <p className="text-lg font-semibold text-destructive">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
+                <p className="text-xs text-destructive">{t('common.status.failed')}</p>
               </div>
             </div>
 
             {/* Failed items */}
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardRules.batch.createFailed')}</p>
+                <p className="text-sm font-medium text-destructive">{t('admin.forwardRules.batch.createFailed')}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm"
+                      className="flex items-center justify-between p-2 bg-destructive/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs truncate max-w-[150px]">
                         {t('admin.forwardRules.batch.ruleIndex', { index: item.id })}
                       </span>
-                      <span className="text-xs text-red-600 dark:text-red-400 truncate max-w-[280px]">
+                      <span className="text-xs text-destructive truncate max-w-[280px]">
                         {item.reason}
                       </span>
                     </div>
@@ -331,14 +331,14 @@ export const BatchCreateDialog: React.FC<BatchCreateDialogProps> = ({
             {/* Success items */}
             {result.succeeded.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">{t('admin.forwardRules.batch.createSuccess')}</p>
+                <p className="text-sm font-medium text-success">{t('admin.forwardRules.batch.createSuccess')}</p>
                 <div className="max-h-[100px] overflow-y-auto space-y-1">
                   {result.succeeded.slice(0, 10).map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/10 rounded text-sm"
+                      className="flex items-center gap-2 p-2 bg-success/10 rounded text-sm"
                     >
-                      <CheckCircle2 className="size-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="size-3.5 text-success shrink-0" />
                       <span className="font-mono text-xs">{item.id}</span>
                     </div>
                   ))}

@@ -22,6 +22,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { GoogleIcon, GitHubIcon } from '@/components/common/SocialIcons';
 import { FormField, AuthAlert } from '@/components/auth';
 import { usePublicBranding } from '@/features/settings';
+import { getButtonClass } from '@/lib/ui-styles';
 
 // ============ Types ============
 type LoginFormData = {
@@ -228,7 +229,7 @@ export const LoginPage = () => {
                 type="button"
                 onClick={() => handleOAuthLogin('google')}
                 disabled={isLoading}
-                className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+                className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
               >
                 <GoogleIcon className="size-5" />
                 {t('auth.login.continueWithGoogle')}
@@ -237,7 +238,7 @@ export const LoginPage = () => {
                 type="button"
                 onClick={() => handleOAuthLogin('github')}
                 disabled={isLoading}
-                className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+                className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
               >
                 <GitHubIcon className="size-5" />
                 {t('auth.login.continueWithGithub')}
@@ -250,7 +251,7 @@ export const LoginPage = () => {
                     loginWithPasskey();
                   }}
                   disabled={isLoading || isPasskeyLoading}
-                  className="flex h-11 w-full items-center justify-center gap-3 rounded-xl bg-background text-sm font-medium ring-1 ring-border transition-all hover:bg-muted/50 hover:ring-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98] active:bg-muted/70 disabled:pointer-events-none disabled:opacity-50"
+                  className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
                 >
                   {isPasskeyLoading ? (
                     <>
@@ -324,7 +325,7 @@ export const LoginPage = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground ring-1 ring-primary/20 transition-all hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                className={getButtonClass('default', 'default', 'h-11 w-full font-semibold')}
               >
                 {isLoading ? (
                   <>

@@ -119,7 +119,7 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ArrowUpCircle className="size-5 text-blue-500" />
+            <ArrowUpCircle className="size-5 text-info" />
             {t(`${i18nNamespace}.title`)}
           </DialogTitle>
           <DialogDescription>

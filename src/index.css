@@ -116,6 +116,10 @@
   --color-info-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
   --color-info-muted: light-dark(oklch(0.97 0.03 250), oklch(0.2 0.05 250));
 
+  /* Relay - Purple (for forward-rule flow relay nodes) */
+  --color-relay: light-dark(oklch(0.55 0.2 300), oklch(0.65 0.2 300));
+  --color-relay-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+
   /* Border & Input */
   --color-border: light-dark(oklch(0.92 0.01 260), oklch(0.28 0.015 260));
   --color-input: light-dark(oklch(0.9 0.01 260), oklch(0.25 0.015 260));

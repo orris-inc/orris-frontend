@@ -29,6 +29,7 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
 import { getResourceBgClass, getResourceTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
@@ -172,7 +173,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
   if (!isOnline || !status) {
     return (
-      <div className={cn('rounded-xl ring-1 ring-border bg-card p-6 text-center', className)}>
+      <div className={cn(cardStyles, 'p-6 text-center', className)}>
         <WifiOff className="size-12 text-muted-foreground/30 mx-auto mb-3" />
         <h3 className="text-sm font-semibold text-foreground mb-1">
           {entity.name || entity.id}
@@ -190,7 +191,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
   }
 
   return (
-    <div className={cn('rounded-xl ring-1 ring-border bg-card overflow-hidden', className)}>
+    <div className={cn(cardStyles, 'overflow-hidden', className)}>
       {/* Header */}
       <div className="p-3 border-b border-border/50 bg-muted/30">
         <div className="flex items-center gap-3">
@@ -371,7 +372,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
           {/* System Info Section */}
           <SectionHeader
-            icon={<Terminal className="size-3.5 text-violet-500" />}
+            icon={<Terminal className="size-3.5 text-relay" />}
             title={t('admin.monitor.detail.systemInfo')}
             isExpanded={expandedSections.system}
             onToggle={() => toggleSection('system')}
@@ -390,7 +391,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
           {/* Disk I/O Section */}
           <SectionHeader
-            icon={<HardDrive className="size-3.5 text-orange-500" />}
+            icon={<HardDrive className="size-3.5 text-warning" />}
             title={t('admin.monitor.detail.diskIO')}
             isExpanded={expandedSections.io}
             onToggle={() => toggleSection('io')}
@@ -466,7 +467,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
           {/* Sockets Section */}
           <SectionHeader
-            icon={<Layers className="size-3.5 text-cyan-500" />}
+            icon={<Layers className="size-3.5 text-info" />}
             title={t('admin.monitor.detail.socketStats')}
             isExpanded={expandedSections.sockets}
             onToggle={() => toggleSection('sockets')}
@@ -483,7 +484,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
           {/* Processes Section */}
           <SectionHeader
-            icon={<Box className="size-3.5 text-emerald-500" />}
+            icon={<Box className="size-3.5 text-success" />}
             title={t('admin.monitor.detail.processStats')}
             isExpanded={expandedSections.processes}
             onToggle={() => toggleSection('processes')}
@@ -505,7 +506,7 @@ export const EntityFullDetailPanel = memo(({ entity, className, onClose }: Entit
 
           {/* VM Stats Section */}
           <SectionHeader
-            icon={<MemoryStick className="size-3.5 text-pink-500" />}
+            icon={<MemoryStick className="size-3.5 text-destructive" />}
             title={t('admin.monitor.detail.virtualMemory')}
             isExpanded={expandedSections.vm}
             onToggle={() => toggleSection('vm')}

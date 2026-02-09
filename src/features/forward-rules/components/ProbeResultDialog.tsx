@@ -124,7 +124,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
         <div className="flex-1 min-h-0 overflow-y-auto py-3">
           {isProbing ? (
             <div className="flex flex-col items-center justify-center py-6">
-              <Loader2 className="size-6 animate-spin text-blue-500 mb-2" />
+              <Loader2 className="size-6 animate-spin text-info mb-2" />
               <p className="text-sm text-muted-foreground">{t('admin.forwardRules.probe.probing')}</p>
             </div>
           ) : probeResult ? (
@@ -133,22 +133,22 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
               <div
                 className={`flex items-center gap-2.5 p-3 rounded-lg ${
                   probeResult.success
-                    ? 'bg-green-50 dark:bg-green-900/20'
-                    : 'bg-red-50 dark:bg-red-900/20'
+                    ? 'bg-success/10'
+                    : 'bg-destructive/10'
                 }`}
               >
                 {probeResult.success ? (
-                  <CheckCircle2 className="size-5 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="size-5 text-success flex-shrink-0" />
                 ) : (
-                  <XCircle className="size-5 text-red-500 flex-shrink-0" />
+                  <XCircle className="size-5 text-destructive flex-shrink-0" />
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <p
                       className={`text-sm font-medium ${
                         probeResult.success
-                          ? 'text-green-700 dark:text-green-300'
-                          : 'text-red-700 dark:text-red-300'
+                          ? 'text-success'
+                          : 'text-destructive'
                       }`}
                     >
                       {probeResult.success ? t('admin.forwardRules.probe.success') : t('admin.forwardRules.probe.failed')}
@@ -158,7 +158,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                     )}
                   </div>
                   {probeResult.error && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1 break-words">
+                    <p className="text-xs text-destructive mt-1 break-words">
                       {probeResult.error}
                     </p>
                   )}
@@ -193,7 +193,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                         title={t('common.copyAddress')}
                       >
                         {copiedAddress ? (
-                          <Check className="size-3 text-green-500" />
+                          <Check className="size-3 text-success" />
                         ) : (
                           <Copy className="size-3 text-muted-foreground" />
                         )}
@@ -240,7 +240,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                               <div key={exitResult.agentId} className="space-y-1">
                                 {/* Tunnel latency */}
                                 <div className={`flex items-center text-xs py-1 px-2 rounded ${
-                                  !exitResult.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                                  !exitResult.success ? 'bg-destructive/10' : 'bg-muted/30'
                                 }`}>
                                   <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
                                     <ArrowRight className="size-3 flex-shrink-0" />
@@ -248,7 +248,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                                       {entryAgentName} → {exitName}
                                     </span>
                                     {!exitResult.online && (
-                                      <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
+                                      <Badge variant="outline" className="text-warning text-[10px] px-1 py-0 flex-shrink-0">
                                         {t('common.status.offline')}
                                       </Badge>
                                     )}
@@ -274,7 +274,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                                       <span>RTT: {exitResult.tunnelMinLatencyMs}-{exitResult.tunnelMaxLatencyMs}ms</span>
                                     )}
                                     {exitResult.tunnelPacketLoss !== undefined && exitResult.tunnelPacketLoss > 0 && (
-                                      <span className="text-amber-600">Loss: {exitResult.tunnelPacketLoss.toFixed(1)}%</span>
+                                      <span className="text-warning">Loss: {exitResult.tunnelPacketLoss.toFixed(1)}%</span>
                                     )}
                                   </div>
                                 )}
@@ -318,7 +318,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                                   <span>RTT: {probeResult.tunnelMinLatencyMs}-{probeResult.tunnelMaxLatencyMs}ms</span>
                                 )}
                                 {probeResult.tunnelPacketLoss !== undefined && probeResult.tunnelPacketLoss > 0 && (
-                                  <span className="text-amber-600">Loss: {probeResult.tunnelPacketLoss.toFixed(1)}%</span>
+                                  <span className="text-warning">Loss: {probeResult.tunnelPacketLoss.toFixed(1)}%</span>
                                 )}
                               </div>
                             )}
@@ -351,7 +351,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                           <div
                             key={index}
                             className={`flex items-center text-xs py-1 px-2 rounded ${
-                              !hop.success ? 'bg-red-50 dark:bg-red-900/20' : 'bg-muted/30'
+                              !hop.success ? 'bg-destructive/10' : 'bg-muted/30'
                             }`}
                           >
                             <span className="text-muted-foreground flex-1 min-w-0 flex items-center gap-1">
@@ -360,7 +360,7 @@ export const ProbeResultDialog: React.FC<ProbeResultDialogProps> = ({
                                 {fromName} → {toName}
                               </span>
                               {!hop.online && (
-                                <Badge variant="outline" className="text-yellow-600 text-[10px] px-1 py-0 flex-shrink-0">
+                                <Badge variant="outline" className="text-warning text-[10px] px-1 py-0 flex-shrink-0">
                                   {t('common.status.offline')}
                                 </Badge>
                               )}

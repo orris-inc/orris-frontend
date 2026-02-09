@@ -137,10 +137,10 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
 
         return (
           <div className="space-y-1">
-            <div className="font-medium text-slate-900 dark:text-white">
+            <div className="font-medium text-foreground">
               {plan?.name || t('subscription.unknownPlan')}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400">
+            <div className="text-xs text-muted-foreground">
               {cycleText}
             </div>
           </div>
@@ -183,9 +183,9 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
     //   meta: { priority: 3 } as ResponsiveColumnMeta,
     //   cell: ({ row }) => (
     //     row.original.autoRenew ? (
-    //       <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={1.5} />
+    //       <CheckCircle className="size-4 text-success" strokeWidth={1.5} />
     //     ) : (
-    //       <X className="size-4 text-slate-400 dark:text-slate-500" strokeWidth={1.5} />
+    //       <X className="size-4 text-muted-foreground dark:text-muted-foreground" strokeWidth={1.5} />
     //     )
     //   ),
     // },
@@ -228,7 +228,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-950"
+                className="h-8 px-2 text-success hover:text-success hover:bg-success/10"
                 onClick={() => onActivate(subscription)}
               >
                 <Play className="size-4" />
@@ -239,7 +239,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-950"
+                className="h-8 px-2 text-success hover:text-success hover:bg-success/10"
                 onClick={() => onUnsuspend(subscription)}
               >
                 <PlayCircle className="size-4" />

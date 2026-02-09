@@ -143,14 +143,14 @@ export const ChangePlanDialog: React.FC<ChangePlanDialogProps> = ({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="upgrade" id="upgrade" />
                 <Label htmlFor="upgrade" className="cursor-pointer flex items-center gap-1.5">
-                  <ArrowUpCircle className="size-4 text-emerald-500" />
+                  <ArrowUpCircle className="size-4 text-success" />
                   {t('subscription.upgrade')}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="downgrade" id="downgrade" />
                 <Label htmlFor="downgrade" className="cursor-pointer flex items-center gap-1.5">
-                  <ArrowDownCircle className="size-4 text-amber-500" />
+                  <ArrowDownCircle className="size-4 text-warning" />
                   {t('subscription.downgrade')}
                 </Label>
               </div>
@@ -193,10 +193,10 @@ export const ChangePlanDialog: React.FC<ChangePlanDialogProps> = ({
           </div>
 
           {/* Warning Info */}
-          <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+          <div className="rounded-lg border border-info/20 bg-info/10 p-3">
             <div className="flex items-start gap-2">
-              <Info className="size-4 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-blue-700 dark:text-blue-400">
+              <Info className="size-4 text-info mt-0.5 shrink-0" />
+              <p className="text-sm text-info">
                 {t('subscription.changePlanWarning')}
               </p>
             </div>

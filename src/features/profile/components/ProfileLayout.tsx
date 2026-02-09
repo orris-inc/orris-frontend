@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import * as Select from '@radix-ui/react-select';
 import { User, Shield, Bell, Palette, Check, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 export type ProfileSection = 'profile' | 'security' | 'notifications' | 'appearance';
 
@@ -38,7 +40,8 @@ export const ProfileLayout = ({ children }: ProfileLayoutProps) => {
       <div className="lg:hidden">
         <Select.Root value={activeSection} onValueChange={(value) => setActiveSection(value as ProfileSection)}>
           <Select.Trigger
-            className="inline-flex items-center justify-between w-full rounded-xl bg-card ring-1 ring-border px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target active:scale-[0.98]"
+            className={cn(cardStyles, 'inline-flex items-center justify-between w-full px-4 py-3 text-sm font-medium hover:bg-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 touch-target active:scale-[0.98]')}
+
             aria-label={t('profile.nav.selectSection')}
           >
             <span className="flex items-center gap-3">

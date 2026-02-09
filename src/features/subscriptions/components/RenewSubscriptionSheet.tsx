@@ -92,10 +92,10 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
 
           {/* Lifetime subscription warning */}
           {isLifetime ? (
-            <div className="rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
+            <div className="rounded-xl border border-warning/20 bg-warning/10 p-3">
               <div className="flex items-start gap-2">
-                <Info className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                <Info className="size-4 text-warning mt-0.5 shrink-0" />
+                <p className="text-sm text-warning">
                   {t('subscription.lifetimeCannotRenew')}
                 </p>
               </div>
@@ -130,10 +130,10 @@ export const RenewSubscriptionSheet: React.FC<RenewSubscriptionSheetProps> = ({
               )}
 
               {/* Info */}
-              <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+              <div className="rounded-xl border border-info/20 bg-info/10 p-3">
                 <div className="flex items-start gap-2">
-                  <Info className="size-4 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
-                  <p className="text-xs text-blue-700 dark:text-blue-400">
+                  <Info className="size-4 text-info mt-0.5 shrink-0" />
+                  <p className="text-xs text-info">
                     {t('subscription.renewInfo')}
                   </p>
                 </div>

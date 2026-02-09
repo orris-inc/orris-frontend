@@ -180,7 +180,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           {t('common.actions.enable')}
         </ContextMenuItem>
       )}
-      <ContextMenuItem onClick={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+      <ContextMenuItem onClick={() => onDelete(agent)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
         {t('common.actions.delete')}
       </ContextMenuItem>
@@ -229,7 +229,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
           {t('common.actions.enable')}
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-red-600 dark:text-red-400">
+      <DropdownMenuItem onSelect={() => onDelete(agent)} className="text-destructive">
         <Trash2 className="mr-2 size-4" />
         {t('common.actions.delete')}
       </DropdownMenuItem>
@@ -374,7 +374,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       cell: ({ row }) => {
         const agent = row.original;
         if (!agent.groupSids || agent.groupSids.length === 0) {
-          return <span className="text-xs text-slate-400">-</span>;
+          return <span className="text-xs text-muted-foreground">-</span>;
         }
         const firstGroupSid = agent.groupSids[0];
         const firstGroup = resourceGroupsMap[firstGroupSid];
@@ -394,7 +394,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   return (
                     <div key={sid}>
                       <span>{group?.name || t('admin.forwardAgents.table.tooltip.unknownResourceGroup')}</span>
-                      <span className="text-xs text-slate-400 font-mono ml-2">({sid})</span>
+                      <span className="text-xs text-muted-foreground font-mono ml-2">({sid})</span>
                     </div>
                   );
                 })}
@@ -417,7 +417,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         const arch = agent.systemStatus?.arch;
 
         if (!version) {
-          return <span className="text-xs text-slate-400">-</span>;
+          return <span className="text-xs text-muted-foreground">-</span>;
         }
 
         return (
@@ -425,11 +425,11 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 cursor-default">
                 {agent.hasUpdate ? (
-                  <ArrowUpCircle className="size-3.5 text-amber-500" />
+                  <ArrowUpCircle className="size-3.5 text-warning" />
                 ) : (
-                  <Package className="size-3.5 text-slate-400" />
+                  <Package className="size-3.5 text-muted-foreground" />
                 )}
-                <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+                <span className={`text-xs font-mono ${agent.hasUpdate ? 'text-warning' : 'text-muted-foreground'}`}>
                   v{version}
                 </span>
               </div>
@@ -438,10 +438,10 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
               <div className="space-y-1">
                 <div className="text-xs">{t('common.fields.version')}: v{version}</div>
                 {platform && arch && (
-                  <div className="text-xs text-slate-400">{platform}/{arch}</div>
+                  <div className="text-xs text-muted-foreground">{platform}/{arch}</div>
                 )}
                 {agent.hasUpdate && (
-                  <div className="text-xs text-amber-500">{t('admin.forwardAgents.table.tooltip.newVersionAvailable')}</div>
+                  <div className="text-xs text-warning">{t('admin.forwardAgents.table.tooltip.newVersionAvailable')}</div>
                 )}
               </div>
             </TooltipContent>
@@ -494,7 +494,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             {agent.systemStatus && onBroadcastURL && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={() => onBroadcastURL(agent)} className={`${actionButtonClass} text-blue-500 hover:text-blue-600 hover:bg-blue-500/10`}>
+                  <button onClick={() => onBroadcastURL(agent)} className={`${actionButtonClass} text-info hover:text-info hover:bg-info/10`}>
                     <Radio className="size-4" strokeWidth={1.5} />
                   </button>
                 </TooltipTrigger>

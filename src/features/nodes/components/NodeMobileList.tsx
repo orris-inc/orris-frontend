@@ -225,7 +225,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                 {t('common.actions.enable')}
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onSelect={() => onDelete(node)} className="text-red-600 dark:text-red-400">
+            <DropdownMenuItem onSelect={() => onDelete(node)} className="text-destructive">
               <Trash2 className="mr-2 size-4" />
               {t('common.actions.delete')}
             </DropdownMenuItem>
@@ -241,7 +241,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
 
   if (nodes.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground">
         {t('admin.nodes.emptyState')}
       </div>
     );
@@ -251,7 +251,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
   const renderNodeCard = (node: Node) => {
     const statusConfig = STATUS_CONFIG[node.status] || { labelKey: 'common.status.unknown', variant: 'default' as const, icon: XCircle };
     const StatusIcon = statusConfig.icon;
-    const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-gray-100 text-gray-700' };
+    const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
 
     return (
       <AccordionItem

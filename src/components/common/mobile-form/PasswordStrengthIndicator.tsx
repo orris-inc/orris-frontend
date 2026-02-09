@@ -50,9 +50,9 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
                 'h-1 flex-1 rounded-full transition-colors',
                 index < passedRules.length
                   ? strengthPercent === 100
-                    ? 'bg-emerald-500'
+                    ? 'bg-success'
                     : strengthPercent >= 66
-                      ? 'bg-yellow-500'
+                      ? 'bg-warning'
                       : 'bg-destructive'
                   : 'bg-muted'
               )}
@@ -62,7 +62,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
         {/* Status text */}
         <span className={cn(
           'text-xs',
-          strengthPercent === 100 ? 'text-emerald-600' : 'text-muted-foreground'
+          strengthPercent === 100 ? 'text-success' : 'text-muted-foreground'
         )}>
           {strengthPercent === 100 ? validText : `${passedRules.length}/${rules.length}`}
         </span>
@@ -81,9 +81,9 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
               'h-1.5 flex-1 rounded-full transition-colors',
               index < passedRules.length
                 ? strengthPercent === 100
-                  ? 'bg-emerald-500'
+                  ? 'bg-success'
                   : strengthPercent >= 66
-                    ? 'bg-yellow-500'
+                    ? 'bg-warning'
                     : 'bg-destructive'
                 : 'bg-muted'
             )}
@@ -100,13 +100,13 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps>
               key={rule.key}
               className={cn(
                 'flex items-center gap-1.5 text-xs transition-colors',
-                passed ? 'text-emerald-600' : 'text-muted-foreground'
+                passed ? 'text-success' : 'text-muted-foreground'
               )}
             >
               <div
                 className={cn(
                   'size-4 rounded-full flex items-center justify-center flex-shrink-0',
-                  passed ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-muted'
+                  passed ? 'bg-success/10' : 'bg-muted'
                 )}
               >
                 {passed ? <Check className="size-2.5" /> : <X className="size-2.5" />}

@@ -36,6 +36,7 @@ import { ScrollArea } from "@/components/common/ScrollArea";
 import { Info, FolderTree } from "lucide-react";
 import { SortableChainAgentList } from "./SortableChainAgentList";
 import { ExitAgentList } from "./ExitAgentList";
+import { TargetConfigFields } from "./TargetConfigFields";
 import { useEditForwardRuleForm } from '../hooks/useEditForwardRuleForm';
 import type {
   ForwardRule,
@@ -279,7 +280,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                               {agent.allowedPortRange && (
                                 <Badge
                                   variant="outline"
-                                  className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                                  className="text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                                 >
                                   {agent.allowedPortRange}
                                 </Badge>
@@ -295,7 +296,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                           (a) => a.id === form.formData.agentId,
                         );
                         return selectedAgent?.allowedPortRange ? (
-                          <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-warning bg-warning/10 border border-warning/30 rounded-md px-2.5 py-1.5">
                             <Info className="size-3.5 shrink-0" />
                             <span>
                               {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
@@ -355,7 +356,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                                 {agent.allowedPortRange && (
                                   <Badge
                                     variant="outline"
-                                    className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                                    className="text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                                   >
                                     {agent.allowedPortRange}
                                   </Badge>
@@ -371,7 +372,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                             (a) => a.id === form.formData.exitAgentId,
                           );
                           return selectedAgent?.allowedPortRange ? (
-                            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md px-2.5 py-1.5">
+                            <div className="flex items-center gap-1.5 text-xs text-warning bg-warning/10 border border-warning/30 rounded-md px-2.5 py-1.5">
                               <Info className="size-3.5 shrink-0" />
                               <span>
                                 {t('admin.forwardRules.form.portRestriction', { range: selectedAgent.allowedPortRange })}
@@ -620,126 +621,21 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                       rule.ruleType === "entry" ||
                       rule.ruleType === "chain" ||
                       rule.ruleType === "direct_chain") && (
-                      <>
-                        {/* Target Type Selection */}
-                        <div className="flex flex-col gap-2 @sm:col-span-2">
-                          <Label>{t('admin.forwardRules.form.targetType')}</Label>
-                          <RadioGroup
-                            value={form.targetType}
-                            onValueChange={(value) => form.handleTargetTypeChange(value as "manual" | "node")}
-                            className="flex gap-4"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem
-                                value="manual"
-                                id="edit-target-manual"
-                              />
-                              <Label
-                                htmlFor="edit-target-manual"
-                                className="font-normal cursor-pointer"
-                              >
-                                {t('admin.forwardRules.form.targetTypeManual')}
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem
-                                value="node"
-                                id="edit-target-node"
-                              />
-                              <Label
-                                htmlFor="edit-target-node"
-                                className="font-normal cursor-pointer"
-                              >
-                                {t('admin.forwardRules.form.targetTypeNode')}
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        {/* Manual Target Address Input */}
-                        {form.targetType === "manual" && (
-                          <>
-                            <div className="flex flex-col gap-2">
-                              <Label htmlFor="targetAddress">{t('admin.forwardRules.form.targetAddress')}</Label>
-                              <Input
-                                id="targetAddress"
-                                value={form.formData.targetAddress || ""}
-                                onChange={(e) =>
-                                  form.handleChange("targetAddress", e.target.value)
-                                }
-                                error={!!form.errors.targetAddress}
-                              />
-                              {form.errors.targetAddress && (
-                                <p className="text-xs text-destructive">
-                                  {form.errors.targetAddress}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                              <Label htmlFor="targetPort">{t('admin.forwardRules.form.targetPort')}</Label>
-                              <Input
-                                id="targetPort"
-                                type="number"
-                                min={1}
-                                max={65535}
-                                value={form.formData.targetPort || ""}
-                                onChange={(e) =>
-                                  form.handleChange(
-                                    "targetPort",
-                                    parseInt(e.target.value, 10),
-                                  )
-                                }
-                                error={!!form.errors.targetPort}
-                              />
-                              {form.errors.targetPort && (
-                                <p className="text-xs text-destructive">
-                                  {form.errors.targetPort}
-                                </p>
-                              )}
-                            </div>
-                          </>
-                        )}
-
-                        {/* Select Target Node */}
-                        {form.targetType === "node" && (
-                          <div className="flex flex-col gap-2 @sm:col-span-2">
-                            <Label htmlFor="targetNodeId">{t('admin.forwardRules.form.targetNode')}</Label>
-                            <Select
-                              value={form.formData.targetNodeId || ""}
-                              onValueChange={(value) =>
-                                form.handleChange("targetNodeId", value)
-                              }
-                            >
-                              <SelectTrigger
-                                id="targetNodeId"
-                                className={
-                                  form.errors.targetNodeId
-                                    ? "border-destructive"
-                                    : ""
-                                }
-                              >
-                                <SelectValue placeholder={t('admin.forwardRules.form.selectTargetNode')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {form.availableNodes.map((node) => (
-                                  <SelectItem key={node.id} value={node.id}>
-                                    {node.name} ({node.serverAddress})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <p className="text-xs text-muted-foreground">
-                              {t('admin.forwardRules.form.targetNodeDynamicHint')}
-                            </p>
-                            {form.errors.targetNodeId && (
-                              <p className="text-xs text-destructive">
-                                {form.errors.targetNodeId}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </>
+                      <div className="grid grid-cols-6 gap-4 @sm:col-span-2">
+                        <TargetConfigFields
+                          targetType={form.targetType}
+                          onTargetTypeChange={(value) => form.handleTargetTypeChange(value as "manual" | "node")}
+                          targetAddress={form.formData.targetAddress || ""}
+                          onTargetAddressChange={(value) => form.handleChange("targetAddress", value)}
+                          targetPort={form.formData.targetPort || 0}
+                          onTargetPortChange={(value) => form.handleChange("targetPort", value)}
+                          targetNodeId={form.formData.targetNodeId || ""}
+                          onTargetNodeIdChange={(value) => form.handleChange("targetNodeId", value)}
+                          availableNodes={form.availableNodes}
+                          errors={form.errors as Record<string, string | undefined>}
+                          idPrefix="edit-"
+                        />
+                      </div>
                     )}
 
                   {/* Bind IP - hidden for external type */}

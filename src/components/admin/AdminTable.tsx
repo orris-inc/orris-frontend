@@ -336,10 +336,10 @@ interface AdminBadgeProps {
 
 const badgeVariants = {
   default: 'bg-muted text-muted-foreground border border-border/60',
-  success: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60',
-  warning: 'bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/60',
-  danger: 'bg-red-50 dark:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-800/60',
-  info: 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60',
+  success: 'bg-success/10 text-success border border-success/20',
+  warning: 'bg-warning/10 text-warning border border-warning/20',
+  danger: 'bg-destructive/10 text-destructive border border-destructive/20',
+  info: 'bg-info/10 text-info border border-info/20',
   outline: 'border border-border/60 text-muted-foreground hover:bg-accent',
 };
 

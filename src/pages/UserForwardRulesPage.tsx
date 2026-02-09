@@ -242,8 +242,8 @@ export const UserForwardRulesPage = () => {
         {/* No subscription prompt */}
         {hasNoSubscription && (
           <div className="glass rounded-2xl flex flex-col items-center justify-center py-12 sm:py-16 px-4">
-            <div className="p-4 rounded-full bg-amber-500/10 mb-4 sm:mb-6">
-              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500" />
+            <div className="p-4 rounded-full bg-warning/10 mb-4 sm:mb-6">
+              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-warning" />
             </div>
             <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center">{t('userForwardRules.noSubscription.title')}</h2>
             <p className="text-sm sm:text-base text-muted-foreground text-center max-w-md mb-4 sm:mb-6">
@@ -266,10 +266,10 @@ export const UserForwardRulesPage = () => {
 
             {/* Rule limit reached warning */}
             {isAtLimit && (
-              <div className="glass rounded-xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-amber-500/10 ring-1 ring-amber-500/20">
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5 sm:mt-0" />
+              <div className="glass rounded-xl flex items-start sm:items-center gap-3 p-3 sm:p-4 bg-warning/10 ring-1 ring-warning/20">
+                <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5 sm:mt-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-amber-600 dark:text-amber-400 text-sm sm:text-base">{t('userForwardRules.limitReached.title')}</p>
+                  <p className="font-medium text-warning text-sm sm:text-base">{t('userForwardRules.limitReached.title')}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {t('userForwardRules.limitReached.description', { count: usage?.ruleCount })}
                   </p>

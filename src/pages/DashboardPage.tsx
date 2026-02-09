@@ -123,13 +123,13 @@ const getAnnouncementIcon = (type: AnnouncementType) => {
 const getAnnouncementTypeStyle = (type: AnnouncementType) => {
   switch (type) {
     case 'system':
-      return 'text-blue-500';
+      return 'text-info';
     case 'maintenance':
-      return 'text-amber-500';
+      return 'text-warning';
     case 'feature':
-      return 'text-emerald-500';
+      return 'text-success';
     case 'promotion':
-      return 'text-purple-500';
+      return 'text-relay';
     default:
       return 'text-muted-foreground';
   }

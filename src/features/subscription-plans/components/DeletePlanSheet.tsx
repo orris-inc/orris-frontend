@@ -32,12 +32,12 @@ const PLAN_TYPE_LABEL_KEYS: Record<string, string> = {
 const STATUS_CONFIG: Record<string, { labelKey: string; color: string; icon: React.ReactNode }> = {
   active: {
     labelKey: 'common.status.enabled',
-    color: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30',
+    color: 'text-success bg-success/10',
     icon: <CheckCircle2 className="size-3.5" />,
   },
   inactive: {
     labelKey: 'common.status.disabled',
-    color: 'text-gray-600 bg-gray-100 dark:bg-gray-800',
+    color: 'text-muted-foreground bg-muted',
     icon: <XCircle className="size-3.5" />,
   },
 };
@@ -129,12 +129,12 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
                   <div className="flex items-center gap-1.5">
                     {plan.isPublic ? (
                       <>
-                        <Globe className="size-4 text-blue-500" />
+                        <Globe className="size-4 text-info" />
                         <span className="text-sm">{t('admin.plans.public')}</span>
                       </>
                     ) : (
                       <>
-                        <Lock className="size-4 text-yellow-500" />
+                        <Lock className="size-4 text-warning" />
                         <span className="text-sm">{t('admin.plans.private')}</span>
                       </>
                     )}

@@ -111,10 +111,12 @@ export function StackedList<T = StackedListItem>({
       {items.map((item, index) => {
         const key = getKey ? getKey(item, index) : (item as StackedListItem).id ?? index;
 
-        // Use render function if provided, otherwise treat as legacy StackedListItem
+        // Use render function if provided, otherwise treat as legacy StackedListItem.
+        // When renderItem is absent, T defaults to StackedListItem per the generic signature,
+        // so the intersection cast is safe for the default type parameter.
         const renderResult = renderItem
           ? renderItem(item, index)
-          : (item as unknown as StackedListItem);
+          : (item as T & StackedListItem);
 
         return (
           <StackedListRow

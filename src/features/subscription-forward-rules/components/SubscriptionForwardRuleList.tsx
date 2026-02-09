@@ -76,7 +76,7 @@ const ChainNodesDisplay: React.FC<{
         <div className="flex items-center gap-1.5 text-sm">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Bot className="size-3.5 text-purple-500 flex-shrink-0" />
+              <Bot className="size-3.5 text-relay flex-shrink-0" />
             </TooltipTrigger>
             <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
           </Tooltip>
@@ -96,14 +96,14 @@ const ChainNodesDisplay: React.FC<{
       <div className="flex items-center gap-1.5 text-sm">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Bot className="size-3.5 text-purple-500 flex-shrink-0" />
+            <Bot className="size-3.5 text-relay flex-shrink-0" />
           </TooltipTrigger>
           <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
         </Tooltip>
         <span className="truncate">{firstTwoNames} ...</span>
         <Popover>
           <PopoverTrigger asChild>
-            <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+            <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-relay/10 text-relay hover:bg-relay/20 transition-colors">
               +{chainCount - 2}
             </button>
           </PopoverTrigger>
@@ -122,7 +122,7 @@ const ChainNodesDisplay: React.FC<{
                   const isLast = index === chainAgentIds.length - 1;
                   return (
                     <div key={id} className="flex items-start gap-2">
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-relay/10 flex items-center justify-center text-xs font-medium text-relay">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -139,8 +139,8 @@ const ChainNodesDisplay: React.FC<{
                 })}
                 {targetDisplay && (
                   <div className="flex items-start gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <Server className="size-3.5 text-blue-600 dark:text-blue-400" />
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-info/10 flex items-center justify-center">
+                      <Server className="size-3.5 text-info" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate">{targetDisplay.name}</div>
@@ -288,7 +288,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               <div className="flex items-center gap-1.5 text-sm">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Bot className="size-3.5 text-green-500 flex-shrink-0" />
+                    <Bot className="size-3.5 text-success flex-shrink-0" />
                   </TooltipTrigger>
                   <TooltipContent>{t('userForwardRules.tooltip.entryAgent')}</TooltipContent>
                 </Tooltip>
@@ -296,7 +296,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               </div>
               <CopyableAddress
                 address={entryAddress}
-                className="text-blue-600 dark:text-blue-400 pl-5"
+                className="text-info pl-5"
               />
             </div>
           );
@@ -363,12 +363,12 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               return (
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
-                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
                     <span className="truncate">{firstExitName}</span>
                     {exitCount > 1 && (
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                          <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-relay/10 text-relay hover:bg-relay/20 transition-colors">
                             +{exitCount - 1}
                           </button>
                         </PopoverTrigger>
@@ -410,7 +410,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               return (
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
-                    <ExitTypeIcon type="agent" className="text-purple-500 flex-shrink-0" />
+                    <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
                     <span className="truncate">{exitName}</span>
                   </div>
                   <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />

@@ -51,9 +51,9 @@ const formatBytes = (bytes: number): string => {
 
 // Get color based on usage
 const getBarColor = (value: number): string => {
-  if (value >= 80) return 'bg-red-500';
-  if (value >= 60) return 'bg-amber-500';
-  return 'bg-emerald-500';
+  if (value >= 80) return 'bg-destructive';
+  if (value >= 60) return 'bg-warning';
+  return 'bg-success';
 };
 
 // Mini bar component for compact display

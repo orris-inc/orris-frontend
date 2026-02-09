@@ -136,9 +136,9 @@ const formatNumber = (num?: number): string => {
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
-  if (value >= 90) return 'bg-red-500';
-  if (value >= 70) return 'bg-yellow-500';
-  return 'bg-green-500';
+  if (value >= 90) return 'bg-destructive';
+  if (value >= 70) return 'bg-warning';
+  return 'bg-success';
 };
 
 // Metric item component
@@ -218,7 +218,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Cpu className="size-4" />}
                 title={t('admin.monitor.metrics.cpuDetails')}
-                iconColor="text-blue-500"
+                iconColor="text-info"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -240,7 +240,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<MemoryStick className="size-4" />}
                 title={t('admin.monitor.metrics.swapMemory')}
-                iconColor="text-purple-500"
+                iconColor="text-relay"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -273,7 +273,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<HardDrive className="size-4" />}
                 title={t('admin.monitor.metrics.diskIO')}
-                iconColor="text-orange-500"
+                iconColor="text-warning"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -295,7 +295,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Gauge className="size-4" />}
                 title={t('admin.monitor.metrics.pressureIndicators')}
-                iconColor="text-red-500"
+                iconColor="text-destructive"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -342,7 +342,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Network className="size-4" />}
                 title={t('admin.monitor.metrics.networkStats')}
-                iconColor="text-cyan-500"
+                iconColor="text-info"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -371,7 +371,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Layers className="size-4" />}
                 title={t('admin.monitor.metrics.socketStats')}
-                iconColor="text-indigo-500"
+                iconColor="text-relay"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -393,7 +393,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Activity className="size-4" />}
                 title={t('admin.monitor.metrics.processStats')}
-                iconColor="text-green-500"
+                iconColor="text-success"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -404,13 +404,13 @@ export const ExtendedMetricsPanel = ({
                 </div>
                 <div className="bg-muted/30 rounded-md p-2 text-center">
                   <p className="text-[10px] text-muted-foreground">{t('common.status.running')}</p>
-                  <p className="text-sm font-medium text-green-600">
+                  <p className="text-sm font-medium text-success">
                     {formatNumber(data.processesRunning)}
                   </p>
                 </div>
                 <div className="bg-muted/30 rounded-md p-2 text-center">
                   <p className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.blocked')}</p>
-                  <p className="text-sm font-medium text-orange-600">
+                  <p className="text-sm font-medium text-warning">
                     {formatNumber(data.processesBlocked)}
                   </p>
                 </div>
@@ -426,7 +426,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Shuffle className="size-4" />}
                 title={t('admin.monitor.metrics.contextSwitch')}
-                iconColor="text-pink-500"
+                iconColor="text-destructive"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -445,7 +445,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Server className="size-4" />}
                 title={t('admin.monitor.metrics.virtualMemory')}
-                iconColor="text-amber-500"
+                iconColor="text-warning"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">
@@ -458,7 +458,7 @@ export const ExtendedMetricsPanel = ({
                   <MetricItem
                     label={t('admin.monitor.detail.oomKills')}
                     value={formatNumber(data.vmOomKill)}
-                    valueClassName="text-red-600"
+                    valueClassName="text-destructive"
                   />
                 )}
               </div>
@@ -473,7 +473,7 @@ export const ExtendedMetricsPanel = ({
               <SectionHeader
                 icon={<Terminal className="size-4" />}
                 title={t('admin.monitor.metrics.systemInfo')}
-                iconColor="text-slate-500"
+                iconColor="text-muted-foreground"
               />
             </AccordionTrigger>
             <AccordionContent className="px-3 pb-3 pt-0">

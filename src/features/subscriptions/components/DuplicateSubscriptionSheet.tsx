@@ -70,8 +70,8 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <Copy className="size-4 text-blue-500" />
+            <div className="size-8 rounded-full bg-info/10 flex items-center justify-center">
+              <Copy className="size-4 text-info" />
             </div>
             <span>{t('subscription.duplicate')}</span>
           </SheetTitle>
@@ -161,10 +161,10 @@ export const DuplicateSubscriptionSheet: React.FC<DuplicateSubscriptionSheetProp
               )}
 
               {/* Info Alert */}
-              <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+              <div className="rounded-xl border border-info/20 bg-info/10 p-3">
                 <div className="flex items-start gap-2">
-                  <Info className="size-4 text-blue-500 mt-0.5 shrink-0" />
-                  <p className="text-xs text-blue-700 dark:text-blue-400">
+                  <Info className="size-4 text-info mt-0.5 shrink-0" />
+                  <p className="text-xs text-info">
                     {t('subscription.duplicateInfo')}
                   </p>
                 </div>

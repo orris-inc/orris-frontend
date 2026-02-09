@@ -425,7 +425,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   </p>
                 )}
                 {!isLoadingAgents && forwardAgents.filter(a => a.status === 'enabled').length === 0 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                  <p className="text-xs text-warning">
                     {t('userForwardRules.form.noAgentsAvailable')}
                   </p>
                 )}
@@ -821,7 +821,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                     </p>
                   )}
                   {!isLoadingNodes && availableNodes.length === 0 && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <p className="text-xs text-warning">
                       {t('userForwardRules.form.noNodesAvailable')}
                     </p>
                   )}

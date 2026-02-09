@@ -6,6 +6,8 @@ import { Server, TrendingUp, Layers } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/common/Badge';
 import { Skeleton } from '@/components/common/Skeleton';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import type { SubscriptionForwardUsage } from '@/api/forward';
 
 interface SubscriptionForwardUsageCardProps {
@@ -33,7 +35,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
   const { t } = useTranslation();
   if (isLoading) {
     return (
-      <div className="@container p-5 rounded-xl bg-card ring-1 ring-border">
+      <div className={cn('@container p-5', cardStyles)}>
         <div className="space-y-4">
           <Skeleton className="h-5 w-24" />
           <div className="grid grid-cols-1 @md:grid-cols-3 gap-4">
@@ -58,7 +60,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
   const trafficLimit = usage.trafficLimit > 0 ? formatTraffic(usage.trafficLimit) : null;
 
   return (
-    <div className="@container p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
+    <div className={cn('@container p-3 @sm:p-4', cardStyles)}>
       <div className="space-y-2 @sm:space-y-3">
         {/* Header - hidden on small containers */}
         <h3 className="text-sm font-medium text-foreground hidden @sm:block">{t('forwardUsage.forwardQuota')}</h3>
@@ -68,8 +70,8 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
           {/* Rule count */}
           <div className="flex-shrink-0 w-[130px] @sm:w-auto p-2.5 @sm:p-3 rounded-lg bg-muted/50">
             <div className="flex items-center gap-1.5 mb-1">
-              <div className="p-1 rounded bg-blue-500/10">
-                <Server className="h-3.5 w-3.5 text-blue-500" />
+              <div className="p-1 rounded bg-info/10">
+                <Server className="h-3.5 w-3.5 text-info" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.rules')}</span>
             </div>
@@ -80,7 +82,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
             {usage.ruleLimit > 0 && (
               <div className="w-full bg-muted rounded-full h-1 mt-1.5 overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 transition-all"
+                  className="h-full bg-info transition-all"
                   style={{ width: `${Math.min(ruleUsagePercent, 100)}%` }}
                 />
               </div>
@@ -90,8 +92,8 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
           {/* Traffic usage */}
           <div className="flex-shrink-0 w-[130px] @sm:w-auto p-2.5 @sm:p-3 rounded-lg bg-muted/50">
             <div className="flex items-center gap-1.5 mb-1">
-              <div className="p-1 rounded bg-emerald-500/10">
-                <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <div className="p-1 rounded bg-success/10">
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.traffic')}</span>
             </div>
@@ -105,7 +107,7 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
             {usage.trafficLimit > 0 && (
               <div className="w-full bg-muted rounded-full h-1 mt-1.5 overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 transition-all"
+                  className="h-full bg-success transition-all"
                   style={{ width: `${Math.min(trafficUsagePercent, 100)}%` }}
                 />
               </div>
@@ -115,8 +117,8 @@ export const SubscriptionForwardUsageCard: React.FC<SubscriptionForwardUsageCard
           {/* Allowed rule types */}
           <div className="flex-shrink-0 w-[130px] @sm:w-auto p-2.5 @sm:p-3 rounded-lg bg-muted/50">
             <div className="flex items-center gap-1.5 mb-1">
-              <div className="p-1 rounded bg-purple-500/10">
-                <Layers className="h-3.5 w-3.5 text-purple-500" />
+              <div className="p-1 rounded bg-relay/10">
+                <Layers className="h-3.5 w-3.5 text-relay" />
               </div>
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t('forwardUsage.types')}</span>
             </div>

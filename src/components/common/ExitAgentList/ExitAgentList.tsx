@@ -117,7 +117,7 @@ export function ExitAgentList<T extends BaseAgent>({
                     key={ea.agentId}
                     className={`flex flex-col gap-2 p-2 rounded transition-colors @[360px]:flex-row @[360px]:items-center ${
                       isBackup
-                        ? "bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                        ? "bg-warning/5 hover:bg-warning/10"
                         : "bg-muted/30 hover:bg-muted/50"
                     }`}
                   >
@@ -135,7 +135,7 @@ export function ExitAgentList<T extends BaseAgent>({
                         {isBackup && (
                           <Badge
                             variant="outline"
-                            className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
+                            className="text-[10px] px-1.5 py-0 border-warning/50 text-warning"
                           >
                             {t('admin.forwardRules.exitAgents.backup')}
                           </Badge>
@@ -166,7 +166,7 @@ export function ExitAgentList<T extends BaseAgent>({
                         }}
                         disabled={disabled}
                       />
-                      <span className={`text-xs w-12 text-right ${isBackup ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+                      <span className={`text-xs w-12 text-right ${isBackup ? "text-warning" : "text-muted-foreground"}`}>
                         {isBackup
                           ? t('admin.forwardRules.exitAgents.backupShort')
                           : isWeighted

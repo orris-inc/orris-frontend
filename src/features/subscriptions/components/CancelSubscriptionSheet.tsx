@@ -87,10 +87,10 @@ export const CancelSubscriptionSheet: React.FC<CancelSubscriptionSheetProps> = (
 
         <SheetBody className="py-4 space-y-4">
           {/* Warning */}
-          <div className="rounded-xl border border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30 p-3">
+          <div className="rounded-xl border border-warning/20 bg-warning/10 p-3">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-yellow-700 dark:text-yellow-400">
+              <AlertTriangle className="size-4 text-warning mt-0.5 shrink-0" />
+              <p className="text-xs text-warning">
                 {t('subscription.cancelWarning')}
               </p>
             </div>

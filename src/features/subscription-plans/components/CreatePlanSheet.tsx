@@ -125,11 +125,11 @@ export const CreatePlanSheet: React.FC<CreatePlanSheetProps> = ({
             <div
               className={cn(
                 'size-8 rounded-full flex items-center justify-center',
-                form.isDuplicateMode ? 'bg-blue-500/10' : 'bg-primary/10'
+                form.isDuplicateMode ? 'bg-info/10' : 'bg-primary/10'
               )}
             >
               {form.isDuplicateMode ? (
-                <Copy className="size-4 text-blue-500" />
+                <Copy className="size-4 text-info" />
               ) : (
                 <CreditCard className="size-4 text-primary" />
               )}

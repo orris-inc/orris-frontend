@@ -43,6 +43,7 @@ import {
   Hysteria2ConfigForm,
   TuicConfigForm,
 } from './protocol-forms';
+import { NodeOtherSettingsFields } from './form-sections';
 import {
   Server,
   Network,
@@ -57,11 +58,7 @@ import {
   Layers,
   Gauge,
   Workflow,
-  FolderTree,
 } from 'lucide-react';
-import { Checkbox } from '@/components/common/Checkbox';
-import { ScrollArea } from '@/components/common/ScrollArea';
-import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useCreateNodeForm } from '../hooks/useCreateNodeForm';
 
@@ -75,36 +72,17 @@ interface CreateNodeDialogProps {
   nodes?: OutboundNodeOption[];
 }
 
-// Shadowsocks encryption methods
+// Protocol option constants
 const SS_ENCRYPTION_METHODS = [
-  'aes-128-gcm',
-  'aes-256-gcm',
-  'chacha20-ietf-poly1305',
-  'xchacha20-ietf-poly1305',
-  '2022-blake3-aes-128-gcm',
-  '2022-blake3-aes-256-gcm',
-  '2022-blake3-chacha20-poly1305',
+  'aes-128-gcm', 'aes-256-gcm', 'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
+  '2022-blake3-aes-128-gcm', '2022-blake3-aes-256-gcm', '2022-blake3-chacha20-poly1305',
 ] as const;
-
-// Trojan transport protocols
 const TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc'];
-
-// VLESS transport protocols
 const VLESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'h2'];
-
-// VLESS security types
 const VLESS_SECURITY_OPTIONS: VLESSSecurity[] = ['none', 'tls', 'reality'];
-
-// VMess security types
 const VMESS_SECURITY_OPTIONS: VMessSecurity[] = ['auto', 'aes-128-gcm', 'chacha20-poly1305', 'none', 'zero'];
-
-// VMess transport protocols
 const VMESS_TRANSPORT_PROTOCOLS: TransportProtocol[] = ['tcp', 'ws', 'grpc', 'http', 'quic'];
-
-// Congestion control algorithms
 const CONGESTION_CONTROL_OPTIONS: CongestionControl[] = ['cubic', 'bbr', 'new_reno'];
-
-// TUIC UDP relay modes
 const TUIC_UDP_RELAY_MODES: TUICUDPRelayMode[] = ['native', 'quic'];
 
 // Section configuration
@@ -377,42 +355,15 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     {t('admin.nodes.form.protocolType')} <span className="text-destructive">*</span>
                   </Label>
                   <div className="grid grid-cols-3 gap-2">
-                    <ProtocolCard
-                      protocol="shadowsocks"
-                      selected={isShadowsocks}
-                      onSelect={() => handleChange('protocol', 'shadowsocks')}
-                      t={t}
-                    />
-                    <ProtocolCard
-                      protocol="trojan"
-                      selected={isTrojan}
-                      onSelect={() => handleChange('protocol', 'trojan')}
-                      t={t}
-                    />
-                    <ProtocolCard
-                      protocol="vless"
-                      selected={isVless}
-                      onSelect={() => handleChange('protocol', 'vless')}
-                      t={t}
-                    />
-                    <ProtocolCard
-                      protocol="vmess"
-                      selected={isVmess}
-                      onSelect={() => handleChange('protocol', 'vmess')}
-                      t={t}
-                    />
-                    <ProtocolCard
-                      protocol="hysteria2"
-                      selected={isHysteria2}
-                      onSelect={() => handleChange('protocol', 'hysteria2')}
-                      t={t}
-                    />
-                    <ProtocolCard
-                      protocol="tuic"
-                      selected={isTuic}
-                      onSelect={() => handleChange('protocol', 'tuic')}
-                      t={t}
-                    />
+                    {(Object.keys(PROTOCOL_CONFIG) as NodeProtocol[]).map((proto) => (
+                      <ProtocolCard
+                        key={proto}
+                        protocol={proto}
+                        selected={formData.protocol === proto}
+                        onSelect={() => handleChange('protocol', proto)}
+                        t={t}
+                      />
+                    ))}
                   </div>
                 </div>
 
@@ -767,103 +718,24 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
               getBadgeText={() => hasOtherSettings ? t('admin.nodes.form.configured') : null}
               requiredLabel={t('admin.nodes.form.required')}
             >
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField label={t('admin.nodes.form.region')} hint={t('admin.nodes.form.regionHint')}>
-                    <Input
-                      id="region"
-                      placeholder={t('admin.nodes.form.regionPlaceholder')}
-                      value={formData.region}
-                      onChange={(e) => handleChange('region', e.target.value)}
-                      className="h-10"
-                    />
-                  </FormField>
-
-                  <FormField label={t('common.fields.sortOrder')} hint={t('admin.nodes.form.sortOrderHint')}>
-                    <Input
-                      id="sortOrder"
-                      type="number"
-                      value={formData.sortOrder}
-                      onChange={(e) => handleChange('sortOrder', parseInt(e.target.value, 10) || 0)}
-                      className="h-10 font-mono"
-                    />
-                  </FormField>
-                </div>
-
-                <FormField label={t('admin.nodes.form.tags')} hint={t('admin.nodes.form.tagsHint')}>
-                  <Input
-                    id="tagsInput"
-                    placeholder={t('admin.nodes.form.tagsPlaceholder')}
-                    value={formData.tagsInput}
-                    onChange={(e) => handleChange('tagsInput', e.target.value)}
-                    className="h-10"
-                  />
-                </FormField>
-
-                {/* Resource Groups */}
-                {resourceGroups.length > 0 && (
-                  <FormField
-                    label={
-                      <span className="flex items-center gap-1.5">
-                        <FolderTree className="size-4" />
-                        {t('admin.nodes.form.bindResourceGroups')}
-                      </span>
-                    }
-                    hint={
-                      formData.groupSids && formData.groupSids.length > 0
-                        ? t('admin.nodes.form.selectedGroupsCount', { count: formData.groupSids.length })
-                        : t('admin.nodes.form.bindResourceGroupsHint')
-                    }
-                  >
-                    <div className="border rounded-lg overflow-hidden">
-                      <ScrollArea className="h-[120px]">
-                        <div className="divide-y divide-border">
-                          {resourceGroups.map((group) => {
-                            const isSelected = formData.groupSids?.includes(group.sid) ?? false;
-                            return (
-                              <label
-                                key={group.sid}
-                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors ${
-                                  isSelected ? 'bg-primary/5' : 'hover:bg-muted/50'
-                                }`}
-                              >
-                                <Checkbox
-                                  checked={isSelected}
-                                  onCheckedChange={() => handleGroupToggle(group.sid)}
-                                />
-                                <span className="text-sm font-medium truncate flex-1">
-                                  {group.name}
-                                </span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </FormField>
-                )}
-
-                {/* Expiration time */}
-                <FormField label={t('common.fields.expiresAt')} hint={t('admin.nodes.form.expiresAtHint')}>
-                  <ExpirationDatePicker
-                    value={formData.expiresAt}
-                    onChange={(value) => handleChange("expiresAt", value)}
-                    id="expiresAt"
-                  />
-                </FormField>
-
-                {/* Cost label */}
-                <FormField label={t('common.fields.costLabel')} hint={t('common.costLabel.hint')}>
-                  <Input
-                    id="costLabel"
-                    type="text"
-                    value={formData.costLabel ?? ""}
-                    onChange={(e) => handleCostLabelChange(e.target.value)}
-                    placeholder={t('common.costLabel.placeholder')}
-                    className="h-10"
-                  />
-                </FormField>
-              </div>
+              <NodeOtherSettingsFields
+                variant="desktop"
+                mode="create"
+                formData={{
+                  region: formData.region,
+                  sortOrder: formData.sortOrder,
+                  tagsInput: formData.tagsInput,
+                  groupSids: formData.groupSids || [],
+                  expiresAt: formData.expiresAt,
+                  costLabel: formData.costLabel,
+                }}
+                onFieldChange={handleChange}
+                onCostLabelChange={handleCostLabelChange}
+                onGroupToggle={(sid, _checked) => handleGroupToggle(sid)}
+                onGroupRemove={(sid) => handleGroupToggle(sid)}
+                filteredResourceGroups={resourceGroups}
+                isLoading={false}
+              />
             </CollapsibleSection>
 
             {/* Route Config Section */}

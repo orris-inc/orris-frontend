@@ -11,6 +11,7 @@ import { ReactNode } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 // Change type for trend indicator
 export type StatsChangeType = 'increase' | 'decrease' | 'neutral';
@@ -81,7 +82,8 @@ export const AdminStatsCard = ({
     return (
       <div
         className={cn(
-          'overflow-hidden rounded-lg bg-card px-4 py-5 shadow-sm ring-1 ring-border sm:p-6',
+          cardStyles,
+          'overflow-hidden rounded-lg px-4 py-5 shadow-sm sm:p-6',
           className
         )}
       >
@@ -128,7 +130,8 @@ export const AdminStatsCard = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg bg-card px-4 py-5 shadow-sm ring-1 ring-border sm:p-6',
+        cardStyles,
+        'overflow-hidden rounded-lg px-4 py-5 shadow-sm sm:p-6',
         className
       )}
     >

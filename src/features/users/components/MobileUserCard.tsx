@@ -46,14 +46,14 @@ const UserAvatar = ({
         'relative size-11 rounded-full flex items-center justify-center',
         'text-base font-semibold',
         isAdmin
-          ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
+          ? 'bg-gradient-to-br from-warning to-warning/80 text-warning-foreground'
           : 'bg-primary/10 text-primary'
       )}
     >
       {initial}
       {isAdmin && (
-        <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-amber-500 flex items-center justify-center">
-          <Crown className="size-2.5 text-white" />
+        <div className="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-warning flex items-center justify-center">
+          <Crown className="size-2.5 text-warning-foreground" />
         </div>
       )}
     </div>
@@ -116,7 +116,7 @@ export const MobileUserCard = ({ user, onCardPress }: MobileUserCardProps) => {
       {/* Role Badge - Only show for admin */}
       {user.role === 'admin' && (
         <div className="shrink-0">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-warning/10 text-warning">
             <Shield className="size-3" />
             <span className="text-[10px] font-medium">
               {t(roleConfig.labelKey)}

@@ -22,6 +22,7 @@ import {
   SheetFooter,
 } from '@/components/common/sheet/Sheet';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type {
   ForwardAgent,
   AgentBatchUpdateResponse,
@@ -98,7 +99,7 @@ export const AgentBatchUpdateSheet = ({
             // Confirmation view
             <>
               {/* Updatable count */}
-              <div className="rounded-xl bg-card ring-1 ring-border p-4">
+              <div className={cn(cardStyles, 'p-4')}>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
                     {t('admin.forwardAgents.batchUpdateDialog.updatableCount')}
@@ -124,7 +125,7 @@ export const AgentBatchUpdateSheet = ({
                   </span>
                 </div>
               ) : (
-                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
+                <div className={cn(cardStyles, 'overflow-hidden')}>
                   <div className="px-3 py-2 border-b border-border bg-muted/30">
                     <p className="text-xs font-medium text-muted-foreground">
                       {t('admin.forwardAgents.batchUpdateDialog.willUpdateAgents')}
@@ -182,7 +183,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Succeeded list */}
               {result.succeeded.length > 0 && (
-                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
+                <div className={cn(cardStyles, 'overflow-hidden')}>
                   <div className="px-3 py-2 border-b border-border bg-success/5">
                     <p className="text-xs font-medium text-success">
                       {t('admin.forwardAgents.batchUpdateDialog.updateTriggered')}
@@ -206,7 +207,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Failed list */}
               {result.failed.length > 0 && (
-                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
+                <div className={cn(cardStyles, 'overflow-hidden')}>
                   <div className="px-3 py-2 border-b border-border bg-destructive/5">
                     <p className="text-xs font-medium text-destructive">
                       {t('admin.forwardAgents.batchUpdateDialog.updateFailed')}
@@ -228,7 +229,7 @@ export const AgentBatchUpdateSheet = ({
 
               {/* Skipped list */}
               {result.skipped.length > 0 && (
-                <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden">
+                <div className={cn(cardStyles, 'overflow-hidden')}>
                   <div className="px-3 py-2 border-b border-border bg-warning/5">
                     <p className="text-xs font-medium text-warning">
                       {t('admin.forwardAgents.batchUpdateDialog.updateSkipped')}

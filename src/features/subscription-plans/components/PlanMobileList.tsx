@@ -29,6 +29,8 @@ import {
 } from '@/components/common/DropdownMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import { BillingCycleBadge } from './BillingCycleBadge';
 import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
@@ -104,7 +106,7 @@ const getPriceRange = (
 const MobileCardSkeleton: React.FC = () => (
   <div className="space-y-3">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="rounded-xl ring-1 ring-border p-4 space-y-3">
+      <div key={i} className={cn(cardStyles, 'p-4 space-y-3')}>
         <div className="flex items-center justify-between">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-16" />
@@ -132,11 +134,11 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-accent transition-colors"
             onClick={(e) => e.stopPropagation()}
             aria-label={t('common.actions.more')}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -163,7 +165,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
               {plan.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
             </DropdownMenuItem>
             {onDelete && (
-              <DropdownMenuItem onSelect={() => onDelete(plan)} className="text-red-600 dark:text-red-400">
+              <DropdownMenuItem onSelect={() => onDelete(plan)} className="text-destructive">
                 <Trash2 className="mr-2 size-4" />
                 {t('common.actions.delete')}
               </DropdownMenuItem>
@@ -180,7 +182,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
 
   if (plans.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground dark:text-muted-foreground">
         {t('admin.plans.emptyState')}
       </div>
     );
@@ -198,7 +200,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
           <AccordionItem
             key={plan.id}
             value={plan.id}
-            className="rounded-xl ring-1 ring-border bg-card overflow-hidden"
+            className={cn(cardStyles, 'overflow-hidden')}
           >
             {/* Card Header - Always visible */}
             <div className="px-3 py-2">
@@ -206,7 +208,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* Plan name and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                    <span className="font-medium text-sm text-foreground truncate">
                       {plan.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
@@ -215,9 +217,9 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                   </div>
 
                   {/* Price and type */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="font-mono text-slate-700 dark:text-slate-300">{priceRange.display}</span>
-                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
+                    <span className="font-mono text-foreground">{priceRange.display}</span>
+                    <span className="text-muted-foreground">·</span>
                     <AdminBadge
                       variant={planType === 'forward' ? 'warning' : 'info'}
                       className="text-[10px] px-1.5 py-0"
@@ -233,10 +235,10 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onEdit(plan)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-accent transition-colors"
                         aria-label={t('common.actions.edit')}
                       >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                        <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{t('common.actions.edit')}</TooltipContent>
@@ -247,15 +249,15 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                         onClick={() => onToggleStatus(plan)}
                         className={`p-1.5 rounded transition-colors ${
                           plan.status === 'active'
-                            ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                            ? 'hover:bg-destructive/10'
+                            : 'hover:bg-success/10'
                         }`}
                         aria-label={plan.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
                       >
                         <Power className={`size-3.5 ${
                           plan.status === 'active'
-                            ? 'text-slate-400 hover:text-red-500'
-                            : 'text-slate-400 hover:text-green-500'
+                            ? 'text-muted-foreground hover:text-destructive'
+                            : 'text-muted-foreground hover:text-success'
                         }`} />
                       </button>
                     </TooltipTrigger>
@@ -267,26 +269,26 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-muted">
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">{t('common.detail')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* Slug */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.slug')}</span>
-                  <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{plan.slug}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.slug')}</span>
+                  <span className="text-xs font-mono text-muted-foreground text-muted-foreground">{plan.slug}</span>
                 </div>
 
                 {/* Billing cycle */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.cycle')}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.cycle')}</span>
                   {priceRange.details && priceRange.details.length > 1 ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-xs text-slate-600 dark:text-slate-400 cursor-help">
+                        <span className="text-xs text-muted-foreground cursor-help">
                           {priceRange.details.length}{' '}
                           {t('admin.plans.cycleOptions')}
                         </span>
@@ -308,7 +310,7 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
 
                 {/* Public status */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.public')}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('admin.plans.detail.public')}</span>
                   <AdminBadge variant={plan.isPublic ? 'success' : 'outline'} className="text-[10px] px-1.5 py-0">
                     {plan.isPublic ? t('common.yes') : t('common.no')}
                   </AdminBadge>
@@ -317,16 +319,16 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 {/* Sort order */}
                 {plan.sortOrder !== undefined && plan.sortOrder !== null && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 flex-shrink-0">{t('common.table.sort')}</span>
-                    <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{plan.sortOrder}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('common.table.sort')}</span>
+                    <span className="text-xs font-mono text-muted-foreground text-muted-foreground">{plan.sortOrder}</span>
                   </div>
                 )}
 
                 {/* Description */}
                 {plan.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300 flex-1 line-clamp-2">{plan.description}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
+                    <span className="text-xs text-muted-foreground text-muted-foreground flex-1 line-clamp-2">{plan.description}</span>
                   </div>
                 )}
               </div>

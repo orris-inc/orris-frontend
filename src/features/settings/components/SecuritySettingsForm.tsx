@@ -13,6 +13,8 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Skeleton } from '@/components/common/Skeleton';
+import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { FormSection, FormField, FormActions } from './FormField';
 import { SourceBadge } from './SourceBadge';
 import type {
@@ -342,7 +344,7 @@ export const SecuritySettingsForm = ({
 export const SecuritySettingsFormSkeleton = () => (
   <div className="space-y-6">
     {/* Password Policy Section */}
-    <div className="bg-card rounded-lg ring-1 ring-border overflow-hidden">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
         <div className="space-y-1.5">
           <Skeleton className="h-5 w-28" />
@@ -365,7 +367,7 @@ export const SecuritySettingsFormSkeleton = () => (
     </div>
 
     {/* Session Settings Section */}
-    <div className="bg-card rounded-lg ring-1 ring-border overflow-hidden">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
         <div className="space-y-1.5">
           <Skeleton className="h-5 w-24" />
@@ -386,7 +388,7 @@ export const SecuritySettingsFormSkeleton = () => (
     </div>
 
     {/* Login Protection Section */}
-    <div className="bg-card rounded-lg ring-1 ring-border overflow-hidden">
+    <div className={cn(cardStyles, 'overflow-hidden')}>
       <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
         <div className="space-y-1.5">
           <Skeleton className="h-5 w-24" />

@@ -259,7 +259,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   <div className="p-3 bg-muted rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-blue-500" />
+                        <Package className="h-4 w-4 text-info" />
                         <span className="text-sm font-medium">{t("admin.forwardAgents.detail.versionManagement")}</span>
                       </div>
                       {versionLoading ? (
@@ -358,7 +358,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
-                              <Cpu className="h-4 w-4 text-blue-500" />
+                              <Cpu className="h-4 w-4 text-info" />
                               <span className="text-xs font-medium">{t("admin.forwardAgents.detail.cpu")}</span>
                             </div>
                             <span className="text-sm font-semibold">
@@ -388,7 +388,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
-                              <MemoryStick className="h-4 w-4 text-green-500" />
+                              <MemoryStick className="h-4 w-4 text-success" />
                               <span className="text-xs font-medium">{t("admin.forwardAgents.detail.memory")}</span>
                             </div>
                             <span className="text-sm font-semibold">
@@ -420,7 +420,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5">
-                              <HardDrive className="h-4 w-4 text-orange-500" />
+                              <HardDrive className="h-4 w-4 text-warning" />
                               <span className="text-xs font-medium">{t("admin.forwardAgents.detail.disk")}</span>
                             </div>
                             <span className="text-sm font-semibold">
@@ -455,7 +455,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         {/* Network */}
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Network className="h-4 w-4 text-indigo-500" />
+                            <Network className="h-4 w-4 text-info" />
                             <span className="text-xs font-medium">
                               {t("admin.forwardAgents.detail.networkTraffic")}
                             </span>
@@ -478,7 +478,7 @@ export const ForwardAgentDetailDialog: React.FC<
                         {/* Forward Status */}
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <ArrowUpDown className="h-4 w-4 text-pink-500" />
+                            <ArrowUpDown className="h-4 w-4 text-relay" />
                             <span className="text-xs font-medium">
                               {t("admin.forwardAgents.detail.forwardStatus")}
                             </span>
@@ -503,7 +503,7 @@ export const ForwardAgentDetailDialog: React.FC<
                             runtimeStatus.tlsListenPort) && (
                             <div className="p-3 bg-muted rounded-lg">
                               <div className="flex items-center gap-1.5 mb-2">
-                                <Radio className="h-4 w-4 text-purple-500" />
+                                <Radio className="h-4 w-4 text-relay" />
                                 <span className="text-xs font-medium">
                                   {t("admin.forwardAgents.detail.tunnelPorts")}
                                 </span>
@@ -523,7 +523,7 @@ export const ForwardAgentDetailDialog: React.FC<
                             runtimeStatus.publicIpv6) && (
                             <div className="p-3 bg-muted rounded-lg">
                               <div className="flex items-center gap-1.5 mb-2">
-                                <Globe className="h-4 w-4 text-cyan-500" />
+                                <Globe className="h-4 w-4 text-info" />
                                 <span className="text-xs font-medium">
                                   {t("admin.forwardAgents.detail.publicIp")}
                                 </span>

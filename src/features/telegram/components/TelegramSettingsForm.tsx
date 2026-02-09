@@ -26,6 +26,7 @@ import {
 } from '@/features/settings/components/FormField';
 import { SecretInput } from '@/features/settings/components/SecretInput';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type {
   TelegramConfigResponse,
   UpdateTelegramConfigRequest,
@@ -316,7 +317,7 @@ export const TelegramSettingsForm = ({
  * Loading skeleton for the form
  */
 export const TelegramSettingsFormSkeleton = () => (
-  <div className="bg-card rounded-lg ring-1 ring-border overflow-hidden">
+  <div className={cn(cardStyles, 'overflow-hidden')}>
     {/* Header skeleton */}
     <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
       <div className="space-y-1.5">

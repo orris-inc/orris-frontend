@@ -30,6 +30,7 @@ import {
 } from '@/components/common/Popover';
 import { Checkbox } from '@/components/common/Checkbox';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatBitRate } from '@/shared/utils/format-utils';
 import type { EntityChartDataPoint, EntityStatus } from '../hooks/useMonitorData';
 
@@ -404,7 +405,7 @@ export const RealtimeMetricsChart = memo(({
   }, [mode]);
 
   return (
-    <div className="@container bg-card rounded-xl ring-1 ring-border overflow-hidden">
+    <div className={cn(cardStyles, '@container overflow-hidden')}>
       {/* Compact Header */}
       <div className="p-3">
         {/* Single row: Title + Metric tabs + Entity selector */}
@@ -527,11 +528,11 @@ export const RealtimeMetricsChart = memo(({
                           <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className={cn(
                               'p-1.5 rounded-lg shrink-0',
-                              entity.type === 'node' ? 'bg-info/10' : 'bg-violet-500/10'
+                              entity.type === 'node' ? 'bg-info/10' : 'bg-relay/10'
                             )}>
                               {entity.type === 'node'
                                 ? <Server className="size-4 text-info" />
-                                : <Cpu className="size-4 text-violet-500" />
+                                : <Cpu className="size-4 text-relay" />
                               }
                             </div>
                             <div className="min-w-0 flex-1">

@@ -80,26 +80,26 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
   direct: {
     labelKey: 'admin.forwardRules.ruleType.direct',
     shortLabelKey: 'admin.forwardRules.ruleType.directShort',
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
   },
   entry: {
     labelKey: 'admin.forwardRules.ruleType.entry',
     shortLabelKey: 'admin.forwardRules.ruleType.entryShort',
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
   },
   chain: {
     labelKey: 'admin.forwardRules.ruleType.chain',
     shortLabelKey: 'admin.forwardRules.ruleType.chainShort',
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
   },
   direct_chain: {
     labelKey: 'admin.forwardRules.ruleType.directChain',
     shortLabelKey: 'admin.forwardRules.ruleType.directChainShort',
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
 };
 
@@ -107,30 +107,30 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; shortLabelKey: string
 const FLOW_NODE_CONFIG = {
   entry: {
     icon: Bot,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50 dark:bg-green-900/30',
-    borderColor: 'border-green-200 dark:border-green-800',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/30',
     labelKey: 'admin.forwardRules.flowNode.entry',
   },
   relay: {
     icon: Bot,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/30',
-    borderColor: 'border-purple-200 dark:border-purple-800',
+    color: 'text-relay',
+    bgColor: 'bg-relay/10',
+    borderColor: 'border-relay/30',
     labelKey: 'admin.forwardRules.flowNode.relay',
   },
   exit: {
     icon: Bot,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50 dark:bg-orange-900/30',
-    borderColor: 'border-orange-200 dark:border-orange-800',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/30',
     labelKey: 'admin.forwardRules.flowNode.exit',
   },
   target: {
     icon: Server,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/30',
-    borderColor: 'border-blue-200 dark:border-blue-800',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
+    borderColor: 'border-info/30',
     labelKey: 'admin.forwardRules.flowNode.target',
   },
 } as const;
@@ -179,13 +179,13 @@ const ChainNodesDisplayMobile: React.FC<{
           <div key={id} className="flex items-center gap-1.5">
             <MobileFlowNode type="relay" name={getAgentName(id)} />
             {index < chainAgentIds.length - 1 && (
-              <ArrowRight className="size-3 text-purple-400 flex-shrink-0" />
+              <ArrowRight className="size-3 text-relay/60 flex-shrink-0" />
             )}
           </div>
         ))}
         {targetDisplay && (
           <>
-            <ArrowRight className="size-3 text-blue-400 flex-shrink-0" />
+            <ArrowRight className="size-3 text-info/60 flex-shrink-0" />
             <MobileFlowNode type="target" name={targetDisplay.name} address={targetDisplay.address} />
           </>
         )}
@@ -197,10 +197,10 @@ const ChainNodesDisplayMobile: React.FC<{
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       <MobileFlowNode type="relay" name={getAgentName(chainAgentIds[0])} />
-      <ArrowRight className="size-3 text-purple-400 flex-shrink-0" />
+      <ArrowRight className="size-3 text-relay/60 flex-shrink-0" />
       <Popover>
         <PopoverTrigger asChild>
-          <button className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 touch-manipulation min-h-[28px]">
+          <button className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-lg bg-relay/10 text-relay border border-relay/30 touch-manipulation min-h-[28px]">
             +{chainCount - 1} {t('admin.forwardRules.flowNode.relay')}
             <ChevronDown className="size-3" />
           </button>
@@ -220,7 +220,7 @@ const ChainNodesDisplayMobile: React.FC<{
                 const isLast = index === chainAgentIds.length - 1;
                 return (
                   <div key={id} className="flex items-start gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-medium text-purple-700 dark:text-purple-300">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-relay/10 flex items-center justify-center text-xs font-medium text-relay">
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -239,8 +239,8 @@ const ChainNodesDisplayMobile: React.FC<{
               })}
               {targetDisplay && (
                 <div className="flex items-start gap-2">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Server className="size-3.5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-info/10 flex items-center justify-center">
+                    <Server className="size-3.5 text-info dark:text-info/60" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{targetDisplay.name}</div>
@@ -256,7 +256,7 @@ const ChainNodesDisplayMobile: React.FC<{
       </Popover>
       {targetDisplay && (
         <>
-          <ArrowRight className="size-3 text-blue-400 flex-shrink-0" />
+          <ArrowRight className="size-3 text-info/60 flex-shrink-0" />
           <MobileFlowNode type="target" name={targetDisplay.name} address={targetDisplay.address} />
         </>
       )}
@@ -513,7 +513,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
 
               {/* Entry agent + address - compact inline */}
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Bot className="size-3.5 text-green-500 flex-shrink-0" />
+                <Bot className="size-3.5 text-success flex-shrink-0" />
                 <span className="truncate max-w-[80px]">{agentName}</span>
                 <span className="text-border">|</span>
                 {!isSelectMode && (
@@ -565,7 +565,7 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                         <MobileFlowNode type="exit" name={exitName} address={exitAgent?.publicAddress} />
                         {target && (
                           <>
-                            <ArrowRight className="size-3 text-blue-400 flex-shrink-0" />
+                            <ArrowRight className="size-3 text-info/60 flex-shrink-0" />
                             <MobileFlowNode type="target" name={target.name} address={target.address} />
                           </>
                         )}

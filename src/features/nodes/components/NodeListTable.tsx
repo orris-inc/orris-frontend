@@ -4,7 +4,7 @@
  * Switches to mobile card list on small screens
  */
 
-import { useMemo, useCallback, useState, useDeferredValue } from 'react';
+import { useMemo, useCallback, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Edit,
@@ -107,8 +107,8 @@ const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
   },
   maintenance: {
     labelKey: 'common.status.maintenance',
-    colorClass: 'text-orange-500',
-    bgClass: 'bg-orange-500/10',
+    colorClass: 'text-warning',
+    bgClass: 'bg-warning/10',
     icon: Wrench,
   },
 };
@@ -158,8 +158,6 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
   const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
-  // Track which dropdown is open to prevent SSE updates from closing it
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   // Defer nodes updates to prevent SSE from interrupting user interactions (hover, dropdown)
   const deferredNodes = useDeferredValue(nodes);
 
@@ -281,7 +279,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             items={hoverItems}
             contentClassName="w-72"
             footer={node.allowInsecure && (
-              <span className="text-amber-500 text-xs">{t('admin.nodes.tooltip.allowInsecure')}</span>
+              <span className="text-warning text-xs">{t('admin.nodes.tooltip.allowInsecure')}</span>
             )}
           >
             <div className="flex flex-col gap-0.5 cursor-default">
@@ -601,17 +599,16 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             {node.isOnline && onNotifyURL && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={() => onNotifyURL(node)} className={`${actionButtonClass} text-blue-500 hover:text-blue-600 hover:bg-blue-500/10`}>
+                  <button onClick={() => onNotifyURL(node)} className={`${actionButtonClass} text-info hover:text-info hover:bg-info/10`}>
                     <Radio className="size-4" strokeWidth={1.5} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>{t('admin.nodes.actions.broadcastUrl')}</TooltipContent>
               </Tooltip>
             )}
-            <DropdownMenu
-              open={openDropdownId === node.id}
-              onOpenChange={(open) => setOpenDropdownId(open ? node.id : null)}
-            >
+            {/* Uncontrolled DropdownMenu - Radix manages open/close state internally,
+                avoids re-creating column definitions on every dropdown toggle */}
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={actionButtonClass}>
                   <MoreHorizontal className="size-4" strokeWidth={1.5} />
@@ -627,7 +624,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         );
       },
     },
-  ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap, openDropdownId]);
+  ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 
   // Render mobile card list on small screens
   if (isMobile) {

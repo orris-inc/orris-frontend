@@ -146,14 +146,14 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="upgrade" id="upgrade-mobile" />
                 <Label htmlFor="upgrade-mobile" className="cursor-pointer flex items-center gap-1.5 text-sm">
-                  <ArrowUpCircle className="size-4 text-emerald-500" />
+                  <ArrowUpCircle className="size-4 text-success" />
                   {t('subscription.upgrade')}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="downgrade" id="downgrade-mobile" />
                 <Label htmlFor="downgrade-mobile" className="cursor-pointer flex items-center gap-1.5 text-sm">
-                  <ArrowDownCircle className="size-4 text-amber-500" />
+                  <ArrowDownCircle className="size-4 text-warning" />
                   {t('subscription.downgrade')}
                 </Label>
               </div>
@@ -184,10 +184,10 @@ export const ChangePlanSheet: React.FC<ChangePlanSheetProps> = ({
           </div>
 
           {/* Warning Info */}
-          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/30 p-3">
+          <div className="rounded-xl border border-info/20 bg-info/10 p-3">
             <div className="flex items-start gap-2">
-              <Info className="size-4 text-blue-600 dark:text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-blue-700 dark:text-blue-400">
+              <Info className="size-4 text-info mt-0.5 shrink-0" />
+              <p className="text-xs text-info">
                 {t('subscription.changePlanWarning')}
               </p>
             </div>

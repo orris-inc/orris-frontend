@@ -225,13 +225,21 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
 
   // Render USDT payment instructions content
   const renderUSDTContent = () => {
-    if (!paymentResponse || !paymentResponse.chainType) return null;
+    // Guard all required USDT fields before rendering
+    if (
+      !paymentResponse ||
+      !paymentResponse.chainType ||
+      !paymentResponse.receivingAddress ||
+      paymentResponse.usdtAmount == null
+    ) {
+      return null;
+    }
 
     return (
       <USDTPaymentInstructions
         chainType={paymentResponse.chainType}
-        receivingAddress={paymentResponse.receivingAddress!}
-        usdtAmount={paymentResponse.usdtAmount!}
+        receivingAddress={paymentResponse.receivingAddress}
+        usdtAmount={paymentResponse.usdtAmount}
         exchangeRate={paymentResponse.exchangeRate}
         expiredAt={paymentResponse.expiredAt}
         onCompleted={handleUSDTCompleted}

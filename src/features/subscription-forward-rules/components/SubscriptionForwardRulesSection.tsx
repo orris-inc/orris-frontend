@@ -129,10 +129,10 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
 
       {/* Rule limit reached warning - compact on mobile */}
       {isAtLimit && (
-        <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-amber-500/10 ring-1 ring-amber-500/20 rounded-xl">
-          <AlertCircle className="h-4 w-4 @sm:h-5 @sm:w-5 text-amber-500 shrink-0 mt-0.5 @sm:mt-0" />
+        <div className="flex items-start @sm:items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-warning/10 ring-1 ring-warning/20 rounded-xl">
+          <AlertCircle className="h-4 w-4 @sm:h-5 @sm:w-5 text-warning shrink-0 mt-0.5 @sm:mt-0" />
           <div>
-            <p className="text-xs @sm:text-sm font-medium text-amber-600 dark:text-amber-400">{t('userForwardRules.limitReached.title')}</p>
+            <p className="text-xs @sm:text-sm font-medium text-warning">{t('userForwardRules.limitReached.title')}</p>
             <p className="text-[10px] @sm:text-xs text-muted-foreground">
               {t('userForwardRules.limitReached.description', { count: usage?.ruleCount })}
             </p>

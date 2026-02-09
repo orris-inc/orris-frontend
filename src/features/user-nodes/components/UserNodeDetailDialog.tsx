@@ -109,7 +109,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               {node.isOnline ? (
-                <Wifi className="h-4 w-4 text-green-500" />
+                <Wifi className="h-4 w-4 text-success" />
               ) : (
                 <WifiOff className="h-4 w-4 text-muted-foreground" />
               )}
@@ -119,7 +119,7 @@ export const UserNodeDetailDialog: React.FC<UserNodeDetailDialogProps> = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">{t('userNodes.detail.currentStatus')}</span>
-                <span className={`ml-2 ${node.isOnline ? 'text-green-600' : 'text-muted-foreground'}`}>
+                <span className={`ml-2 ${node.isOnline ? 'text-success' : 'text-muted-foreground'}`}>
                   {node.isOnline ? t('common.status.online') : t('common.status.offline')}
                 </span>
               </div>

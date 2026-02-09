@@ -75,7 +75,7 @@ export const TokenDialog: React.FC<TokenDialogProps> = ({
             className={`${textareaStyles} font-mono text-sm break-all`}
           />
           {hasCopied ? (
-            <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+            <p className="text-sm text-success flex items-center gap-1">
               {t('common.token.copied')}
             </p>
           ) : (

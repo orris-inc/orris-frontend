@@ -25,6 +25,8 @@ import { Activity, Server, Cpu, LayoutGrid, LayoutList, Table2, ArrowDown, Arrow
 import { Badge } from '@/components/common/Badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/common/Tabs';
 import { Button } from '@/components/common/Button';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 
 type EntityFilter = 'all' | 'node' | 'agent';
 type ViewMode = 'grid' | 'compact' | 'table';
@@ -91,7 +93,7 @@ export const MonitorPage = () => {
     <AdminLayout>
       <div className="py-3 space-y-3">
         {/* High-Density Status Bar - All metrics inline */}
-        <header className="bg-card rounded-xl ring-1 ring-border px-3 py-2">
+        <header className={cn(cardStyles, 'px-3 py-2')}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             {/* Left: Title + Connection + Entity counts */}
             <div className="flex items-center gap-4">
@@ -106,7 +108,7 @@ export const MonitorPage = () => {
                   <span className="font-medium text-foreground">{overview.onlineNodes}</span>/{overview.totalNodes}
                 </span>
                 <span className="flex items-center gap-1 text-muted-foreground">
-                  <Cpu className="size-3 text-violet-500" />
+                  <Cpu className="size-3 text-relay" />
                   <span className="font-medium text-foreground">{overview.onlineAgents}</span>/{overview.totalAgents}
                 </span>
               </div>
@@ -251,7 +253,7 @@ export const MonitorPage = () => {
                   </div>
                 )
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 bg-card rounded-xl ring-1 ring-border">
+                <div className={cn('flex flex-col items-center justify-center py-12', cardStyles)}>
                   <div className="size-16 rounded-full bg-muted/30 flex items-center justify-center mb-4">
                     <Activity className="size-8 text-muted-foreground/50" />
                   </div>

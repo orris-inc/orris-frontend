@@ -36,14 +36,14 @@ interface ViewPlanSubscriptionsSheetProps extends BaseSheetProps {
 
 // Status configuration (synced with SDK 2025-01-14)
 const STATUS_CONFIG: Record<SubscriptionStatus, { labelKey: string; color: string }> = {
-  inactive: { labelKey: 'common.status.disabled', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
-  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  active: { labelKey: 'common.status.enabled', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
-  suspended: { labelKey: 'common.status.suspended', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  cancelled: { labelKey: 'common.status.cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  expired: { labelKey: 'common.status.expired', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+  inactive: { labelKey: 'common.status.disabled', color: 'bg-muted text-muted-foreground' },
+  pending_payment: { labelKey: 'subscriptionStatus.pendingPayment', color: 'bg-warning/10 text-warning' },
+  trialing: { labelKey: 'subscriptionStatus.trialing', color: 'bg-info/10 text-info' },
+  active: { labelKey: 'common.status.enabled', color: 'bg-success/10 text-success' },
+  past_due: { labelKey: 'subscriptionStatus.pastDue', color: 'bg-warning/10 text-warning' },
+  suspended: { labelKey: 'common.status.suspended', color: 'bg-destructive/10 text-destructive' },
+  cancelled: { labelKey: 'common.status.cancelled', color: 'bg-destructive/10 text-destructive' },
+  expired: { labelKey: 'common.status.expired', color: 'bg-muted text-muted-foreground' },
 };
 
 export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProps> = ({
@@ -118,8 +118,8 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
       <SheetContent className="max-h-[95vh]">
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
-              <Users className="size-4 text-indigo-500" />
+            <div className="size-8 rounded-full bg-relay/10 flex items-center justify-center">
+              <Users className="size-4 text-relay" />
             </div>
             <span>{t('subscriptionPlans.subscribers')}</span>
           </SheetTitle>
@@ -132,11 +132,11 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
           {/* Stats & Search */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-info/10 text-info text-xs">
                 <Users className="size-3" />
                 {t('subscriptionPlans.subscriptionsCount', { count: subscriptions.length })}
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-success/10 text-success text-xs">
                 <CheckCircle className="size-3" />
                 {t('subscriptionPlans.activeCount', { count: activeCount })}
               </span>
@@ -187,7 +187,7 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                 {filteredSubscriptions.map((subscription) => {
                   const statusConfig = STATUS_CONFIG[subscription.status] || {
                     labelKey: 'common.status.unknown',
-                    color: 'bg-gray-100 text-gray-600',
+                    color: 'bg-muted text-muted-foreground',
                   };
                   const user = usersMap.get(String(subscription.userId));
                   const displayName = user?.name || user?.displayName || t('subscriptionPlans.userNumber', { id: subscription.userId });
@@ -200,8 +200,8 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                     >
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
-                        <div className="size-10 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/40 dark:to-indigo-800/30 flex items-center justify-center shrink-0">
-                          <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                        <div className="size-10 rounded-full bg-gradient-to-br from-relay/15 to-relay/10 flex items-center justify-center shrink-0">
+                          <span className="text-sm font-semibold text-relay">
                             {initials}
                           </span>
                         </div>

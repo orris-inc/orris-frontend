@@ -14,6 +14,7 @@
  */
 
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 // Base skeleton pulse animation
 const pulseClass = 'animate-pulse bg-muted rounded';
@@ -125,7 +126,7 @@ export const StatsSkeleton = ({
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={`stat-${i}`}
-          className="overflow-hidden rounded-lg bg-card p-4 shadow-sm ring-1 ring-border sm:p-6"
+          className={cn(cardStyles, 'overflow-hidden rounded-lg p-4 shadow-sm sm:p-6')}
         >
           <div className={cn(pulseClass, 'h-4 w-24 mb-2')} />
           <div className={cn(pulseClass, 'h-8 w-16')} />
@@ -205,7 +206,7 @@ export const CardSkeleton = ({
   className,
 }: CardSkeletonProps) => {
   return (
-    <div className={cn('overflow-hidden rounded-lg bg-card ring-1 ring-border', className)}>
+    <div className={cn(cardStyles, 'overflow-hidden rounded-lg', className)}>
       {/* Image placeholder */}
       {showImage && (
         <div className={cn(pulseClass, 'h-48 w-full rounded-none')} />

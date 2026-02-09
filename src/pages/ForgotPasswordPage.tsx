@@ -77,8 +77,8 @@ export const ForgotPasswordPage = () => {
           <div className={cardStyles}>
             <div className={cn(cardContentStyles, "pt-6 text-center grid gap-6")}>
               <div className="flex justify-center">
-                <div className="size-20 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                  <Mail className="size-10 text-green-600 dark:text-green-500" />
+                <div className="size-20 rounded-full bg-success/10 flex items-center justify-center">
+                  <Mail className="size-10 text-success" />
                 </div>
               </div>
 

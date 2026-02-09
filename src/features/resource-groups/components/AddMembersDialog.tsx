@@ -144,21 +144,21 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
         {/* Statistics */}
         <div className="grid grid-cols-3 gap-3">
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
-            <Users className="size-4 text-blue-500" />
+            <Users className="size-4 text-info" />
             <div>
               <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.total', { memberType: memberLabel })}</p>
               <p className="text-sm font-medium">{totalItems} {t('resourceGroups.unit')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
-            <Check className="size-4 text-green-500" />
+            <Check className="size-4 text-success" />
             <div>
               <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.associated')}</p>
               <p className="text-sm font-medium">{existingCount} {t('resourceGroups.unit')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 p-2.5 bg-muted rounded-lg">
-            <Icon className="size-4 text-orange-500" />
+            <Icon className="size-4 text-warning" />
             <div>
               <p className="text-xs text-muted-foreground">{t('resourceGroups.addMembers.stats.available')}</p>
               <p className="text-sm font-medium">{availableItems.length} {t('resourceGroups.unit')}</p>
@@ -228,7 +228,7 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                         className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
                           isSelected
                             ? 'bg-primary/10'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                            : 'hover:bg-accent hover:bg-accent/50'
                         }`}
                       >
                         <Checkbox

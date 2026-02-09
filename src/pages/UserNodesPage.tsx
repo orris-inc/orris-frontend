@@ -37,6 +37,7 @@ import {
 } from '@/features/user-nodes/hooks/useUserNodes';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import {
   BentoStatCard,
@@ -276,7 +277,7 @@ export const UserNodesPage = () => {
             {/* Stats Grid */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Node Quota Card - Custom with Progress bar */}
-              <div className="col-span-2 p-4 sm:p-5 rounded-xl bg-card ring-1 ring-border transition-shadow hover:shadow-md">
+              <div className={cn('col-span-2 p-4 sm:p-5 transition-shadow hover:shadow-md', cardStyles)}>
                 <div className="flex items-center gap-3 mb-3">
                   <div
                     className={cn(

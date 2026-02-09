@@ -103,16 +103,16 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900">
+        <div className="px-6 py-5 bg-gradient-to-b from-muted to-card">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+            <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-relay to-relay/90 text-white shadow-lg shadow-relay/30">
               <Users className="size-5" strokeWidth={1.5} />
             </div>
             <div>
-              <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+              <DialogTitle className="text-lg font-semibold text-foreground">
                 {t('subscriptionPlans.subscribers')}
               </DialogTitle>
-              <DialogDescription className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              <DialogDescription className="text-sm text-muted-foreground dark:text-muted-foreground mt-0.5">
                 {t('subscriptionPlans.subscribersOfPlan', { name: plan?.name })}
               </DialogDescription>
             </div>
@@ -137,7 +137,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
 
           {/* Search box */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400" strokeWidth={2} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" strokeWidth={2} />
             <input
               type="text"
               placeholder={t('subscriptionPlans.searchUsersPlaceholder')}
@@ -145,10 +145,10 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
                 'w-56 h-9 pl-9 pr-3 rounded-lg text-sm',
-                'bg-slate-100 dark:bg-slate-800',
+                'bg-muted',
                 'border border-transparent',
-                'text-slate-900 dark:text-white placeholder:text-slate-400',
-                'focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500',
+                'text-foreground placeholder:text-muted-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary',
                 'transition-all duration-200'
               )}
             />
@@ -162,27 +162,27 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full py-16">
               <div className="relative">
-                <Loader2 className="size-10 animate-spin text-indigo-500" strokeWidth={2} />
-                <div className="absolute inset-0 rounded-full bg-indigo-500/20 blur-xl animate-pulse motion-reduce:animate-none" />
+                <Loader2 className="size-10 animate-spin text-relay" strokeWidth={2} />
+                <div className="absolute inset-0 rounded-full bg-relay/20 blur-xl animate-pulse motion-reduce:animate-none" />
               </div>
-              <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{t('common.table.loading')}</p>
+              <p className="mt-4 text-sm text-muted-foreground dark:text-muted-foreground">{t('common.table.loading')}</p>
             </div>
           ) : filteredSubscriptions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full py-16">
               <div className="relative">
-                <div className="size-16 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center shadow-inner">
+                <div className="size-16 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center shadow-inner">
                   {searchQuery ? (
-                    <Search className="size-7 text-slate-400" strokeWidth={1.5} />
+                    <Search className="size-7 text-muted-foreground" strokeWidth={1.5} />
                   ) : (
-                    <Users className="size-7 text-slate-400" strokeWidth={1.5} />
+                    <Users className="size-7 text-muted-foreground" strokeWidth={1.5} />
                   )}
                 </div>
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-200/20 to-transparent dark:from-slate-700/20 blur-xl -z-10" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-muted/20 to-transparent blur-xl -z-10" />
               </div>
-              <p className="mt-4 text-sm font-medium text-slate-600 dark:text-slate-400">
+              <p className="mt-4 text-sm font-medium text-muted-foreground">
                 {searchQuery ? t('subscriptionPlans.noMatchingSubscriptions') : t('subscriptionPlans.noSubscribers')}
               </p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
                 {searchQuery ? t('subscriptionPlans.tryOtherKeywords') : t('subscriptionPlans.noPlanSubscribers')}
               </p>
             </div>
@@ -212,8 +212,8 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                   >
                     <div className="flex items-center gap-4">
                       {/* User avatar */}
-                      <div className="flex items-center justify-center size-11 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-50 dark:from-indigo-900/40 dark:to-indigo-800/30 shrink-0">
-                        <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                      <div className="flex items-center justify-center size-11 rounded-full bg-gradient-to-br from-relay/15 to-relay/10 shrink-0">
+                        <span className="text-sm font-semibold text-relay">
                           {initials}
                         </span>
                       </div>
@@ -221,14 +221,14 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                       {/* Main info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <span className="font-semibold text-slate-900 dark:text-white truncate">
+                          <span className="font-semibold text-foreground truncate">
                             {displayName}
                           </span>
                           <AdminBadge variant={statusConfig.variant} size="sm">
                             {t(statusConfig.labelKey)}
                           </AdminBadge>
                         </div>
-                        <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                           {user?.email && (
                             <span className="truncate max-w-[180px]">{user.email}</span>
                           )}
@@ -236,7 +236,7 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                             <Calendar className="size-3.5" strokeWidth={2} />
                             {formatDate(subscription.startDate)}
                             {subscription.endDate && !isNeverExpiresDate(subscription.endDate) && (
-                              <span className="text-slate-400"> → {formatDate(subscription.endDate)}</span>
+                              <span className="text-muted-foreground"> → {formatDate(subscription.endDate)}</span>
                             )}
                           </span>
                         </div>
@@ -254,8 +254,8 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
         <Separator />
 
         {/* Footer */}
-        <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/30">
-          <div className="text-xs text-slate-400">
+        <div className="px-6 py-4 flex items-center justify-between bg-gradient-to-b from-card to-muted/50">
+          <div className="text-xs text-muted-foreground">
             {searchQuery && filteredSubscriptions.length !== subscriptions.length && (
               <span>{t('subscriptionPlans.filterResults', { filtered: filteredSubscriptions.length, total: subscriptions.length })}</span>
             )}
@@ -264,9 +264,9 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
             onClick={onClose}
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-medium',
-              'bg-slate-100 dark:bg-slate-800',
-              'text-slate-700 dark:text-slate-300',
-              'hover:bg-slate-200 dark:hover:bg-slate-700',
+              'bg-muted',
+              'text-foreground',
+              'hover:bg-muted',
               'active:scale-[0.98]',
               'transition-all duration-200'
             )}

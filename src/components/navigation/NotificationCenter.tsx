@@ -81,23 +81,23 @@ const getNotificationIcon = (type: NotificationType): NotificationIconConfig => 
   const config: Record<NotificationType, NotificationIconConfig> = {
     info: {
       icon: Info,
-      bgColor: 'bg-blue-500/10',
-      iconColor: 'text-blue-500',
+      bgColor: 'bg-info/10',
+      iconColor: 'text-info',
     },
     warning: {
       icon: AlertTriangle,
-      bgColor: 'bg-amber-500/10',
-      iconColor: 'text-amber-500',
+      bgColor: 'bg-warning/10',
+      iconColor: 'text-warning',
     },
     error: {
       icon: AlertCircle,
-      bgColor: 'bg-red-500/10',
-      iconColor: 'text-red-500',
+      bgColor: 'bg-destructive/10',
+      iconColor: 'text-destructive',
     },
     success: {
       icon: CheckCircle,
-      bgColor: 'bg-emerald-500/10',
-      iconColor: 'text-emerald-500',
+      bgColor: 'bg-success/10',
+      iconColor: 'text-success',
     },
     system: {
       icon: Settings,

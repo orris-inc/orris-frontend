@@ -444,7 +444,7 @@ export const MobileEntityDetailSheet = memo(({
 
               {/* System Info Section */}
               <CollapsibleSection
-                icon={<Terminal className="size-4 text-violet-500" />}
+                icon={<Terminal className="size-4 text-relay" />}
                 title={t('admin.monitor.detail.systemInfo')}
                 defaultOpen
               >

@@ -7,6 +7,7 @@ import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from '
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { inputStyles, labelStyles } from '@/lib/ui-styles';
 
 interface FormFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   /** Field label text */
@@ -63,7 +64,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
         {/* Label */}
         <LabelPrimitive.Root
           htmlFor={fieldId}
-          className={cn('text-sm font-medium text-foreground', labelClassName)}
+          className={cn(labelStyles, 'text-foreground', labelClassName)}
         >
           {label}
         </LabelPrimitive.Root>
@@ -85,26 +86,16 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
             aria-invalid={!!error}
             aria-describedby={error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined}
             className={cn(
-              // Base layout
-              'block w-full h-11',
-              // Padding
+              inputStyles,
+              'block ring-inset',
               leftIcon ? 'pl-10' : 'pl-3.5',
               isPassword ? 'pr-11' : 'pr-3.5',
-              // Typography
-              'text-base sm:text-sm text-foreground placeholder:text-muted-foreground/60',
-              // Shape & background
-              'rounded-xl bg-background',
-              // Ring border (Tailwind UI style)
-              'border-0 ring-1 ring-inset ring-border',
-              // Focus state
+              'sm:text-sm text-foreground placeholder:text-muted-foreground/60',
+              'border-0',
               'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary',
-              // Error state
               'aria-[invalid=true]:ring-destructive/50 aria-[invalid=true]:focus:ring-destructive',
-              // Hover
               'hover:ring-muted-foreground/40 focus:hover:ring-primary',
-              // Disabled
-              'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted/50',
-              // Caret & selection
+              'disabled:bg-muted/50',
               'caret-primary selection:bg-primary/20',
               className
             )}

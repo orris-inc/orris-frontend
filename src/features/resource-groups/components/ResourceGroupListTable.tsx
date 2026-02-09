@@ -157,15 +157,15 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         const plan = plansMap[row.original.planId];
         return plan ? (
           <div className="space-y-0.5">
-            <div className="text-sm text-slate-900 dark:text-white">
+            <div className="text-sm text-foreground">
               {plan.name}
             </div>
-            <div className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+            <div className="text-xs text-muted-foreground dark:text-muted-foreground font-mono">
               {plan.slug}
             </div>
           </div>
         ) : (
-          <span className="text-sm text-slate-400">
+          <span className="text-sm text-muted-foreground">
             {t('resourceGroups.planPlaceholder', { id: row.original.planId })}
           </span>
         );
@@ -204,7 +204,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative inline-flex items-center justify-center size-8 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 group after:absolute after:inset-[-6px] after:content-['']">
+              <button className="relative inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted hover:bg-accent transition-all duration-200 group after:absolute after:inset-[-6px] after:content-['']">
                 <MoreHorizontal className="size-4 group-hover:scale-110 transition-transform" strokeWidth={2} />
               </button>
             </DropdownMenuTrigger>

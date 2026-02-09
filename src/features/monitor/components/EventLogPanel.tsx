@@ -7,6 +7,8 @@ import { memo, useState, useMemo } from 'react';
 import { formatDate } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import { Server, Cpu, ArrowUpCircle, ArrowDownCircle, RefreshCw, Filter, Check } from 'lucide-react';
+import { cardStyles } from '@/lib/ui-styles';
+import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/common/ScrollArea';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
@@ -127,7 +129,7 @@ export const EventLogPanel = memo(({ events }: EventLogPanelProps) => {
   const activeFilterCount = filters.has('all') ? 0 : filters.size;
 
   return (
-    <div className="bg-card rounded-xl ring-1 ring-border h-full min-h-[320px] max-h-[380px] flex flex-col">
+    <div className={cn(cardStyles, 'h-full min-h-[320px] max-h-[380px] flex flex-col')}>
       {/* Compact Header */}
       <div className="flex items-center justify-between px-2.5 py-2 border-b border-border shrink-0">
         <div className="flex items-center gap-2">

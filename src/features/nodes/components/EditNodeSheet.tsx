@@ -18,7 +18,6 @@ import {
   Layers,
   Gauge,
   Workflow,
-  X,
 } from 'lucide-react';
 import {
   Sheet,
@@ -30,15 +29,13 @@ import {
   SheetFooter,
   type EditSheetProps,
 } from '@/components/common/sheet';
-import { Badge } from '@/components/common/Badge';
-import { Switch, SwitchThumb } from '@/components/common/Switch';
-import { Checkbox } from '@/components/common/Checkbox';
 import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/components/common/mobile-form';
-import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
+import { MobileProtocolSettingsFields, NodeOtherSettingsFields, NodeNetworkFields } from './form-sections';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   Node,
@@ -59,7 +56,6 @@ import {
   VMESS_SECURITY_TYPES,
   CONGESTION_CONTROL_TYPES,
   TUIC_UDP_RELAY_MODES,
-  TLS_FINGERPRINT_TYPES,
 } from '@/shared/constants/protocol-options';
 import { useEditNodeForm } from '../hooks/useEditNodeForm';
 
@@ -70,9 +66,9 @@ interface EditNodeSheetProps extends EditSheetProps<Node, UpdateNodeRequest> {
 // Status options for MobileSelect - labels will be translated in component
 const STATUS_OPTIONS_VALUES = ['active', 'inactive', 'maintenance'] as const;
 const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-emerald-500',
+  active: 'bg-success',
   inactive: 'bg-gray-400',
-  maintenance: 'bg-amber-500',
+  maintenance: 'bg-warning',
 };
 
 // Protocol configuration for display
@@ -103,7 +99,7 @@ const MobileSection: React.FC<MobileSectionProps> = ({
   onToggle,
   children,
 }) => (
-  <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
+  <div className={cn(cardStyles, 'overflow-hidden')}>
     <button
       type="button"
       onClick={onToggle}
@@ -215,11 +211,6 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
       color: STATUS_COLORS[value],
     })), [t]);
 
-  const tlsSecurityOptions: MobileSelectOption[] = useMemo(() => [
-    { value: 'false', label: t('admin.nodes.form.verifyCert') },
-    { value: 'true', label: t('admin.nodes.form.skipVerify') },
-  ], [t]);
-
   const vlessSecurityOptions: MobileSelectOption[] = useMemo(() =>
     VLESS_SECURITY_TYPES.map((value) => ({
       value,
@@ -243,14 +234,6 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
       value,
       label: value.toUpperCase(),
     })), []);
-
-  const fingerprintOptions: MobileSelectOption[] = useMemo(() => [
-    { value: '__none__', label: t('admin.nodes.form.disableTls') },
-    ...TLS_FINGERPRINT_TYPES.map((value) => ({
-      value,
-      label: value === 'random' ? t('admin.nodes.form.randomFingerprint') : value.charAt(0).toUpperCase() + value.slice(1),
-    })),
-  ], [t]);
 
   const handleClose = useCallback((o: boolean) => {
     if (!loading) {
@@ -477,46 +460,14 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             isOpen={openSections.has('network')}
             onToggle={() => toggleSection('network')}
           >
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('admin.nodes.form.serverAddress')} />
-                <MobileFormInput
-                  value={formData.serverAddress || ''}
-                  onChange={(value) => handleChange('serverAddress', value)}
-                  error={errors.serverAddress}
-                  className="font-mono"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <FormFieldLabel label={t('admin.nodes.form.agentPort')} />
-                  <MobileFormInput
-                    type="number"
-                    min={1}
-                    max={65535}
-                    value={formData.agentPort ? String(formData.agentPort) : ''}
-                    onChange={(value) => handleChange('agentPort', parseInt(value, 10))}
-                    error={errors.agentPort}
-                    className="font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <FormFieldLabel label={t('admin.nodes.form.subscriptionPort')} />
-                  <MobileFormInput
-                    type="number"
-                    min={1}
-                    max={65535}
-                    placeholder={t('admin.nodes.form.subscriptionPortPlaceholder')}
-                    value={formData.subscriptionPort !== undefined ? String(formData.subscriptionPort) : ''}
-                    onChange={(value) => handleChange('subscriptionPort', value ? parseInt(value, 10) : undefined)}
-                    error={errors.subscriptionPort}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-            </div>
+            <NodeNetworkFields
+              variant="mobile"
+              serverAddress={formData.serverAddress}
+              agentPort={formData.agentPort}
+              subscriptionPort={formData.subscriptionPort}
+              onFieldChange={handleChange}
+              errors={errors}
+            />
           </MobileSection>
 
           {/* Protocol Settings Section */}
@@ -527,416 +478,20 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             isOpen={openSections.has('protocol')}
             onToggle={() => toggleSection('protocol')}
           >
-            <div className="space-y-4">
-              {isShadowsocks && (
-                <>
-                  <div className="space-y-1.5">
-                    <FormFieldLabel label={t('admin.nodes.form.plugin')} hint={t('admin.nodes.form.pluginHint')} />
-                    <MobileFormInput
-                      placeholder="obfs-local"
-                      value={formData.plugin || ''}
-                      onChange={(value) => handleChange('plugin', value)}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <FormFieldLabel label={t('admin.nodes.form.pluginOptions')} hint={t('admin.nodes.form.pluginOptionsHint')} />
-                    <MobileFormInput
-                      placeholder="obfs=http;obfs-host=www.bing.com"
-                      value={pluginOptsStr}
-                      onChange={handlePluginOptsChange}
-                      className="font-mono"
-                    />
-                  </div>
-                </>
-              )}
-
-              {isTrojan && (
-                <>
-                  <div className="space-y-1.5">
-                    <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
-                    <MobileFormInput
-                      placeholder="example.com"
-                      value={formData.sni || ''}
-                      onChange={(value) => handleChange('sni', value)}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} hint={t('admin.nodes.form.tlsSecurityHint')} />
-                    <MobileSelect
-                      value={formData.allowInsecure ? 'true' : 'false'}
-                      onChange={(value) => handleChange('allowInsecure', value === 'true')}
-                      options={tlsSecurityOptions}
-                    />
-                  </div>
-
-                  {showWsFields && (
-                    <>
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHostHeader')} />
-                        <MobileFormInput
-                          placeholder="example.com"
-                          value={formData.host || ''}
-                          onChange={(value) => handleChange('host', value)}
-                          className="font-mono"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsPathHint')} />
-                        <MobileFormInput
-                          placeholder="/path"
-                          value={formData.path || ''}
-                          onChange={(value) => handleChange('path', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {showGrpcFields && (
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
-                      <MobileFormInput
-                        placeholder="grpc-service"
-                        value={formData.host || ''}
-                        onChange={(value) => handleChange('host', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* VLESS Protocol Settings */}
-              {isVless && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
-                      <MobileFormInput
-                        placeholder="example.com"
-                        value={formData.vlessSni || ''}
-                        onChange={(value) => handleChange('vlessSni', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
-                      <MobileSelect
-                        value={formData.vlessAllowInsecure ? 'true' : 'false'}
-                        onChange={(value) => handleChange('vlessAllowInsecure', value === 'true')}
-                        options={tlsSecurityOptions}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.flow')} hint={t('admin.nodes.form.flowHint')} />
-                      <MobileFormInput
-                        placeholder="xtls-rprx-vision"
-                        value={formData.vlessFlow || ''}
-                        onChange={(value) => handleChange('vlessFlow', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
-                      <MobileSelect
-                        value={formData.vlessFingerprint || '__none__'}
-                        onChange={(value) => handleChange('vlessFingerprint', value === '__none__' ? '' : value)}
-                        options={fingerprintOptions}
-                      />
-                    </div>
-                  </div>
-
-                  {showVlessWsFields && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsH2Host')} />
-                        <MobileFormInput
-                          placeholder="example.com"
-                          value={formData.vlessHost || ''}
-                          onChange={(value) => handleChange('vlessHost', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsH2PathHint')} />
-                        <MobileFormInput
-                          placeholder="/ws"
-                          value={formData.vlessPath || ''}
-                          onChange={(value) => handleChange('vlessPath', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {showVlessGrpcFields && (
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
-                      <MobileFormInput
-                        placeholder="grpc-service"
-                        value={formData.vlessServiceName || ''}
-                        onChange={(value) => handleChange('vlessServiceName', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                  )}
-
-                  {showVlessRealityFields && (
-                    <>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <FormFieldLabel label={t('admin.nodes.form.fields.publicKey')} hint={t('admin.nodes.form.realityPublicKeyHint')} />
-                          <MobileFormInput
-                            placeholder={t('admin.nodes.form.publicKeyPlaceholder')}
-                            value={formData.vlessRealityPublicKey || ''}
-                            onChange={(value) => handleChange('vlessRealityPublicKey', value)}
-                            className="font-mono text-xs"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <FormFieldLabel label={t('admin.nodes.form.fields.shortId')} />
-                          <MobileFormInput
-                            placeholder={t('admin.nodes.form.shortIdPlaceholder')}
-                            value={formData.vlessRealityShortId || ''}
-                            onChange={(value) => handleChange('vlessRealityShortId', value)}
-                            className="font-mono"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.spiderX')} hint={t('common.optional')} />
-                        <MobileFormInput
-                          placeholder="/"
-                          value={formData.vlessRealitySpiderX || ''}
-                          onChange={(value) => handleChange('vlessRealitySpiderX', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* VMess Protocol Settings */}
-              {isVmess && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.alterId')} hint={t('admin.nodes.form.alterIdHint')} />
-                      <MobileFormInput
-                        type="number"
-                        inputMode="numeric"
-                        value={String(formData.vmessAlterId ?? 0)}
-                        onChange={(value) => handleChange('vmessAlterId', parseInt(value, 10) || 0)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.tls')} />
-                      <MobileSelect
-                        value={formData.vmessTls ? 'true' : 'false'}
-                        onChange={(value) => handleChange('vmessTls', value === 'true')}
-                        options={[
-                          { value: 'true', label: t('admin.nodes.form.enableTls') },
-                          { value: 'false', label: t('admin.nodes.form.disableTls') },
-                        ]}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
-                      <MobileFormInput
-                        placeholder="example.com"
-                        value={formData.vmessSni || ''}
-                        onChange={(value) => handleChange('vmessSni', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
-                      <MobileSelect
-                        value={formData.vmessAllowInsecure ? 'true' : 'false'}
-                        onChange={(value) => handleChange('vmessAllowInsecure', value === 'true')}
-                        options={tlsSecurityOptions}
-                      />
-                    </div>
-                  </div>
-
-                  {showVmessWsFields && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.host')} hint={t('admin.nodes.form.hints.wsHttpHost')} />
-                        <MobileFormInput
-                          placeholder="example.com"
-                          value={formData.vmessHost || ''}
-                          onChange={(value) => handleChange('vmessHost', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <FormFieldLabel label={t('admin.nodes.form.fields.path')} hint={t('admin.nodes.form.wsHttpPathHint')} />
-                        <MobileFormInput
-                          placeholder="/ws"
-                          value={formData.vmessPath || ''}
-                          onChange={(value) => handleChange('vmessPath', value)}
-                          className="font-mono"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {showVmessGrpcFields && (
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.serviceName')} hint={t('admin.nodes.form.grpcServiceNameHint')} />
-                      <MobileFormInput
-                        placeholder="grpc-service"
-                        value={formData.vmessServiceName || ''}
-                        onChange={(value) => handleChange('vmessServiceName', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Hysteria2 Protocol Settings */}
-              {isHysteria2 && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
-                      <MobileFormInput
-                        placeholder="example.com"
-                        value={formData.hysteria2Sni || ''}
-                        onChange={(value) => handleChange('hysteria2Sni', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
-                      <MobileSelect
-                        value={formData.hysteria2AllowInsecure ? 'true' : 'false'}
-                        onChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')}
-                        options={tlsSecurityOptions}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')} />
-                      <MobileFormInput
-                        placeholder="salamander"
-                        value={formData.hysteria2Obfs || ''}
-                        onChange={(value) => handleChange('hysteria2Obfs', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.obfsPassword')} />
-                      <MobileFormInput
-                        placeholder={t('common.placeholders.password')}
-                        value={formData.hysteria2ObfsPassword || ''}
-                        onChange={(value) => handleChange('hysteria2ObfsPassword', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.upBandwidth')} />
-                      <MobileFormInput
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="100"
-                        value={formData.hysteria2UpMbps !== undefined ? String(formData.hysteria2UpMbps) : ''}
-                        onChange={(value) => handleChange('hysteria2UpMbps', value ? parseInt(value, 10) : undefined)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.downBandwidth')} />
-                      <MobileFormInput
-                        type="number"
-                        inputMode="numeric"
-                        placeholder="100"
-                        value={formData.hysteria2DownMbps !== undefined ? String(formData.hysteria2DownMbps) : ''}
-                        onChange={(value) => handleChange('hysteria2DownMbps', value ? parseInt(value, 10) : undefined)}
-                        className="font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} />
-                    <MobileSelect
-                      value={formData.hysteria2Fingerprint || '__none__'}
-                      onChange={(value) => handleChange('hysteria2Fingerprint', value === '__none__' ? '' : value)}
-                      options={fingerprintOptions}
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* TUIC Protocol Settings */}
-              {isTuic && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
-                      <MobileFormInput
-                        placeholder="example.com"
-                        value={formData.tuicSni || ''}
-                        onChange={(value) => handleChange('tuicSni', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
-                      <MobileSelect
-                        value={formData.tuicAllowInsecure ? 'true' : 'false'}
-                        onChange={(value) => handleChange('tuicAllowInsecure', value === 'true')}
-                        options={tlsSecurityOptions}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.fields.alpn')} hint={t('admin.nodes.form.alpnHint')} />
-                      <MobileFormInput
-                        placeholder="h3"
-                        value={formData.tuicAlpn || ''}
-                        onChange={(value) => handleChange('tuicAlpn', value)}
-                        className="font-mono"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <FormFieldLabel label={t('admin.nodes.form.disableSni')} />
-                      <MobileSelect
-                        value={formData.tuicDisableSni ? 'true' : 'false'}
-                        onChange={(value) => handleChange('tuicDisableSni', value === 'true')}
-                        options={[
-                          { value: 'false', label: t('admin.nodes.form.notDisabled') },
-                          { value: 'true', label: t('admin.nodes.form.disableSniOption') },
-                        ]}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+            <MobileProtocolSettingsFields
+              protocol={node.protocol}
+              formData={formData as unknown as Record<string, unknown>}
+              onFieldChange={handleChange}
+              pluginOptsStr={pluginOptsStr}
+              onPluginOptsChange={handlePluginOptsChange}
+              showWsFields={showWsFields}
+              showGrpcFields={showGrpcFields}
+              showVlessWsFields={showVlessWsFields}
+              showVlessGrpcFields={showVlessGrpcFields}
+              showVlessRealityFields={showVlessRealityFields}
+              showVmessWsFields={showVmessWsFields}
+              showVmessGrpcFields={showVmessGrpcFields}
+            />
           </MobileSection>
 
           {/* Other Settings Section */}
@@ -946,141 +501,37 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
             isOpen={openSections.has('other')}
             onToggle={() => toggleSection('other')}
           >
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <FormFieldLabel label={t('admin.nodes.form.region')} />
-                  <MobileFormInput
-                    value={formData.region || ''}
-                    onChange={(value) => handleChange('region', value)}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <FormFieldLabel label={t('common.fields.sortOrder')} />
-                  <MobileFormInput
-                    type="number"
-                    value={String(formData.sortOrder ?? 0)}
-                    onChange={(value) => handleChange('sortOrder', parseInt(value, 10) || 0)}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('admin.nodes.form.tags')} hint={t('admin.nodes.form.tagsHint')} />
-                <MobileFormInput
-                  placeholder={t('admin.nodes.form.tagsPlaceholder')}
-                  value={formData.tagsInput ?? ''}
-                  onChange={(value) => handleChange('tagsInput', value)}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('admin.nodes.form.resourceGroup')} hint={t('admin.nodes.form.resourceGroupSelectHint')} />
-
-                {/* Selected groups chips */}
-                {formData.groupSids.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {formData.groupSids.map((sid) => {
-                      const group = filteredResourceGroups.find((g) => g.sid === sid);
-                      return (
-                        <Badge key={sid} variant="secondary" className="gap-1 pr-1">
-                          <Layers className="size-3" />
-                          {group?.name ?? sid}
-                          <button
-                            type="button"
-                            onClick={() => form.setFormData((prev) => ({
-                              ...prev,
-                              groupSids: prev.groupSids.filter((id) => id !== sid),
-                            }))}
-                            className="ml-0.5 rounded-full p-1 hover:bg-muted min-w-[28px] min-h-[28px] flex items-center justify-center"
-                          >
-                            <X className="size-3" />
-                          </button>
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Group selection list */}
-                <div className="ring-1 ring-border rounded-xl max-h-[150px] overflow-y-auto bg-background">
-                  {isLoadingGroups || isLoadingPlans ? (
-                    <div className="p-3 text-center text-sm text-muted-foreground">{t('common.table.loading')}</div>
-                  ) : filteredResourceGroups.length === 0 ? (
-                    <div className="p-3 text-center text-sm text-muted-foreground">{t('admin.nodes.detail.noResourceGroups')}</div>
-                  ) : (
-                    <div className="divide-y divide-border/50">
-                      {filteredResourceGroups.map((group) => (
-                        <label
-                          key={group.sid}
-                          className="flex items-center gap-3 p-3 active:bg-accent/30 transition-colors min-h-[52px]"
-                        >
-                          <Checkbox
-                            checked={formData.groupSids.includes(group.sid)}
-                            onCheckedChange={(checked) => {
-                              form.setFormData((prev) => ({
-                                ...prev,
-                                groupSids: checked
-                                  ? [...prev.groupSids, group.sid]
-                                  : prev.groupSids.filter((id) => id !== group.sid),
-                              }));
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">{group.name}</span>
-                              <Badge variant={group.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">
-                                {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
-                              </Badge>
-                            </div>
-                            {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('admin.nodes.form.muteNotification')} hint={t('admin.nodes.form.muteNotificationHint')} />
-                <div className="flex items-center gap-3 min-h-[52px] px-4 rounded-xl ring-1 ring-border bg-background">
-                  <Switch
-                    checked={formData.muteNotification ?? false}
-                    onCheckedChange={(checked) => handleChange('muteNotification', checked)}
-                  >
-                    <SwitchThumb />
-                  </Switch>
-                  <span className="text-sm text-muted-foreground">
-                    {formData.muteNotification ? t('admin.nodes.form.muted') : t('admin.nodes.form.unmuted')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Expiration time */}
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('common.fields.expiresAt')} hint={t('admin.nodes.form.expiresAtHint')} />
-                <ExpirationDatePicker
-                  value={formData.expiresAt}
-                  onChange={(value) => handleChange("expiresAt", value ?? "")}
-                  emptyValue=""
-                  id="expiresAt"
-                  mobile
-                />
-              </div>
-
-              {/* Cost label */}
-              <div className="space-y-1.5">
-                <FormFieldLabel label={t('common.fields.costLabel')} hint={t('common.costLabel.hint')} />
-                <MobileFormInput
-                  value={formData.costLabel ?? ""}
-                  onChange={(value) => handleCostLabelChange(value)}
-                  placeholder={t('common.costLabel.placeholder')}
-                />
-              </div>
-            </div>
+            <NodeOtherSettingsFields
+              variant="mobile"
+              mode="edit"
+              formData={{
+                region: formData.region,
+                sortOrder: formData.sortOrder,
+                tagsInput: formData.tagsInput,
+                groupSids: formData.groupSids,
+                muteNotification: formData.muteNotification,
+                expiresAt: formData.expiresAt,
+                costLabel: formData.costLabel,
+              }}
+              onFieldChange={handleChange}
+              onCostLabelChange={handleCostLabelChange}
+              onGroupToggle={(sid, checked) => {
+                form.setFormData((prev) => ({
+                  ...prev,
+                  groupSids: checked
+                    ? [...prev.groupSids, sid]
+                    : prev.groupSids.filter((id) => id !== sid),
+                }));
+              }}
+              onGroupRemove={(sid) => {
+                form.setFormData((prev) => ({
+                  ...prev,
+                  groupSids: prev.groupSids.filter((id) => id !== sid),
+                }));
+              }}
+              filteredResourceGroups={filteredResourceGroups}
+              isLoading={isLoadingGroups || isLoadingPlans}
+            />
           </MobileSection>
 
           {/* Route Config Section */}

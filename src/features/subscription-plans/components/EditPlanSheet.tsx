@@ -109,8 +109,8 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
       <SheetContent>
         <SheetHeader className="pb-2">
           <SheetTitle className="flex items-center gap-2">
-            <div className="size-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <Pencil className="size-4 text-blue-500" />
+            <div className="size-8 rounded-full bg-info/10 flex items-center justify-center">
+              <Pencil className="size-4 text-info" />
             </div>
             <span>{t('admin.plans.form.editPlan')}</span>
           </SheetTitle>

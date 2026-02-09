@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Skeleton } from '@/components/common/Skeleton';
 import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 
 type ColorVariant = 'primary' | 'success' | 'warning' | 'destructive' | 'muted' | 'custom';
 
@@ -90,8 +91,8 @@ export const BentoStatCard = ({
     return (
       <div
         className={cn(
-          // Mobile: compact, sm+: larger padding
-          'p-3 sm:p-4 rounded-xl bg-card ring-1 ring-border',
+          cardStyles,
+          'p-3 sm:p-4',
           large && 'col-span-2 sm:p-5',
           className
         )}
@@ -109,8 +110,8 @@ export const BentoStatCard = ({
   return (
     <div
       className={cn(
-        // Mobile: compact p-3, sm+: p-4, large cards get p-5 on sm+
-        'p-3 sm:p-4 rounded-xl bg-card ring-1 ring-border',
+        cardStyles,
+        'p-3 sm:p-4',
         'transition-shadow hover:shadow-md',
         large && 'col-span-2 sm:p-5',
         className

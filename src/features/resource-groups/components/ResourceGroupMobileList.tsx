@@ -78,11 +78,11 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-1.5 rounded-md hover:bg-accent transition-colors"
             onClick={(e) => e.stopPropagation()}
             aria-label={t('common.actions.more')}
           >
-            <MoreHorizontal className="size-4 text-slate-500" />
+            <MoreHorizontal className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -122,7 +122,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
 
   if (resourceGroups.length === 0) {
     return (
-      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+      <div className="text-center py-12 text-muted-foreground">
         {t('admin.resourceGroups.emptyState')}
       </div>
     );
@@ -147,7 +147,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                 <div className="flex-1 min-w-0">
                   {/* Name and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-slate-900 dark:text-white truncate">
+                    <span className="font-medium text-sm text-foreground truncate">
                       {resourceGroup.name}
                     </span>
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
@@ -156,8 +156,8 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                   </div>
 
                   {/* Plan name */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                    <FileText className="size-3 text-slate-400 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <FileText className="size-3 text-muted-foreground flex-shrink-0" />
                     <span className="truncate">{plan?.name || `${t('admin.resourceGroups.detail.plan')} #${resourceGroup.planId}`}</span>
                   </div>
                 </div>
@@ -168,10 +168,10 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onEdit(resourceGroup)}
-                        className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-muted hover:bg-accent transition-colors"
                         aria-label={t('common.actions.edit')}
                       >
-                        <Edit className="size-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300" />
+                        <Edit className="size-3.5 text-muted-foreground hover:text-foreground" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{t('common.actions.edit')}</TooltipContent>
@@ -182,15 +182,15 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                         onClick={() => onToggleStatus(resourceGroup)}
                         className={`p-1.5 rounded transition-colors ${
                           resourceGroup.status === 'active'
-                            ? 'hover:bg-red-50 dark:hover:bg-red-900/20'
-                            : 'hover:bg-green-50 dark:hover:bg-green-900/20'
+                            ? 'hover:bg-destructive/10'
+                            : 'hover:bg-success/10'
                         }`}
                         aria-label={resourceGroup.status === 'active' ? t('common.actions.disable') : t('common.actions.enable')}
                       >
                         <Power className={`size-3.5 ${
                           resourceGroup.status === 'active'
-                            ? 'text-slate-400 hover:text-red-500'
-                            : 'text-slate-400 hover:text-green-500'
+                            ? 'text-muted-foreground hover:text-destructive'
+                            : 'text-muted-foreground hover:text-success'
                         }`} />
                       </button>
                     </TooltipTrigger>
@@ -202,30 +202,30 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
             </div>
 
             {/* Accordion Trigger */}
-            <AccordionTrigger className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700 hover:no-underline hover:bg-slate-50 dark:hover:bg-slate-700/50">
-              <span className="text-xs text-slate-400 dark:text-slate-500">{t('common.detail')}</span>
+            <AccordionTrigger className="px-3 py-1.5 border-t border-border hover:no-underline hover:bg-accent hover:bg-accent/50">
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground">{t('common.detail')}</span>
             </AccordionTrigger>
 
             {/* Accordion Content - Expanded details */}
             <AccordionContent>
-              <div className="px-3 pb-2 space-y-2 border-t border-slate-100 dark:border-slate-700 pt-2">
+              <div className="px-3 pb-2 space-y-2 border-t border-border pt-2">
                 {/* SID */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">SID</span>
-                  <span className="text-xs font-mono text-slate-600 dark:text-slate-300">{resourceGroup.sid}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">SID</span>
+                  <span className="text-xs font-mono text-muted-foreground text-muted-foreground">{resourceGroup.sid}</span>
                 </div>
 
                 {/* Plan */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.plan')}</span>
-                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.plan')}</span>
+                  <div className="text-xs text-muted-foreground text-muted-foreground">
                     {plan ? (
                       <span>
                         {plan.name}
-                        <span className="ml-1 font-mono text-slate-400">({plan.slug})</span>
+                        <span className="ml-1 font-mono text-muted-foreground">({plan.slug})</span>
                       </span>
                     ) : (
-                      <span className="text-slate-400">{t('admin.resourceGroups.detail.plan')} #{resourceGroup.planId}</span>
+                      <span className="text-muted-foreground">{t('admin.resourceGroups.detail.plan')} #{resourceGroup.planId}</span>
                     )}
                   </div>
                 </div>
@@ -233,15 +233,15 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                 {/* Description */}
                 {resourceGroup.description && (
                   <div className="flex items-start gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
-                    <span className="text-xs text-slate-600 dark:text-slate-300 flex-1">{resourceGroup.description}</span>
+                    <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-10 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
+                    <span className="text-xs text-muted-foreground text-muted-foreground flex-1">{resourceGroup.description}</span>
                   </div>
                 )}
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.created')}</span>
-                  <span className="text-xs text-slate-500">{formatDate(resourceGroup.createdAt)}</span>
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('admin.resourceGroups.detail.created')}</span>
+                  <span className="text-xs text-muted-foreground">{formatDate(resourceGroup.createdAt)}</span>
                 </div>
               </div>
             </AccordionContent>

@@ -86,7 +86,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
         'flex flex-col rounded-3xl px-6 py-8 sm:px-8',
         featured
           ? 'order-first bg-primary lg:order-none'
-          : 'bg-slate-50 dark:bg-slate-900/50'
+          : 'bg-muted'
       )}
     >
       {/* Plan name */}
@@ -151,7 +151,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
           'mt-6 inline-flex items-center justify-center rounded-full py-2.5 px-4 text-sm font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]',
           featured
             ? 'bg-white text-primary hover:bg-white/90 focus-visible:ring-white'
-            : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 focus-visible:ring-slate-900'
+            : 'bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-ring'
         )}
       >
         {t('pricing.getStarted')}
@@ -169,7 +169,7 @@ const PricingCard: React.FC<PricingCardProps> = ({
             <Check
               className={cn(
                 'size-5 flex-none mr-3',
-                featured ? 'text-white' : 'text-slate-400'
+                featured ? 'text-white' : 'text-muted-foreground'
               )}
             />
             <span>{feature}</span>

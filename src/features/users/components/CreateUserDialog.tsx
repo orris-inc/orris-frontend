@@ -200,9 +200,9 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                           'h-1 flex-1 rounded-full transition-colors',
                           index < form.passwordStrength.length
                             ? form.strengthPercent === 100
-                              ? 'bg-emerald-500'
+                              ? 'bg-success'
                               : form.strengthPercent >= 66
-                                ? 'bg-yellow-500'
+                                ? 'bg-warning'
                                 : 'bg-destructive'
                             : 'bg-muted'
                         )}
@@ -217,7 +217,7 @@ export const CreateUserDialog: React.FC<CreateUserDialogProps> = ({
                           key={rule.key}
                           className={cn(
                             'flex items-center gap-1 text-xs transition-colors',
-                            passed ? 'text-emerald-600' : 'text-muted-foreground'
+                            passed ? 'text-success' : 'text-muted-foreground'
                           )}
                         >
                           {passed ? (

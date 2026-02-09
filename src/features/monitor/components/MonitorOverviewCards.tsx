@@ -6,6 +6,8 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Server, Cpu, Activity, ArrowDown, ArrowUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { cardStyles } from '@/lib/ui-styles';
 import { formatBitRate, formatBytes } from '@/shared/utils/format-utils';
 import type { MonitorOverview } from '../hooks/useMonitorData';
 
@@ -26,7 +28,7 @@ const OverviewCard = memo(({
   iconBg,
   iconColor,
 }: OverviewCardProps) => (
-  <div className="group relative overflow-hidden bg-card rounded-xl p-2.5 ring-1 ring-border/80 hover:ring-border transition-colors">
+  <div className={cn(cardStyles, 'group relative overflow-hidden p-2.5 ring-border/80 hover:ring-border transition-colors')}>
     <div className="flex items-center gap-2">
       <div className={`${iconBg} p-1.5 rounded-md shrink-0`}>
         <div className={iconColor}>{icon}</div>
@@ -76,8 +78,8 @@ export const MonitorOverviewCards = memo(({ overview }: MonitorOverviewCardsProp
         ? `${Math.round((overview.onlineAgents / overview.totalAgents) * 100)}%`
         : '-',
       icon: <Cpu className="size-3.5" strokeWidth={1.5} />,
-      iconBg: 'bg-violet-500/10',
-      iconColor: 'text-violet-500',
+      iconBg: 'bg-relay/10',
+      iconColor: 'text-relay',
     },
     {
       title: t('admin.monitor.cpu'),

@@ -440,20 +440,20 @@ function getAnnouncementColors(type: AnnouncementType): {
 } {
   const colors: Record<AnnouncementType, { bgColor: string; textColor: string }> = {
     system: {
-      bgColor: 'bg-blue-500/10',
-      textColor: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-info/10',
+      textColor: 'text-info',
     },
     maintenance: {
-      bgColor: 'bg-amber-500/10',
-      textColor: 'text-amber-600 dark:text-amber-400',
+      bgColor: 'bg-warning/10',
+      textColor: 'text-warning',
     },
     feature: {
-      bgColor: 'bg-emerald-500/10',
-      textColor: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-success/10',
+      textColor: 'text-success',
     },
     promotion: {
-      bgColor: 'bg-purple-500/10',
-      textColor: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-relay/10',
+      textColor: 'text-relay',
     },
   };
   return colors[type] || { bgColor: 'bg-muted', textColor: 'text-muted-foreground' };

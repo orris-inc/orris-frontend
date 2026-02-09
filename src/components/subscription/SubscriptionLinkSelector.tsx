@@ -132,7 +132,7 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
           'transition-all duration-200 ease-out cursor-pointer',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
           copied
-            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            ? 'bg-success/10 text-success'
             : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
         )}
       >
@@ -158,7 +158,7 @@ const CopyButton: React.FC<{ text: string; variant?: 'default' | 'pill' }> = ({
         'p-1.5 rounded-md transition-all duration-200 ease-out cursor-pointer',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
         copied
-          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+          ? 'bg-success/10 text-success'
           : 'hover:bg-muted text-muted-foreground hover:text-foreground'
       )}
       title={copied ? t('common.copied') : t('subscriptionLink.copyLink')}

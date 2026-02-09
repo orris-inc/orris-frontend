@@ -91,7 +91,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   >
                     {installCopy.copied ? (
                       <>
-                        <Check className="size-3.5 mr-1 text-green-500" />
+                        <Check className="size-3.5 mr-1 text-success" />
                         {t('common.copied')}
                       </>
                     ) : (
@@ -103,7 +103,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   </Button>
                 </div>
                 <div className="relative">
-                  <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-blue-500 selection:text-white">
+                  <pre className="p-3 rounded-lg bg-foreground text-background text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-info selection:text-white">
                     {installScriptData.installCommand}
                   </pre>
                 </div>
@@ -126,7 +126,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   >
                     {uninstallCopy.copied ? (
                       <>
-                        <Check className="size-3.5 mr-1 text-green-500" />
+                        <Check className="size-3.5 mr-1 text-success" />
                         {t('common.copied')}
                       </>
                     ) : (
@@ -138,7 +138,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                   </Button>
                 </div>
                 <div className="relative">
-                  <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-blue-500 selection:text-white">
+                  <pre className="p-3 rounded-lg bg-foreground text-background text-sm font-mono overflow-x-auto whitespace-pre-wrap break-all selection:bg-info selection:text-white">
                     {installScriptData.uninstallCommand}
                   </pre>
                 </div>
@@ -159,7 +159,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                     >
                       {scriptUrlCopy.copied ? (
                         <>
-                          <Check className="size-3.5 mr-1 text-green-500" />
+                          <Check className="size-3.5 mr-1 text-success" />
                           {t('common.copied')}
                         </>
                       ) : (
@@ -180,7 +180,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                     </Button>
                   </div>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-mono break-all">
+                <div className="p-3 rounded-lg bg-muted text-sm font-mono break-all">
                   {installScriptData.scriptUrl}
                 </div>
               </div>
@@ -207,7 +207,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       >
                         {apiUrlCopy.copied ? (
                           <>
-                            <Check className="size-3.5 mr-1 text-green-500" />
+                            <Check className="size-3.5 mr-1 text-success" />
                             {t('common.copied')}
                           </>
                         ) : (
@@ -218,7 +218,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                         )}
                       </Button>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-mono break-all">
+                    <div className="p-3 rounded-lg bg-muted text-sm font-mono break-all">
                       {installScriptData.apiUrl}
                     </div>
                   </div>
@@ -237,7 +237,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                       >
                         {tokenCopy.copied ? (
                           <>
-                            <Check className="size-3.5 mr-1 text-green-500" />
+                            <Check className="size-3.5 mr-1 text-success" />
                             {t('common.copied')}
                           </>
                         ) : (
@@ -248,7 +248,7 @@ export const UserNodeInstallScriptDialog: React.FC<UserNodeInstallScriptDialogPr
                         )}
                       </Button>
                     </div>
-                    <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-mono break-all">
+                    <div className="p-3 rounded-lg bg-muted text-sm font-mono break-all">
                       {installScriptData.token}
                     </div>
                   </div>

@@ -46,22 +46,22 @@ interface ActivityFeedProps {
 const activityIconConfig: Record<ActivityType, ActivityIconConfig> = {
   comment: {
     icon: MessageSquare,
-    bgColor: 'bg-blue-500',
+    bgColor: 'bg-info',
     iconColor: 'text-white',
   },
   status: {
     icon: RefreshCw,
-    bgColor: 'bg-amber-500',
+    bgColor: 'bg-warning',
     iconColor: 'text-white',
   },
   assignment: {
     icon: UserPlus,
-    bgColor: 'bg-purple-500',
+    bgColor: 'bg-relay',
     iconColor: 'text-white',
   },
   tag: {
     icon: Tag,
-    bgColor: 'bg-pink-500',
+    bgColor: 'bg-destructive',
     iconColor: 'text-white',
   },
   system: {
@@ -71,17 +71,17 @@ const activityIconConfig: Record<ActivityType, ActivityIconConfig> = {
   },
   create: {
     icon: Plus,
-    bgColor: 'bg-emerald-500',
+    bgColor: 'bg-success',
     iconColor: 'text-white',
   },
   update: {
     icon: Pencil,
-    bgColor: 'bg-sky-500',
+    bgColor: 'bg-info',
     iconColor: 'text-white',
   },
   delete: {
     icon: Trash2,
-    bgColor: 'bg-red-500',
+    bgColor: 'bg-destructive',
     iconColor: 'text-white',
   },
 };

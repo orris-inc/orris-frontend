@@ -58,10 +58,10 @@ const DetailItem: React.FC<{
 
   return (
     <div className="flex items-start gap-3 py-2">
-      <div className="mt-0.5 text-slate-400 dark:text-slate-500">{icon}</div>
+      <div className="mt-0.5 text-muted-foreground dark:text-muted-foreground">{icon}</div>
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">{label}</div>
-        <div className="text-sm text-slate-900 dark:text-white break-all">{value}</div>
+        <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-0.5">{label}</div>
+        <div className="text-sm text-foreground break-all">{value}</div>
       </div>
       {copyable && (
         <Button
@@ -302,7 +302,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
             <TabsContent value="info" className="space-y-4 py-2">
               {/* Identification info */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.identificationInfo')}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2">{t('resourceGroups.sections.identificationInfo')}</h4>
                 <DetailItem
                   icon={<Hash className="size-4" />}
                   label={t('common.labels.sid')}
@@ -316,14 +316,14 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               {/* Associated plan */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.associatedPlan')}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2">{t('resourceGroups.sections.associatedPlan')}</h4>
                 {plan ? (
-                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
+                  <div className="rounded-lg border border-border p-3 bg-muted">
                     <div className="flex items-center gap-2 mb-1">
-                      <CreditCard className="size-4 text-slate-500" />
+                      <CreditCard className="size-4 text-muted-foreground" />
                       <span className="font-medium">{plan.name}</span>
                     </div>
-                    <code className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <code className="text-xs text-muted-foreground dark:text-muted-foreground font-mono">
                       {plan.slug}
                     </code>
                   </div>
@@ -336,7 +336,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 )}
                 {/* Resource binding rules hint */}
                 {planType && (
-                  <div className="flex items-start gap-2 mt-2 p-2 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300">
+                  <div className="flex items-start gap-2 mt-2 p-2 rounded-md bg-info/10 text-info text-info">
                     <Info className="size-4 mt-0.5 flex-shrink-0" />
                     <p className="text-xs">
                       {planType === 'forward'
@@ -353,7 +353,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                 <>
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('common.fields.description')}</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-2">{t('common.fields.description')}</h4>
                     <DetailItem
                       icon={<FileText className="size-4" />}
                       label={t('common.fields.description')}
@@ -367,7 +367,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
 
               {/* Time info */}
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">{t('resourceGroups.sections.timeInfo')}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-2">{t('resourceGroups.sections.timeInfo')}</h4>
                 <DetailItem
                   icon={<Clock className="size-4" />}
                   label={t('common.fields.createdAt')}
@@ -383,11 +383,11 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
               {/* Resource statistics */}
               <Separator />
               <div>
-                <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-3">{t('resourceGroups.sections.resourceStats')}</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">{t('resourceGroups.sections.resourceStats')}</h4>
                 <div className={`grid gap-3 ${canBindNodes && canBindRules ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   {canBindNodes && (
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <Server className="size-4 text-blue-500" />
+                      <Server className="size-4 text-info" />
                       <div>
                         <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.associatedNodes')}</p>
                         <p className="text-sm font-medium">{nodesPagination.total} {t('resourceGroups.unit')}</p>
@@ -396,7 +396,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                   )}
                   {canBindAgents && (
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <Cpu className="size-4 text-green-500" />
+                      <Cpu className="size-4 text-success" />
                       <div>
                         <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.forwardAgents')}</p>
                         <p className="text-sm font-medium">{agentsPagination.total} {t('resourceGroups.unit')}</p>
@@ -405,7 +405,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                   )}
                   {canBindRules && (
                     <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <ArrowRightLeft className="size-4 text-orange-500" />
+                      <ArrowRightLeft className="size-4 text-warning" />
                       <div>
                         <p className="text-xs text-muted-foreground">{t('resourceGroups.labels.forwardRules')}</p>
                         <p className="text-sm font-medium">{rulesPagination.total} {t('resourceGroups.unit')}</p>
@@ -487,7 +487,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedNodeIds.has(node.id)
                             ? 'bg-primary/10'
-                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            : 'bg-muted hover:bg-muted hover:bg-accent'
                         }`}
                       >
                         <Checkbox
@@ -585,7 +585,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedAgentIds.has(agent.id)
                             ? 'bg-primary/10'
-                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            : 'bg-muted hover:bg-muted hover:bg-accent'
                         }`}
                       >
                         <Checkbox
@@ -683,7 +683,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                           selectedRuleIds.has(rule.id)
                             ? 'bg-primary/10'
-                            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            : 'bg-muted hover:bg-muted hover:bg-accent'
                         }`}
                       >
                         <Checkbox

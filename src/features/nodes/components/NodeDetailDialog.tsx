@@ -59,9 +59,9 @@ import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 // Get progress color based on value
 const getProgressColor = (value: number): string => {
-  if (value >= 90) return 'bg-red-500';
-  if (value >= 70) return 'bg-yellow-500';
-  return 'bg-green-500';
+  if (value >= 90) return 'bg-destructive';
+  if (value >= 70) return 'bg-warning';
+  return 'bg-success';
 };
 
 export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
@@ -133,18 +133,18 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">
               {isOnline ? (
-                <span className="flex items-center gap-1 text-xs text-green-600">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                <span className="flex items-center gap-1 text-xs text-success">
+                  <span className="h-2 w-2 rounded-full bg-success"></span>
                   {t('admin.nodes.detail.nodeOnline')}
                 </span>
               ) : node.status === 'active' ? (
-                <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <span className="h-2 w-2 rounded-full bg-slate-300"></span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground/30"></span>
                   {isConnected ? t('admin.nodes.detail.waitingStatus') : t('admin.nodes.detail.connecting')}
                 </span>
               ) : (
-                <span className="flex items-center gap-1 text-xs text-slate-400">
-                  <span className="h-2 w-2 rounded-full bg-slate-300"></span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="h-2 w-2 rounded-full bg-muted-foreground/30"></span>
                   {t('admin.nodes.detail.nodeOffline')}
                 </span>
               )}
@@ -169,9 +169,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {isConnected ? (
-                        <Wifi className="h-3 w-3 text-green-500" />
+                        <Wifi className="h-3 w-3 text-success" />
                       ) : (
-                        <WifiOff className="h-3 w-3 text-slate-400" />
+                        <WifiOff className="h-3 w-3 text-muted-foreground" />
                       )}
                     </div>
                   </TooltipTrigger>
@@ -179,27 +179,27 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     {isConnected ? t('admin.nodes.detail.realtimeConnected') : t('admin.nodes.detail.connectingRealtime')}
                   </TooltipContent>
                 </Tooltip>
-                <span className="text-slate-300 dark:text-slate-600">|</span>
+                <span className="text-border">|</span>
                 {/* Online Status */}
                 <div className="flex items-center gap-2">
                   {isOnline ? (
                     <>
                       <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
                       </span>
-                      <span className="text-sm font-medium text-green-600">{t('common.status.online')}</span>
+                      <span className="text-sm font-medium text-success">{t('common.status.online')}</span>
                     </>
                   ) : (
                     <>
-                      <span className="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-                      <span className="text-sm font-medium text-slate-500">{t('common.status.offline')}</span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30"></span>
+                      <span className="text-sm font-medium text-muted-foreground">{t('common.status.offline')}</span>
                     </>
                   )}
                 </div>
                 {systemStatus?.uptimeSeconds !== undefined && systemStatus.uptimeSeconds > 0 && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="text-border">|</span>
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Activity className="h-3.5 w-3.5" />
                       <span>{t('admin.nodes.detail.uptime')}: {formatUptime(systemStatus.uptimeSeconds)}</span>
@@ -208,7 +208,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 )}
                 {systemStatus?.agentVersion && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="text-border">|</span>
                     <span className="text-sm text-muted-foreground font-mono">
                       v{systemStatus.agentVersion}
                       {systemStatus.platform && systemStatus.arch && (
@@ -226,11 +226,11 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 <div className="p-3 bg-muted rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4 text-blue-500" />
+                      <Package className="h-4 w-4 text-info" />
                       <span className="text-sm font-medium">{t('admin.nodes.detail.versionManagement')}</span>
                     </div>
                     {versionLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     ) : versionInfo ? (
                       <div className="flex items-center gap-3">
                         <div className="text-sm">
@@ -265,7 +265,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           </Tooltip>
                         )}
                         {!versionInfo.hasUpdate && (
-                          <Badge variant="outline" className="text-green-600 border-green-200 dark:border-green-800">
+                          <Badge variant="outline" className="text-success border-success/30">
                             {t('admin.nodes.detail.upToDate')}
                           </Badge>
                         )}
@@ -281,9 +281,9 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                                 .catch(() => setVersionInfo(null))
                                 .finally(() => setVersionLoading(false));
                             }}
-                            className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                            className="p-1.5 rounded-md hover:bg-accent transition-colors"
                           >
-                            <RefreshCw className="h-4 w-4 text-slate-400" />
+                            <RefreshCw className="h-4 w-4 text-muted-foreground" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent>{t('admin.nodes.detail.refreshVersion')}</TooltipContent>
@@ -309,7 +309,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
-                          <Cpu className="h-4 w-4 text-blue-500" />
+                          <Cpu className="h-4 w-4 text-info" />
                           <span className="text-xs font-medium">CPU</span>
                         </div>
                         <span className="text-sm font-semibold">{(systemStatus.cpuPercent ?? 0).toFixed(1)}%</span>
@@ -330,7 +330,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
-                          <MemoryStick className="h-4 w-4 text-green-500" />
+                          <MemoryStick className="h-4 w-4 text-success" />
                           <span className="text-xs font-medium">{t('admin.nodes.detail.memory')}</span>
                         </div>
                         <span className="text-sm font-semibold">{(systemStatus.memoryPercent ?? 0).toFixed(1)}%</span>
@@ -351,7 +351,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     <div className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-1.5">
-                          <HardDrive className="h-4 w-4 text-orange-500" />
+                          <HardDrive className="h-4 w-4 text-warning" />
                           <span className="text-xs font-medium">{t('admin.nodes.detail.disk')}</span>
                         </div>
                         <span className="text-sm font-semibold">{(systemStatus.diskPercent ?? 0).toFixed(1)}%</span>
@@ -377,12 +377,12 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       {(systemStatus.networkRxRate !== undefined || systemStatus.tcpConnections !== undefined) && (
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Network className="h-4 w-4 text-indigo-500" />
+                            <Network className="h-4 w-4 text-relay" />
                             <span className="text-xs font-medium">{t('admin.nodes.detail.networkTraffic')}</span>
                           </div>
                           <div className="flex items-center gap-4 text-sm">
-                            <span className="text-green-600">↓ {formatBitRate(systemStatus.networkRxRate ?? 0)}</span>
-                            <span className="text-blue-600">↑ {formatBitRate(systemStatus.networkTxRate ?? 0)}</span>
+                            <span className="text-success">↓ {formatBitRate(systemStatus.networkRxRate ?? 0)}</span>
+                            <span className="text-info">↑ {formatBitRate(systemStatus.networkTxRate ?? 0)}</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1.5">
                             TCP {systemStatus.tcpConnections ?? 0} · UDP {systemStatus.udpConnections ?? 0}
@@ -393,7 +393,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                       {(systemStatus.publicIpv4 || systemStatus.publicIpv6) && (
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-1.5 mb-2">
-                            <Globe className="h-4 w-4 text-cyan-500" />
+                            <Globe className="h-4 w-4 text-info" />
                             <span className="text-xs font-medium">{t('admin.nodes.detail.publicIp')}</span>
                           </div>
                           <div className="space-y-0.5 font-mono text-sm">
@@ -546,13 +546,13 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                   <div className="flex items-center gap-1">
                     {node.allowInsecure ? (
                       <>
-                        <ShieldAlert className="h-4 w-4 text-yellow-500" />
-                        <span className="text-sm text-yellow-600">{t('admin.nodes.detail.allowInsecure')}</span>
+                        <ShieldAlert className="h-4 w-4 text-warning" />
+                        <span className="text-sm text-warning">{t('admin.nodes.detail.allowInsecure')}</span>
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-green-600">{t('admin.nodes.detail.secureConnection')}</span>
+                        <ShieldCheck className="h-4 w-4 text-success" />
+                        <span className="text-sm text-success">{t('admin.nodes.detail.secureConnection')}</span>
                       </>
                     )}
                   </div>
@@ -598,8 +598,8 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
             <div>
               <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.maintenanceInfo')}</h3>
               <Separator className="mb-4" />
-              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                <p className="text-sm text-warning">
                   {node.maintenanceReason}
                 </p>
               </div>

@@ -74,7 +74,7 @@ export const TruncatedId: React.FC<TruncatedIdProps> = ({
           copied ? 'opacity-100' : 'opacity-0 group-hover/id:opacity-100'
         )}>
           {copied ? (
-            <Check className="size-3 text-emerald-500" />
+            <Check className="size-3 text-success" />
           ) : (
             <Copy className="size-3 text-muted-foreground/60" />
           )}

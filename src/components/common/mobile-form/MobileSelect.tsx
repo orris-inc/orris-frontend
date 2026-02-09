@@ -17,7 +17,7 @@ import type { ReactNode } from 'react';
 export interface MobileSelectOption {
   value: string;
   label: string;
-  /** Optional color indicator (Tailwind class, e.g., 'bg-emerald-500') */
+  /** Optional color indicator (Tailwind class, e.g., 'bg-success') */
   color?: string;
 }
 

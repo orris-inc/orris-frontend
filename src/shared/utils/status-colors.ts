@@ -27,17 +27,17 @@ export const STATUS_COLORS = {
 // Forward rule flow node colors (entry -> relay -> exit -> target)
 export const FLOW_NODE_COLORS = {
   entry: {
-    text: 'text-success dark:text-success',
+    text: 'text-success',
     bg: 'bg-success/10',
     border: 'border-success/30',
   },
   relay: {
-    text: 'text-purple-600 dark:text-purple-400',
-    bg: 'bg-purple-500/10',
-    border: 'border-purple-500/30',
+    text: 'text-relay',
+    bg: 'bg-relay/10',
+    border: 'border-relay/30',
   },
   exit: {
-    text: 'text-warning dark:text-warning',
+    text: 'text-warning',
     bg: 'bg-warning/10',
     border: 'border-warning/30',
   },

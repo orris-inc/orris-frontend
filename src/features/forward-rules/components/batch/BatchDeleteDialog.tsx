@@ -80,33 +80,33 @@ export const BatchDeleteDialog: React.FC<BatchDeleteDialogProps> = ({
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <CheckCircle2 className="size-5 text-green-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+              <div className="p-3 bg-success/10 rounded-lg text-center">
+                <CheckCircle2 className="size-5 text-success mx-auto mb-1" />
+                <p className="text-lg font-semibold text-success">
                   {result.succeeded.length}
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">{t('admin.forwardRules.batch.succeeded')}</p>
+                <p className="text-xs text-success">{t('admin.forwardRules.batch.succeeded')}</p>
               </div>
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
-                <XCircle className="size-5 text-red-500 mx-auto mb-1" />
-                <p className="text-lg font-semibold text-red-700 dark:text-red-300">
+              <div className="p-3 bg-destructive/10 rounded-lg text-center">
+                <XCircle className="size-5 text-destructive mx-auto mb-1" />
+                <p className="text-lg font-semibold text-destructive">
                   {failedCount}
                 </p>
-                <p className="text-xs text-red-600 dark:text-red-400">{t('common.status.failed')}</p>
+                <p className="text-xs text-destructive">{t('common.status.failed')}</p>
               </div>
             </div>
 
             {failedCount > 0 && result.failed && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-red-700 dark:text-red-300">{t('admin.forwardRules.batch.deleteFailed')}</p>
+                <p className="text-sm font-medium text-destructive">{t('admin.forwardRules.batch.deleteFailed')}</p>
                 <div className="max-h-[150px] overflow-y-auto space-y-1">
                   {result.failed.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/10 rounded text-sm"
+                      className="flex items-center justify-between p-2 bg-destructive/10 rounded text-sm"
                     >
                       <span className="font-mono text-xs truncate max-w-[150px]">{item.id}</span>
-                      <span className="text-xs text-red-600 dark:text-red-400 truncate max-w-[180px]">
+                      <span className="text-xs text-destructive truncate max-w-[180px]">
                         {item.reason}
                       </span>
                     </div>
