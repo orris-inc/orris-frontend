@@ -1051,6 +1051,9 @@
           "installScript": "Get Install Script",
           "copyNode": "Copy Node",
           "generateToken": "Generate Token"
+        },
+        "actions": {
+          "batchInstallScript": "Batch Install Script"
         }
       },
       "installScript": {

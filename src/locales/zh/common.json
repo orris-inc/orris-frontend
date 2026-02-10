@@ -1051,6 +1051,9 @@
           "installScript": "获取安装脚本",
           "copyNode": "复制节点",
           "generateToken": "生成 Token"
+        },
+        "actions": {
+          "batchInstallScript": "批量安装脚本"
         }
       },
       "installScript": {
