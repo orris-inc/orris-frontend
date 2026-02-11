@@ -645,7 +645,20 @@
       "totalTraffic": "Total Traffic",
       "activeUsers": "Active Users",
       "activeSubscriptions": "Active Subs",
-      "totalForwardRules": "Forward Rules"
+      "totalForwardRules": "Forward Rules",
+      "newToday": "+{{count}} today",
+      "newThisWeek": "+{{count}} this week",
+      "expiringIn7d": "{{count}} expiring",
+      "agents": "{{online}}/{{total}} agents",
+      "todayUpload": "Today Upload",
+      "todayDownload": "Today Download",
+      "todayTotal": "Today Total",
+      "expired": "{{count}} expired",
+      "suspended": "{{count}} suspended",
+      "pendingPayment": "{{count}} pending",
+      "trafficUpload": "Upload",
+      "trafficDownload": "Download",
+      "trafficTotal": "Total"
     },
     "quickAccess": {
       "title": "Quick Access",
@@ -680,6 +693,7 @@
       "trend": "Traffic Trend",
       "trendDesc": "Upload and download traffic statistics",
       "total": "Total",
+      "selectedPeriod": "Selected Period",
       "ranking": "Traffic Ranking",
       "userRanking": "User Ranking",
       "subscriptionRanking": "Subscription Ranking",
@@ -903,7 +917,8 @@
           "vless": "Lightweight Protocol",
           "vmess": "V2Ray Protocol",
           "hysteria2": "QUIC Based",
-          "tuic": "UDP Optimized"
+          "tuic": "UDP Optimized",
+          "anytls": "TLS Multiplex"
         },
         "encryptionMethod": "Encryption Method",
         "transportProtocol": "Transport Protocol",
@@ -958,6 +973,16 @@
         "disableSniHint": "Whether to disable SNI",
         "notDisabled": "Not Disabled",
         "disableSniOption": "Disable SNI",
+        "anytls": {
+          "fingerprint": "TLS Fingerprint",
+          "fingerprintHint": "TLS client fingerprint (e.g., chrome, firefox)",
+          "idleCheckInterval": "Idle Check Interval",
+          "idleCheckIntervalHint": "Go duration, e.g., 30s",
+          "idleTimeout": "Idle Timeout",
+          "idleTimeoutHint": "Go duration, e.g., 30s",
+          "minIdleSession": "Min Idle Sessions",
+          "minIdleSessionHint": "Minimum idle session count"
+        },
         "region": "Region",
         "regionPlaceholder": "e.g., Hong Kong",
         "regionHint": "Geographic location of the node",
@@ -2009,7 +2034,8 @@
       "confirmDeleteTitle": "Confirm Delete",
       "total": "Total",
       "found": "Found",
-      "results": "results"
+      "results": "results",
+      "expiringSoon": "Expiring Soon"
     },
     "plans": {
       "title": "Plan Management",
@@ -2105,7 +2131,15 @@
         "duplicate": "Duplicate",
         "viewSubscriptions": "View Subscriptions"
       },
-      "emptyState": "No subscription plans"
+      "emptyState": "No subscription plans",
+      "catalog": {
+        "gridView": "Grid View",
+        "tableView": "Table View",
+        "traffic": "Traffic",
+        "devices": "Devices",
+        "speed": "Speed",
+        "connections": "Connections"
+      }
     },
     "resourceGroups": {
       "title": "Resource Groups",
@@ -2790,6 +2824,7 @@
     "pendingPayment": "Pending Payment",
     "trialing": "Trialing",
     "pastDue": "Past Due",
+    "cancelled": "Cancelled",
     "notExpired": "Not Expired"
   },
   "messages": {

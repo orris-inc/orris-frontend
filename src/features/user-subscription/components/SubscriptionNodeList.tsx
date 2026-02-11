@@ -32,8 +32,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
         // Future: may filter by subscription when API supports it
         const result = await listUserForwardAgents({ pageSize: 100 });
         setAgents(result.items);
-      } catch (err) {
-        console.error('Failed to fetch forward agents:', err);
+      } catch {
         setError('Failed to load forward agents');
       } finally {
         setIsLoading(false);

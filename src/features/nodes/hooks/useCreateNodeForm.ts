@@ -77,6 +77,13 @@ const getDefaultFormData = (): CreateNodeFormData => ({
   tuicSni: '',
   tuicAllowInsecure: false,
   tuicDisableSni: false,
+  // AnyTLS fields
+  anytlsSni: '',
+  anytlsAllowInsecure: false,
+  anytlsFingerprint: '',
+  anytlsIdleSessionCheckInterval: '',
+  anytlsIdleSessionTimeout: '',
+  anytlsMinIdleSession: undefined,
   // Expiration fields
   expiresAt: undefined,
   costLabel: undefined,
@@ -99,6 +106,7 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
   const isVmess = formData.protocol === 'vmess';
   const isHysteria2 = formData.protocol === 'hysteria2';
   const isTuic = formData.protocol === 'tuic';
+  const isAnytls = formData.protocol === 'anytls';
 
   // Transport field visibility flags
   const showWsFields = isTrojan && formData.transportProtocol === 'ws';
@@ -386,6 +394,28 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
       }
     }
 
+    // AnyTLS
+    if (isAnytls) {
+      if (formData.anytlsSni?.trim()) {
+        submitData.anytlsSni = formData.anytlsSni.trim();
+      }
+      if (formData.anytlsAllowInsecure) {
+        submitData.anytlsAllowInsecure = formData.anytlsAllowInsecure;
+      }
+      if (formData.anytlsFingerprint?.trim()) {
+        submitData.anytlsFingerprint = formData.anytlsFingerprint.trim();
+      }
+      if (formData.anytlsIdleSessionCheckInterval?.trim()) {
+        submitData.anytlsIdleSessionCheckInterval = formData.anytlsIdleSessionCheckInterval.trim();
+      }
+      if (formData.anytlsIdleSessionTimeout?.trim()) {
+        submitData.anytlsIdleSessionTimeout = formData.anytlsIdleSessionTimeout.trim();
+      }
+      if (formData.anytlsMinIdleSession !== undefined) {
+        submitData.anytlsMinIdleSession = formData.anytlsMinIdleSession;
+      }
+    }
+
     // Common optional fields
     if (formData.region?.trim()) {
       submitData.region = formData.region.trim();
@@ -422,7 +452,7 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
     }
 
     return extendedSubmitData;
-  }, [formData, pluginOptsString, isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, showWsFields, showGrpcFields, showVlessWsFields, showVlessGrpcFields, showVlessRealityFields, showVmessWsFields, showVmessGrpcFields]);
+  }, [formData, pluginOptsString, isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, isAnytls, showWsFields, showGrpcFields, showVlessWsFields, showVlessGrpcFields, showVlessRealityFields, showVmessWsFields, showVmessGrpcFields]);
 
   // Form validity check
   const isFormValid = Boolean(
@@ -440,8 +470,9 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
     if (isVmess) return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
     if (isHysteria2) return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
     if (isTuic) return Boolean(formData.tuicSni || formData.tuicAlpn);
+    if (isAnytls) return Boolean(formData.anytlsSni || formData.anytlsFingerprint);
     return false;
-  }, [formData, pluginOptsString, isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic]);
+  }, [formData, pluginOptsString, isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, isAnytls]);
 
   const hasProtocolSettings = getHasProtocolSettings();
 
@@ -466,6 +497,7 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
     isVmess,
     isHysteria2,
     isTuic,
+    isAnytls,
 
     // Transport visibility flags
     showWsFields,

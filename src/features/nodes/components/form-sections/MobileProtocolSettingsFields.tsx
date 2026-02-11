@@ -60,6 +60,7 @@ export const MobileProtocolSettingsFields: React.FC<MobileProtocolSettingsFields
   const isVmess = protocol === 'vmess';
   const isHysteria2 = protocol === 'hysteria2';
   const isTuic = protocol === 'tuic';
+  const isAnytls = protocol === 'anytls';
 
   const tlsSecurityOptions: MobileSelectOption[] = useMemo(() => [
     { value: 'false', label: t('admin.nodes.form.verifyCert') },
@@ -483,6 +484,73 @@ export const MobileProtocolSettingsFields: React.FC<MobileProtocolSettingsFields
                 ]}
               />
             </div>
+          </div>
+        </>
+      )}
+
+      {/* AnyTLS Protocol Settings */}
+      {isAnytls && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} />
+              <MobileFormInput
+                placeholder="example.com"
+                value={(formData.anytlsSni as string) || ''}
+                onChange={(value) => onFieldChange('anytlsSni', value)}
+                className="font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <FormFieldLabel label={t('admin.nodes.form.tlsVerify')} />
+              <MobileSelect
+                value={formData.anytlsAllowInsecure ? 'true' : 'false'}
+                onChange={(value) => onFieldChange('anytlsAllowInsecure', value === 'true')}
+                options={tlsSecurityOptions}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <FormFieldLabel label={t('admin.nodes.form.anytls.fingerprint')} hint={t('admin.nodes.form.anytls.fingerprintHint')} />
+            <MobileSelect
+              value={(formData.anytlsFingerprint as string) || '__none__'}
+              onChange={(value) => onFieldChange('anytlsFingerprint', value === '__none__' ? '' : value)}
+              options={fingerprintOptions}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <FormFieldLabel label={t('admin.nodes.form.anytls.idleCheckInterval')} />
+              <MobileFormInput
+                placeholder="30s"
+                value={(formData.anytlsIdleSessionCheckInterval as string) || ''}
+                onChange={(value) => onFieldChange('anytlsIdleSessionCheckInterval', value)}
+                className="font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <FormFieldLabel label={t('admin.nodes.form.anytls.idleTimeout')} />
+              <MobileFormInput
+                placeholder="30s"
+                value={(formData.anytlsIdleSessionTimeout as string) || ''}
+                onChange={(value) => onFieldChange('anytlsIdleSessionTimeout', value)}
+                className="font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <FormFieldLabel label={t('admin.nodes.form.anytls.minIdleSession')} hint={t('admin.nodes.form.anytls.minIdleSessionHint')} />
+            <MobileFormInput
+              type="number"
+              inputMode="numeric"
+              placeholder="0"
+              value={formData.anytlsMinIdleSession !== undefined ? String(formData.anytlsMinIdleSession) : ''}
+              onChange={(value) => onFieldChange('anytlsMinIdleSession', value ? parseInt(value, 10) : undefined)}
+              className="font-mono"
+            />
           </div>
         </>
       )}

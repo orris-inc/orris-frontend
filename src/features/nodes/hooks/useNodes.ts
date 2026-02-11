@@ -54,6 +54,8 @@ export interface NodeFiltersExtended {
   status?: NodeStatus;
   protocol?: Node['protocol'];
   isOnline?: boolean;
+  /** Local text search (name, address, region, tags) */
+  search?: string;
 }
 
 interface UseNodesOptions {
@@ -382,11 +384,17 @@ export const useNodesPage = () => {
 
   // Check if any extended filters are active
   const hasFilters = Boolean(
-    extendedFilters.status || extendedFilters.protocol || extendedFilters.isOnline !== undefined
+    extendedFilters.status || extendedFilters.protocol || extendedFilters.isOnline !== undefined || extendedFilters.search
   );
 
   // Apply local filtering for extended filters
   const filteredNodes = nodesQuery.nodes.filter((node) => {
+    // Text search (name, address, region, tags)
+    if (extendedFilters.search) {
+      const q = extendedFilters.search.toLowerCase();
+      const searchable = [node.name, node.serverAddress, node.region, node.id, ...(node.tags || [])].filter(Boolean).join(' ').toLowerCase();
+      if (!searchable.includes(q)) return false;
+    }
     // Status filter
     if (extendedFilters.status && node.status !== extendedFilters.status) {
       return false;

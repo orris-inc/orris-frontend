@@ -130,6 +130,18 @@ interface RecentItem {
   timestamp: number;
 }
 
+// Runtime type guard for localStorage data integrity
+function isValidRecentItem(item: unknown): item is RecentItem {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    typeof (item as Record<string, unknown>).id === 'string' &&
+    ((item as Record<string, unknown>).type === 'navigation' ||
+      (item as Record<string, unknown>).type === 'action') &&
+    typeof (item as Record<string, unknown>).timestamp === 'number'
+  );
+}
+
 /**
  * Manages recent items in localStorage
  */
@@ -137,7 +149,10 @@ function useRecentItems() {
   const [recentItems, setRecentItems] = useState<RecentItem[]>(() => {
     try {
       const stored = localStorage.getItem(RECENT_ITEMS_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(isValidRecentItem);
     } catch {
       return [];
     }

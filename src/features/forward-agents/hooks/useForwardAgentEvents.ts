@@ -20,6 +20,13 @@ function isBatchAgentStatusEvent(event: AgentSSEEvent): event is ForwardAgentBat
   return event.type === 'agents:status' && 'agents' in event;
 }
 
+// Validate SSE event timestamp is within a reasonable range (not in future beyond 1 min, not before 2020)
+const MIN_TIMESTAMP = 1577836800; // 2020-01-01
+function isValidTimestamp(ts: number): boolean {
+  const nowSec = Math.floor(Date.now() / 1000);
+  return Number.isFinite(ts) && ts >= MIN_TIMESTAMP && ts <= nowSec + 60;
+}
+
 interface UseForwardAgentEventsOptions {
   /** Specific agent IDs to subscribe to (omit for all agents) */
   agentIds?: string[];
@@ -111,6 +118,11 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
     (event: ForwardAgentEvent) => {
       const qc = queryClientRef.current;
 
+      // Skip events with invalid timestamps to prevent cache corruption
+      if ('timestamp' in event && !isValidTimestamp(event.timestamp)) {
+        return;
+      }
+
       switch (event.type) {
         case 'agent:online':
           updateAgentInCache(event.agentId, (agent) => ({
@@ -192,9 +204,7 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
       {
         onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: (error) => {
-          console.error('Forward agent SSE connection error:', error);
-        },
+        onError: () => {},
       }
     );
 
@@ -344,9 +354,7 @@ export function useForwardAgentDetailEvents(options: UseForwardAgentDetailEvents
       {
         onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: (error) => {
-          console.error('Forward agent detail SSE connection error:', error);
-        },
+        onError: () => {},
       }
     );
 

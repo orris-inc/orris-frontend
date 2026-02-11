@@ -1,13 +1,12 @@
 /**
- * Subscription Filters Component
- * Unified filtering toolbar following Tailwind Application UI patterns
+ * Subscription Filters Component (Redesigned)
  *
- * Features:
- * - Status filter (Select - 8 options)
- * - Plan selection
- * - Billing cycle filter
- * - Expiration date filter (upcoming expiry)
- * - Sort options
+ * Layout:
+ *   Row 1: [Status segmented tabs] — primary filter, visually prominent
+ *   Row 2: [Plan ▼] [Billing Cycle ▼] [Expiry ▼] [Sort ▼ ↕] [× Clear]
+ *
+ * Status tabs follow the segmented control pattern from PlanFilters.
+ * Secondary filters are compact selects in a subordinate row.
  */
 
 import { useMemo } from 'react';
@@ -36,16 +35,17 @@ export interface SubscriptionFiltersProps {
   className?: string;
 }
 
-// Status options (8 statuses)
-const STATUS_OPTIONS: { value: SubscriptionStatus; label: string }[] = [
-  { value: 'active', label: 'common.status.enabled' },
-  { value: 'trialing', label: 'subscriptionStatus.trialing' },
-  { value: 'pending_payment', label: 'subscriptionStatus.pendingPayment' },
-  { value: 'past_due', label: 'subscriptionStatus.pastDue' },
-  { value: 'suspended', label: 'common.status.suspended' },
-  { value: 'cancelled', label: 'common.status.cancelled' },
-  { value: 'expired', label: 'common.status.expired' },
-  { value: 'inactive', label: 'common.status.disabled' },
+// Status tab items (primary filter)
+const STATUS_TABS: { value: SubscriptionStatus | 'all'; labelKey: string }[] = [
+  { value: 'all', labelKey: 'filter.all' },
+  { value: 'active', labelKey: 'common.status.enabled' },
+  { value: 'trialing', labelKey: 'subscriptionStatus.trialing' },
+  { value: 'suspended', labelKey: 'common.status.suspended' },
+  { value: 'cancelled', labelKey: 'subscriptionStatus.cancelled' },
+  { value: 'expired', labelKey: 'common.status.expired' },
+  { value: 'past_due', labelKey: 'subscriptionStatus.pastDue' },
+  { value: 'pending_payment', labelKey: 'subscriptionStatus.pendingPayment' },
+  { value: 'inactive', labelKey: 'common.status.disabled' },
 ];
 
 // Billing cycle options
@@ -89,21 +89,18 @@ export const SubscriptionFilters = ({
     pageSize: 100,
   });
 
-  // Check if any filter is active (excluding default status)
-  const hasFilters = useMemo(() => {
-    return !!(
-      (filters.status && filters.status !== 'active') ||
-      filters.planId ||
-      filters.billingCycle ||
-      filters.expiresBefore ||
-      filters.sortBy
-    );
-  }, [filters]);
+  // Check if any advanced filter is active (excluding status — handled by tabs)
+  const hasAdvancedFilters = useMemo(() => {
+    return !!(filters.planId || filters.billingCycle || filters.expiresBefore || filters.sortBy);
+  }, [filters.planId, filters.billingCycle, filters.expiresBefore, filters.sortBy]);
 
-  // Handle status change
-  const handleStatusChange = (value: string) => {
+  // Current status tab value
+  const currentStatus = filters.status ?? 'all';
+
+  // Handle status tab change
+  const handleStatusChange = (value: SubscriptionStatus | 'all') => {
     onFiltersChange({
-      status: value === 'all' ? undefined : (value as SubscriptionStatus),
+      status: value === 'all' ? undefined : value,
     });
   };
 
@@ -163,10 +160,9 @@ export const SubscriptionFilters = ({
     return preset?.value ?? 'all';
   }, [filters.expiresBefore]);
 
-  // Clear all filters (reset to default)
-  const clearFilters = () => {
+  // Clear all advanced filters (keep status tab)
+  const clearAdvancedFilters = () => {
     onFiltersChange({
-      status: 'active',
       planId: undefined,
       billingCycle: undefined,
       expiresBefore: undefined,
@@ -176,126 +172,135 @@ export const SubscriptionFilters = ({
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
-      {/* Status filter */}
-      <Select
-        value={filters.status ?? 'all'}
-        onValueChange={handleStatusChange}
-      >
-        <SelectTrigger className="w-[130px] h-9">
-          <SelectValue placeholder={t('common.status.label')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.all')}</SelectItem>
-          {STATUS_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {t(option.label)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className={cn('space-y-3', className)}>
+      {/* Row 1: Status segmented tabs */}
+      <div className="flex items-center overflow-x-auto scrollbar-none">
+        <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+          {STATUS_TABS.map((tab) => {
+            const isActive = currentStatus === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => handleStatusChange(tab.value)}
+                className={cn(
+                  'px-3 h-8 rounded-lg text-xs font-medium whitespace-nowrap transition-all',
+                  isActive
+                    ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {t(tab.labelKey)}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      {/* Plan filter */}
-      <Select
-        value={filters.planId ?? 'all'}
-        onValueChange={handlePlanChange}
-      >
-        <SelectTrigger className="w-[160px] h-9">
-          <SelectValue placeholder={t('filter.selectPlan')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.allPlans')}</SelectItem>
-          {!plansLoading &&
-            plans.map((plan) => (
-              <SelectItem key={plan.id} value={plan.id}>
-                {plan.name}
-              </SelectItem>
-            ))}
-        </SelectContent>
-      </Select>
-
-      {/* Billing cycle filter */}
-      <Select
-        value={filters.billingCycle ?? 'all'}
-        onValueChange={handleBillingCycleChange}
-      >
-        <SelectTrigger className="w-[140px] h-9">
-          <SelectValue placeholder={t('filter.billingCycle')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.allCycles')}</SelectItem>
-          {BILLING_CYCLES.map((cycle) => (
-            <SelectItem key={cycle} value={cycle}>
-              {t(`billingCycle.${cycle === 'semi_annual' ? 'semiAnnual' : cycle}`)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Expiry filter */}
-      <Select value={currentExpiryPreset} onValueChange={handleExpiryChange}>
-        <SelectTrigger className="w-[150px] h-9">
-          <SelectValue placeholder={t('filter.expiringSoon')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.allExpiry')}</SelectItem>
-          {EXPIRY_PRESETS.map((preset) => (
-            <SelectItem key={preset.value} value={preset.value}>
-              {t(preset.label)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Sort */}
-      <div className="flex items-center gap-1">
-        <Select value={filters.sortBy ?? 'none'} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[140px] h-9">
-            <SelectValue placeholder={t('filter.sortBy')} />
+      {/* Row 2: Secondary filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Plan filter */}
+        <Select
+          value={filters.planId ?? 'all'}
+          onValueChange={handlePlanChange}
+        >
+          <SelectTrigger className="w-[150px] h-8 text-xs">
+            <SelectValue placeholder={t('filter.selectPlan')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">{t('filter.defaultSort')}</SelectItem>
-            {SORT_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {t(option.label)}
+            <SelectItem value="all">{t('filter.allPlans')}</SelectItem>
+            {!plansLoading &&
+              plans.map((plan) => (
+                <SelectItem key={plan.id} value={plan.id}>
+                  {plan.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+
+        {/* Billing cycle filter */}
+        <Select
+          value={filters.billingCycle ?? 'all'}
+          onValueChange={handleBillingCycleChange}
+        >
+          <SelectTrigger className="w-[130px] h-8 text-xs">
+            <SelectValue placeholder={t('filter.billingCycle')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('filter.allCycles')}</SelectItem>
+            {BILLING_CYCLES.map((cycle) => (
+              <SelectItem key={cycle} value={cycle}>
+                {t(`billingCycle.${cycle === 'semi_annual' ? 'semiAnnual' : cycle}`)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {filters.sortBy && (
+
+        {/* Expiry filter */}
+        <Select value={currentExpiryPreset} onValueChange={handleExpiryChange}>
+          <SelectTrigger className="w-[140px] h-8 text-xs">
+            <SelectValue placeholder={t('filter.expiringSoon')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('filter.allExpiry')}</SelectItem>
+            {EXPIRY_PRESETS.map((preset) => (
+              <SelectItem key={preset.value} value={preset.value}>
+                {t(preset.label)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Sort */}
+        <div className="flex items-center gap-1">
+          <Select value={filters.sortBy ?? 'none'} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-[130px] h-8 text-xs">
+              <SelectValue placeholder={t('filter.sortBy')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t('filter.defaultSort')}</SelectItem>
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {t(option.label)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {filters.sortBy && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 shrink-0"
+              onClick={toggleSortOrder}
+              title={t(
+                filters.sortOrder === 'asc'
+                  ? 'filter.sortAscending'
+                  : 'filter.sortDescending'
+              )}
+            >
+              <ArrowUpDown
+                className={cn(
+                  'size-3.5',
+                  filters.sortOrder === 'asc' && 'rotate-180'
+                )}
+              />
+            </Button>
+          )}
+        </div>
+
+        {/* Clear advanced filters button */}
+        {hasAdvancedFilters && (
           <Button
             variant="ghost"
-            size="icon"
-            className="size-9 shrink-0"
-            onClick={toggleSortOrder}
-            title={t(
-              filters.sortOrder === 'asc'
-                ? 'filter.sortAscending'
-                : 'filter.sortDescending'
-            )}
+            size="sm"
+            onClick={clearAdvancedFilters}
+            className="text-muted-foreground h-8 text-xs"
           >
-            <ArrowUpDown
-              className={cn(
-                'size-4',
-                filters.sortOrder === 'asc' && 'rotate-180'
-              )}
-            />
+            <X className="size-3.5 mr-1" />
+            {t('filter.clearAdvanced')}
           </Button>
         )}
       </div>
-
-      {/* Clear filters button */}
-      {hasFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearFilters}
-          className="text-muted-foreground h-9"
-        >
-          <X className="size-4 mr-1" />
-          {t('filter.clearAdvanced')}
-        </Button>
-      )}
     </div>
   );
 };

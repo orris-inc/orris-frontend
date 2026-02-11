@@ -645,7 +645,20 @@
       "totalTraffic": "总流量",
       "activeUsers": "活跃用户",
       "activeSubscriptions": "活跃订阅",
-      "totalForwardRules": "转发规则"
+      "totalForwardRules": "转发规则",
+      "newToday": "+{{count}} 今日",
+      "newThisWeek": "+{{count}} 本周",
+      "expiringIn7d": "{{count}} 即将到期",
+      "agents": "{{online}}/{{total}} 代理在线",
+      "todayUpload": "今日上传",
+      "todayDownload": "今日下载",
+      "todayTotal": "今日总量",
+      "expired": "{{count}} 已过期",
+      "suspended": "{{count}} 已暂停",
+      "pendingPayment": "{{count}} 待付款",
+      "trafficUpload": "上传",
+      "trafficDownload": "下载",
+      "trafficTotal": "总计"
     },
     "quickAccess": {
       "title": "快速访问",
@@ -680,6 +693,7 @@
       "trend": "流量趋势",
       "trendDesc": "上传与下载流量统计",
       "total": "总计",
+      "selectedPeriod": "所选周期",
       "ranking": "流量排行榜",
       "userRanking": "用户排行",
       "subscriptionRanking": "订阅排行",
@@ -903,7 +917,8 @@
           "vless": "轻量协议",
           "vmess": "V2Ray 协议",
           "hysteria2": "基于 QUIC",
-          "tuic": "UDP 优化"
+          "tuic": "UDP 优化",
+          "anytls": "TLS 多路复用"
         },
         "encryptionMethod": "加密方式",
         "transportProtocol": "传输协议",
@@ -958,6 +973,16 @@
         "disableSniHint": "是否禁用 SNI",
         "notDisabled": "未禁用",
         "disableSniOption": "禁用 SNI",
+        "anytls": {
+          "fingerprint": "TLS 指纹",
+          "fingerprintHint": "TLS 客户端指纹（如 chrome、firefox）",
+          "idleCheckInterval": "空闲检查间隔",
+          "idleCheckIntervalHint": "Go 时间格式，如 30s",
+          "idleTimeout": "空闲超时",
+          "idleTimeoutHint": "Go 时间格式，如 30s",
+          "minIdleSession": "最小空闲会话数",
+          "minIdleSessionHint": "最小空闲会话数量"
+        },
         "region": "地区",
         "regionPlaceholder": "例如：香港",
         "regionHint": "节点的地理位置",
@@ -2009,7 +2034,8 @@
       "confirmDeleteTitle": "确认删除",
       "total": "总数",
       "found": "找到",
-      "results": "条结果"
+      "results": "条结果",
+      "expiringSoon": "即将到期"
     },
     "plans": {
       "title": "套餐管理",
@@ -2105,7 +2131,15 @@
         "duplicate": "复制",
         "viewSubscriptions": "查看订阅"
       },
-      "emptyState": "暂无订阅计划"
+      "emptyState": "暂无订阅计划",
+      "catalog": {
+        "gridView": "网格视图",
+        "tableView": "表格视图",
+        "traffic": "流量",
+        "devices": "设备",
+        "speed": "速度",
+        "connections": "连接"
+      }
     },
     "resourceGroups": {
       "title": "资源组",
@@ -2790,6 +2824,7 @@
     "pendingPayment": "待支付",
     "trialing": "试用中",
     "pastDue": "逾期",
+    "cancelled": "已取消",
     "notExpired": "未过期"
   },
   "messages": {

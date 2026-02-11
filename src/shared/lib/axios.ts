@@ -79,10 +79,26 @@ let lastRefreshTime = 0;
 const REFRESH_COOLDOWN = 5000; // Do not repeat refresh within 5 seconds
 
 /**
+ * Read a cookie value by name from document.cookie.
+ */
+function getCookie(name: string): string | undefined {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
+/**
  * Request interceptor
+ * Attaches CSRF token header for mutating requests (POST, PUT, DELETE, PATCH).
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const method = config.method?.toUpperCase();
+    if (method && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      const csrfToken = getCookie('csrf_token');
+      if (csrfToken) {
+        config.headers.set('X-CSRF-Token', csrfToken);
+      }
+    }
     return config;
   },
   (error) => {
@@ -102,6 +118,23 @@ export const rawApiClient = axios.create({
   timeout: 30000,
   withCredentials: true,
 });
+
+// Attach CSRF token header for rawApiClient as well
+rawApiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const method = config.method?.toUpperCase();
+    if (method && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+      const csrfToken = getCookie('csrf_token');
+      if (csrfToken) {
+        config.headers.set('X-CSRF-Token', csrfToken);
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 /**
  * Refresh Access Token

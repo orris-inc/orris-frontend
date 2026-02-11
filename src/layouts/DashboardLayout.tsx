@@ -352,11 +352,19 @@ function NotificationDetail({ announcement, onBack }: NotificationDetailProps) {
   const [sanitizedHtml, setSanitizedHtml] = useState('');
 
   useEffect(() => {
-    if (announcement.contentHtml) {
-      getDOMPurify().then((purify) => {
-        setSanitizedHtml(purify.sanitize(announcement.contentHtml!));
-      });
+    if (!announcement.contentHtml) {
+      setSanitizedHtml('');
+      return;
     }
+
+    let isMounted = true;
+    getDOMPurify().then((purify) => {
+      if (isMounted) {
+        setSanitizedHtml(purify.sanitize(announcement.contentHtml!));
+      }
+    });
+
+    return () => { isMounted = false; };
   }, [announcement.contentHtml]);
 
   return (

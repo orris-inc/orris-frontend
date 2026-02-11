@@ -19,14 +19,27 @@ import { openOAuthPopup, type OAuthProvider } from '../utils/oauth-popup';
  * Validate if redirect URL is safe (only allow relative paths)
  */
 const isSafeRedirectUrl = (url: string): boolean => {
+  // Decode first to catch encoded bypass attempts like %2F%2Fevil.com
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(url);
+  } catch {
+    return false;
+  }
+
   // Only allow relative paths to prevent open redirect vulnerabilities
   // Check if it starts with /, but not // or contains a protocol
-  if (!url.startsWith('/') || url.startsWith('//')) {
+  if (!decoded.startsWith('/') || decoded.startsWith('//')) {
+    return false;
+  }
+
+  // Reject absolute URLs hidden via encoding
+  if (decoded.includes('://')) {
     return false;
   }
 
   // Prevent javascript:, data:, vbscript:, etc. protocols
-  const lowerUrl = url.toLowerCase();
+  const lowerUrl = decoded.toLowerCase();
   const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
   if (dangerousProtocols.some(protocol => lowerUrl.includes(protocol))) {
     return false;

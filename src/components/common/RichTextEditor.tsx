@@ -21,6 +21,7 @@ import {
   Redo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isSafeExternalUrl } from '@/shared/utils/url-utils';
 
 // ============================================================================
 // Types
@@ -90,6 +91,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ editor, disabled }) => {
 
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+
+    // Validate URL protocol to prevent javascript: and data: XSS
+    const isRelative = url.startsWith('/') || url.startsWith('#');
+    if (!isRelative && !isSafeExternalUrl(url)) {
       return;
     }
 

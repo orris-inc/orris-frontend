@@ -89,6 +89,7 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = 
   vmess: { label: 'VMess', color: 'bg-warning/10 text-warning' },
   hysteria2: { label: 'Hysteria2', color: 'bg-info/10 text-info' },
   tuic: { label: 'TUIC', color: 'bg-warning/10 text-warning' },
+  anytls: { label: 'AnyTLS', color: 'bg-primary/10 text-primary' },
 };
 
 // ============================================================================

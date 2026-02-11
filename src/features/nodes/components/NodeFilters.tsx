@@ -1,11 +1,11 @@
 /**
  * Node Filters Component
- * Desktop filtering toolbar for node management
- * Design pattern follows PlanFilters component
+ * Search-first desktop toolbar: search input + status/protocol/online dropdowns + toggles + action slot
  */
 
+import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -36,6 +36,8 @@ export interface NodeFiltersProps {
   onDragSortEnabledChange: (enabled: boolean) => void;
   /** Disable drag sort toggle (e.g., during reordering) */
   dragSortDisabled?: boolean;
+  /** Action slot rendered at the right end (e.g. create + refresh buttons) */
+  action?: ReactNode;
   className?: string;
 }
 
@@ -63,25 +65,27 @@ export const NodeFilters = ({
   dragSortEnabled,
   onDragSortEnabledChange,
   dragSortDisabled,
+  action,
   className,
 }: NodeFiltersProps) => {
   const { t } = useTranslation();
 
-  // Handle status change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onFiltersChange({ search: e.target.value || undefined });
+  };
+
   const handleStatusChange = (value: string) => {
     onFiltersChange({
       status: value === 'all' ? undefined : (value as NodeStatus),
     });
   };
 
-  // Handle protocol change
   const handleProtocolChange = (value: string) => {
     onFiltersChange({
       protocol: value === 'all' ? undefined : (value as NodeProtocol),
     });
   };
 
-  // Handle online status change
   const handleOnlineStatusChange = (value: string) => {
     if (value === 'all') {
       onFiltersChange({ isOnline: undefined });
@@ -90,7 +94,6 @@ export const NodeFilters = ({
     }
   };
 
-  // Get current online status value for select
   const onlineStatusValue = filters.isOnline === undefined
     ? 'all'
     : filters.isOnline
@@ -99,6 +102,18 @@ export const NodeFilters = ({
 
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
+      {/* Search input */}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={filters.search ?? ''}
+          onChange={handleSearchChange}
+          placeholder={t('admin.nodes.searchPlaceholder')}
+          className="h-9 w-[240px] rounded-lg ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        />
+      </div>
+
       {/* Status filter */}
       <Select
         value={filters.status ?? 'all'}
@@ -170,7 +185,7 @@ export const NodeFilters = ({
         <span className="text-muted-foreground">{t('common.table.sort')}</span>
       </label>
 
-      {/* Clear filters button */}
+      {/* Clear filters */}
       {hasFilters && (
         <Button
           variant="ghost"
@@ -181,6 +196,13 @@ export const NodeFilters = ({
           <X className="size-4 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
+      )}
+
+      {/* Right-aligned action slot */}
+      {action && (
+        <div className="ml-auto flex items-center gap-2">
+          {action}
+        </div>
       )}
     </div>
   );

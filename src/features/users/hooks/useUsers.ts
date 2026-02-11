@@ -39,10 +39,11 @@ export const useUsers = (options: UseUsersOptions = {}) => {
   const queryClient = useQueryClient();
   const { showSuccess, showError } = useNotificationStore();
 
-  // Build query params
+  // Build query params — pass search as email partial match
   const params: ListUsersParams = {
     page,
     pageSize,
+    email: filters.search || undefined,
     status: filters.status as ListUsersParams['status'],
     role: filters.role as ListUsersParams['role'],
   };
@@ -166,7 +167,7 @@ export const useUsersPage = () => {
   const usersQuery = useUsers({ page, pageSize, filters });
 
   // Check if any filters are active
-  const hasFilters = Boolean(filters.status || filters.role);
+  const hasFilters = Boolean(filters.status || filters.role || filters.search);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);

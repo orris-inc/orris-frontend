@@ -11,17 +11,13 @@ import {
   Plus,
   RefreshCw,
   ArrowUpCircle,
-  CheckCircle2,
-  Activity,
   Radio,
   Search,
   FilterX,
-  XCircle,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
+import { PageHeader, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { TokenDialog } from '@/components/common/TokenDialog';
@@ -142,13 +138,11 @@ export function ForwardAgentsPage() {
     return map;
   }, [resourceGroups]);
 
-  // Calculate statistics
+  // Calculate stats for conditional action buttons
   const stats = useMemo(() => {
-    const enabled = forwardAgents.filter((a) => a.status === 'enabled').length;
-    const disabled = forwardAgents.filter((a) => a.status === 'disabled').length;
     const online = forwardAgents.filter((a) => a.systemStatus).length;
     const updatable = forwardAgents.filter((a) => a.hasUpdate && a.status === 'enabled' && a.systemStatus).length;
-    return { total: pagination.total, enabled, disabled, online, updatable };
+    return { total: pagination.total, online, updatable };
   }, [forwardAgents, pagination.total]);
 
   // Page header badge
@@ -159,24 +153,6 @@ export function ForwardAgentsPage() {
     }),
     [stats.total, t]
   );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
-      { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-    ];
-
-    if (stats.disabled > 0) {
-      items.push({ icon: XCircle, text: `${stats.disabled} ${t('common.status.disabled')}` });
-    }
-
-    if (stats.updatable > 0) {
-      items.push({ icon: ArrowUpCircle, text: `${stats.updatable} ${t('admin.forwardAgents.updatable')}` });
-    }
-
-    return items;
-  }, [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, agent?: ForwardAgent) => {
@@ -547,46 +523,29 @@ export function ForwardAgentsPage() {
   return (
     <AdminLayout>
       <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Page Header */}
+        {/* Simplified Page Header */}
         <PageHeader
           title={t('admin.forwardAgents.title')}
           icon={Cpu}
           badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 size-4" />
-                {t('common.actions.create')}
-              </Button>
-              {stats.online > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
-                  <Radio className="mr-2 size-4" />
-                  {t('admin.forwardAgents.actions.broadcast')}
-                </Button>
-              )}
-              {stats.updatable > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
-                  <ArrowUpCircle className="mr-2 size-4" />
-                  {t('admin.forwardAgents.actions.update')}
-                </Button>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-              </Tooltip>
-            </div>
-          }
         />
 
-        {/* Filters */}
+        {/* Search-first Filter Bar with Actions */}
         <div className="flex flex-wrap items-center gap-3">
+          {/* Search input */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={filters.name || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder={t('admin.forwardAgents.filters.searchAgent')}
+              className="h-9 w-[220px] rounded-lg ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+
           <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-[120px] h-9">
               <SelectValue placeholder={t('common.status.label')} />
             </SelectTrigger>
             <SelectContent>
@@ -596,18 +555,8 @@ export function ForwardAgentsPage() {
             </SelectContent>
           </Select>
 
-          <div className="relative w-[200px]">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder={t('admin.forwardAgents.filters.searchAgent')}
-              value={filters.name || ''}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
           <Select value={getSortValue()} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-9">
               <SelectValue placeholder={t('common.table.sort')} />
             </SelectTrigger>
             <SelectContent>
@@ -620,7 +569,7 @@ export function ForwardAgentsPage() {
 
           <div className="h-6 w-px bg-border" />
 
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
             <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
               <SwitchThumb />
             </Switch>
@@ -628,11 +577,39 @@ export function ForwardAgentsPage() {
           </label>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleResetFilters}>
-              <FilterX className="mr-2 size-4" />
+            <Button variant="ghost" size="sm" onClick={handleResetFilters} className="text-muted-foreground h-9">
+              <FilterX className="size-4 mr-1" />
               {t('admin.forwardAgents.filters.resetFilters')}
             </Button>
           )}
+
+          {/* Right-aligned action buttons */}
+          <div className="ml-auto flex items-center gap-2">
+            <Button onClick={handleCreate} size="sm">
+              <Plus className="mr-1.5 size-4" />
+              {t('common.actions.create')}
+            </Button>
+            {stats.online > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
+                <Radio className="mr-1.5 size-4" />
+                {t('admin.forwardAgents.actions.broadcast')}
+              </Button>
+            )}
+            {stats.updatable > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
+                <ArrowUpCircle className="mr-1.5 size-4" />
+                {t('admin.forwardAgents.actions.update')}
+              </Button>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Agent Table */}

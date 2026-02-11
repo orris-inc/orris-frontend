@@ -29,6 +29,7 @@ const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
   vmess: 'VMess',
   hysteria2: 'Hysteria2',
   tuic: 'TUIC',
+  anytls: 'AnyTLS',
 };
 
 interface EditUserNodeDialogProps {

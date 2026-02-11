@@ -46,10 +46,22 @@ interface UsePasskeyReturn extends PasskeyState {
  * Validate if redirect URL is safe (only allow relative paths)
  */
 const isSafeRedirectUrl = (url: string): boolean => {
-  if (!url.startsWith('/') || url.startsWith('//')) {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(url);
+  } catch {
     return false;
   }
-  const lowerUrl = url.toLowerCase();
+
+  if (!decoded.startsWith('/') || decoded.startsWith('//')) {
+    return false;
+  }
+
+  if (decoded.includes('://')) {
+    return false;
+  }
+
+  const lowerUrl = decoded.toLowerCase();
   const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
   if (dangerousProtocols.some((protocol) => lowerUrl.includes(protocol))) {
     return false;

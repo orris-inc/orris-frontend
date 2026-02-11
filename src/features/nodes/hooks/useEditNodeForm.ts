@@ -92,6 +92,13 @@ export function useEditNodeForm() {
       tuicSni: node.tuicSni,
       tuicAllowInsecure: node.tuicAllowInsecure,
       tuicDisableSni: node.tuicDisableSni,
+      // AnyTLS fields
+      anytlsSni: node.anytlsSni,
+      anytlsAllowInsecure: node.anytlsAllowInsecure,
+      anytlsFingerprint: node.anytlsFingerprint,
+      anytlsIdleSessionCheckInterval: node.anytlsIdleSessionCheckInterval,
+      anytlsIdleSessionTimeout: node.anytlsIdleSessionTimeout,
+      anytlsMinIdleSession: node.anytlsMinIdleSession,
       // Expiration fields
       expiresAt: node.expiresAt,
       costLabel: node.costLabel,
@@ -158,6 +165,7 @@ export function useEditNodeForm() {
     const isVmess = node.protocol === 'vmess';
     const isHysteria2 = node.protocol === 'hysteria2';
     const isTuic = node.protocol === 'tuic';
+    const isAnytls = node.protocol === 'anytls';
 
     // Name
     if (formData.name !== undefined && hasStringChanged(formData.name, node.name)) {
@@ -362,6 +370,28 @@ export function useEditNodeForm() {
       }
     }
 
+    // AnyTLS related fields
+    if (isAnytls) {
+      if (hasStringChanged(formData.anytlsSni, node.anytlsSni)) {
+        updates.anytlsSni = formData.anytlsSni?.trim() || undefined;
+      }
+      if (formData.anytlsAllowInsecure !== node.anytlsAllowInsecure) {
+        updates.anytlsAllowInsecure = formData.anytlsAllowInsecure;
+      }
+      if (hasStringChanged(formData.anytlsFingerprint, node.anytlsFingerprint)) {
+        updates.anytlsFingerprint = formData.anytlsFingerprint?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.anytlsIdleSessionCheckInterval, node.anytlsIdleSessionCheckInterval)) {
+        updates.anytlsIdleSessionCheckInterval = formData.anytlsIdleSessionCheckInterval?.trim() || undefined;
+      }
+      if (hasStringChanged(formData.anytlsIdleSessionTimeout, node.anytlsIdleSessionTimeout)) {
+        updates.anytlsIdleSessionTimeout = formData.anytlsIdleSessionTimeout?.trim() || undefined;
+      }
+      if (formData.anytlsMinIdleSession !== node.anytlsMinIdleSession) {
+        updates.anytlsMinIdleSession = formData.anytlsMinIdleSession;
+      }
+    }
+
     // Resource group association
     const originalGroupSids = node.groupSids ?? [];
     const newGroupSids = formData.groupSids ?? [];
@@ -433,6 +463,7 @@ export function useEditNodeForm() {
     if (protocol === 'vmess') return Boolean(formData.vmessSni || formData.vmessHost || formData.vmessPath);
     if (protocol === 'hysteria2') return Boolean(formData.hysteria2Sni || formData.hysteria2Obfs || formData.hysteria2UpMbps);
     if (protocol === 'tuic') return Boolean(formData.tuicSni || formData.tuicAlpn);
+    if (protocol === 'anytls') return Boolean(formData.anytlsSni || formData.anytlsFingerprint);
     return false;
   }, [formData, pluginOptsStr]);
 

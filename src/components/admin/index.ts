@@ -76,7 +76,6 @@ export {
   type DatePresetKey,
 } from './DateRangeFilter';
 export { NodeTrafficStats, getStatusColors } from './NodeTrafficStats';
-export { TrafficOverviewCards } from './TrafficOverviewCards';
 export { TrafficTrendChart } from './TrafficTrendChart';
 export { TrafficRankingList, getRankingColors } from './TrafficRankingList';
 export { ExtendedMetricsPanel, type ExtendedMetricsData } from './ExtendedMetricsPanel';
@@ -93,3 +92,4 @@ export { useTableRowId } from './table-hover-card-hooks';
 export { DateTimeCell } from './DateTimeCell';
 export { BulkActionBar, type BulkAction, type BulkActionBarProps } from './BulkActionBar';
 export { useBulkSelection, createExportAction, createDeleteAction, type UseBulkSelectionReturn } from './bulk-action-utils';
+export { DashboardOverviewStrip } from './DashboardOverviewStrip';

@@ -53,6 +53,7 @@ const PROTOCOL_LABELS: Record<NodeProtocol, string> = {
   vmess: 'VMess',
   hysteria2: 'Hy2',
   tuic: 'TUIC',
+  anytls: 'AnyTLS',
 };
 
 // ============================================================================

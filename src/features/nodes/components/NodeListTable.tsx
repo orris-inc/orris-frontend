@@ -27,7 +27,7 @@ import {
   Bell,
   BellOff,
 } from 'lucide-react';
-import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
+import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -128,7 +128,7 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
 };
 
 
-import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatDateTime, formatRelativeTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
   nodes,
@@ -559,7 +559,20 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       header: t('common.fields.createdAt'),
       size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
-      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
+      cell: ({ row }) => {
+        const value = row.original.createdAt;
+        if (!value) return <span className="text-muted-foreground/50 text-sm">-</span>;
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+                {formatRelativeTime(value)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{formatDateTime(value)}</TooltipContent>
+          </Tooltip>
+        );
+      },
     },
     {
       id: 'actions',

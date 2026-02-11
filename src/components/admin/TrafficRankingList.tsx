@@ -57,18 +57,11 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
   const isTopThree = item.rank <= 3;
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border transition-all duration-300',
-        'bg-card',
-        'hover:shadow-md',
-        colors.border
-      )}
-    >
+    <div className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3">
       {/* Rank Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-8 h-8 @md:min-w-10 @md:h-10 rounded-md @md:rounded-lg border transition-all',
+          'flex items-center justify-center min-w-7 h-7 @md:min-w-8 @md:h-8 rounded-md @md:rounded-lg border transition-all',
           colors.bg,
           colors.text,
           colors.border,
@@ -127,14 +120,14 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
  */
 const RankingListSkeleton = () => {
   return (
-    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] space-y-2 @md:space-y-3">
+    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border border-border bg-card"
+          className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3"
         >
           {/* Rank Badge Skeleton */}
-          <div className="min-w-10 h-10 bg-muted rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="min-w-7 h-7 @md:min-w-8 @md:h-8 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
           <div className="flex-1 space-y-2">
@@ -180,7 +173,7 @@ export const TrafficRankingList = ({
     <AdminCard variant="bordered" noPadding>
       <Tabs defaultValue="user" className="@container w-full">
         {/* Header with Title and Tabs */}
-        <div className="flex items-center justify-between px-4 @md:px-6 py-4 @md:py-0 @md:h-[72px] border-b border-border">
+        <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-3.5 border-b border-border">
           <h3 className="text-base @md:text-lg font-semibold text-foreground">
             {t('admin.traffic.ranking')}
           </h3>
@@ -198,7 +191,7 @@ export const TrafficRankingList = ({
             <EmptyState message={t('admin.traffic.noUserData')} />
           ) : (
             <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-              <div className="space-y-2 @md:space-y-3 pr-4">
+              <div className="divide-y divide-border pr-4">
                 {userRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}
@@ -215,7 +208,7 @@ export const TrafficRankingList = ({
             <EmptyState message={t('admin.traffic.noSubscriptionData')} />
           ) : (
             <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-              <div className="space-y-2 @md:space-y-3 pr-4">
+              <div className="divide-y divide-border pr-4">
                 {subscriptionRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}

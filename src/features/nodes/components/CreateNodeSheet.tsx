@@ -23,6 +23,7 @@ import {
   Layers,
   Gauge,
   Workflow,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   Sheet,
@@ -76,6 +77,7 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; descKey: string; ico
   vmess: { name: 'VMess', descKey: 'admin.nodes.form.protocolDesc.vmess', icon: Layers },
   hysteria2: { name: 'Hysteria2', descKey: 'admin.nodes.form.protocolDesc.hysteria2', icon: Gauge },
   tuic: { name: 'TUIC', descKey: 'admin.nodes.form.protocolDesc.tuic', icon: Workflow },
+  anytls: { name: 'AnyTLS', descKey: 'admin.nodes.form.protocolDesc.anytls', icon: ShieldCheck },
 };
 
 // TLS security options - need to be generated with translation at runtime
@@ -359,7 +361,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
 
   const {
     formData, errors, pluginOptsString,
-    isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic,
+    isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, isAnytls,
     showWsFields, showGrpcFields,
     showVlessWsFields, showVlessGrpcFields, showVlessRealityFields,
     showVmessWsFields, showVmessGrpcFields,
@@ -464,6 +466,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
                   <ProtocolCard protocol="vmess" selected={isVmess} onSelect={() => handleChange('protocol', 'vmess')} t={t} />
                   <ProtocolCard protocol="hysteria2" selected={isHysteria2} onSelect={() => handleChange('protocol', 'hysteria2')} t={t} />
                   <ProtocolCard protocol="tuic" selected={isTuic} onSelect={() => handleChange('protocol', 'tuic')} t={t} />
+                  <ProtocolCard protocol="anytls" selected={isAnytls} onSelect={() => handleChange('protocol', 'anytls')} t={t} />
                 </div>
               </div>
 
@@ -523,6 +526,8 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
               {isHysteria2 && (<><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} /><MobileFormInput placeholder="example.com" value={formData.hysteria2Sni || ''} onChange={(value) => handleChange('hysteria2Sni', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} /><MobileSelect value={formData.hysteria2AllowInsecure ? 'true' : 'false'} onChange={(value) => handleChange('hysteria2AllowInsecure', value === 'true')} options={getTlsSecurityOptions(t)} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.obfsType')} hint={t('admin.nodes.form.obfsTypeHint')} /><MobileFormInput placeholder="salamander" value={formData.hysteria2Obfs || ''} onChange={(value) => handleChange('hysteria2Obfs', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.obfsPassword')} /><MobileFormInput placeholder={t('common.placeholders.password')} value={formData.hysteria2ObfsPassword || ''} onChange={(value) => handleChange('hysteria2ObfsPassword', value)} className="font-mono" /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.upBandwidth')} /><MobileFormInput type="number" inputMode="numeric" placeholder="100" value={formData.hysteria2UpMbps !== undefined ? String(formData.hysteria2UpMbps) : ''} onChange={(value) => handleChange('hysteria2UpMbps', value ? parseInt(value, 10) : undefined)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.downBandwidth')} /><MobileFormInput type="number" inputMode="numeric" placeholder="100" value={formData.hysteria2DownMbps !== undefined ? String(formData.hysteria2DownMbps) : ''} onChange={(value) => handleChange('hysteria2DownMbps', value ? parseInt(value, 10) : undefined)} className="font-mono" /></div></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.fingerprintHint')} /><MobileSelect value={formData.hysteria2Fingerprint || '__none__'} onChange={(value) => handleChange('hysteria2Fingerprint', value === '__none__' ? '' : value)} options={[{ value: '__none__', label: t('common.none') }, ...TLS_FINGERPRINT_OPTIONS]} /></div></>)}
 
               {isTuic && (<><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} /><MobileFormInput placeholder="example.com" value={formData.tuicSni || ''} onChange={(value) => handleChange('tuicSni', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} /><MobileSelect value={formData.tuicAllowInsecure ? 'true' : 'false'} onChange={(value) => handleChange('tuicAllowInsecure', value === 'true')} options={getTlsSecurityOptions(t)} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.fields.alpn')} hint={t('admin.nodes.form.alpnHint')} /><MobileFormInput placeholder="h3" value={formData.tuicAlpn || ''} onChange={(value) => handleChange('tuicAlpn', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.disableSni')} /><MobileSelect value={formData.tuicDisableSni ? 'true' : 'false'} onChange={(value) => handleChange('tuicDisableSni', value === 'true')} options={[{ value: 'false', label: t('admin.nodes.form.notDisabled') }, { value: 'true', label: t('admin.nodes.form.disableSniOption') }]} /></div></div></>)}
+
+              {isAnytls && (<><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.fields.sni')} hint={t('admin.nodes.form.sniHint')} /><MobileFormInput placeholder="example.com" value={formData.anytlsSni || ''} onChange={(value) => handleChange('anytlsSni', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.tlsSecurity')} /><MobileSelect value={formData.anytlsAllowInsecure ? 'true' : 'false'} onChange={(value) => handleChange('anytlsAllowInsecure', value === 'true')} options={getTlsSecurityOptions(t)} /></div></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.anytls.fingerprint')} hint={t('admin.nodes.form.anytls.fingerprintHint')} /><MobileSelect value={formData.anytlsFingerprint || '__none__'} onChange={(value) => handleChange('anytlsFingerprint', value === '__none__' ? '' : value)} options={[{ value: '__none__', label: t('common.none') }, ...TLS_FINGERPRINT_OPTIONS]} /></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.anytls.idleCheckInterval')} /><MobileFormInput placeholder="30s" value={formData.anytlsIdleSessionCheckInterval || ''} onChange={(value) => handleChange('anytlsIdleSessionCheckInterval', value)} className="font-mono" /></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.anytls.idleTimeout')} /><MobileFormInput placeholder="30s" value={formData.anytlsIdleSessionTimeout || ''} onChange={(value) => handleChange('anytlsIdleSessionTimeout', value)} className="font-mono" /></div></div><div className="space-y-1.5"><FormFieldLabel label={t('admin.nodes.form.anytls.minIdleSession')} hint={t('admin.nodes.form.anytls.minIdleSessionHint')} /><MobileFormInput type="number" inputMode="numeric" placeholder="0" value={formData.anytlsMinIdleSession !== undefined ? String(formData.anytlsMinIdleSession) : ''} onChange={(value) => handleChange('anytlsMinIdleSession', value ? parseInt(value, 10) : undefined)} className="font-mono" /></div></>)}
             </div>
           </StepSection>
 

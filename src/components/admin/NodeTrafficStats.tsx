@@ -65,28 +65,21 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
   const colors = getStatusColors(item.status);
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border transition-all duration-300',
-        'bg-card',
-        'hover:shadow-md',
-        colors.border
-      )}
-    >
+    <div className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3">
       {/* Node Icon with Status */}
       <div
         className={cn(
-          'relative flex items-center justify-center min-w-8 h-8 @md:min-w-10 @md:h-10 rounded-md @md:rounded-lg border transition-all',
+          'relative flex items-center justify-center min-w-7 h-7 @md:min-w-8 @md:h-8 rounded-md @md:rounded-lg border transition-all',
           colors.bg,
           colors.text,
           colors.border
         )}
       >
-        <Server className="size-4 @md:size-5" strokeWidth={1.5} />
+        <Server className="size-3.5 @md:size-4" strokeWidth={1.5} />
         {/* Status dot */}
         <div
           className={cn(
-            'absolute -top-1 -right-1 size-2.5 @md:size-3 rounded-full border-2 border-card',
+            'absolute -top-0.5 -right-0.5 size-2 @md:size-2.5 rounded-full border-2 border-card',
             colors.dot
           )}
         />
@@ -137,14 +130,14 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
  */
 const NodeListSkeleton = () => {
   return (
-    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] space-y-2 @md:space-y-3">
+    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 @md:gap-4 p-3 @md:p-4 rounded-lg @md:rounded-xl border border-border bg-card"
+          className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3"
         >
           {/* Icon Skeleton */}
-          <div className="min-w-8 h-8 @md:min-w-10 @md:h-10 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="min-w-7 h-7 @md:min-w-8 @md:h-8 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
           <div className="flex-1 space-y-2">
@@ -234,7 +227,7 @@ export const NodeTrafficStats = ({
   return (
     <AdminCard variant="bordered" noPadding className="@container">
       {/* Header - height matches TrafficRankingList */}
-      <div className="flex items-center justify-between px-4 @md:px-6 h-[56px] @md:h-[72px] border-b border-border">
+      <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-3.5 border-b border-border">
         <h3 className="text-base @md:text-lg font-semibold text-foreground">
           {t('admin.traffic.nodeStats')}
         </h3>
@@ -248,7 +241,7 @@ export const NodeTrafficStats = ({
           <EmptyState message={t('admin.traffic.noNodeData')} />
         ) : (
           <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-            <div className="space-y-2 @md:space-y-3 pr-4">
+            <div className="divide-y divide-border pr-4">
               {items.map((item) => (
                 <NodeItem key={item.nodeId} item={item} />
               ))}

@@ -19,20 +19,17 @@ import { ArrowUp, ArrowDown, Activity } from 'lucide-react';
 import { AdminCard } from './AdminCard';
 import { Skeleton } from '@/components/common/Skeleton';
 import { TrafficTrendPoint, formatTrafficBytes } from '@/api/admin';
+import type { TrafficOverview } from '@/api/admin';
 import { cn } from '@/lib/utils';
-
-interface TrafficOverviewData {
-  totalUpload: number;
-  totalDownload: number;
-}
 
 interface TrafficTrendChartProps {
   data: TrafficTrendPoint[];
   granularity: 'hour' | 'day' | 'month';
   loading: boolean;
   headerAction?: React.ReactNode;
-  /** Overview data from API - used for accurate totals display */
-  overview?: TrafficOverviewData;
+  /** Period traffic overview — displayed as summary stats in header */
+  trafficOverview?: TrafficOverview | null;
+  trafficLoading?: boolean;
 }
 
 /**
@@ -94,53 +91,53 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
       'bg-card',
       'backdrop-blur-xl',
       'border border-border',
-      'rounded-xl shadow-xl',
-      'p-4 min-w-[200px]'
+      'rounded-xl shadow-lg',
+      'p-3 min-w-[170px]'
     )}>
       {/* Time label */}
-      <div className="flex items-center gap-2.5 mb-3 pb-3 border-b border-border">
-        <div className="p-1.5 rounded-lg bg-muted">
-          <Activity className="size-3.5 text-muted-foreground" />
+      <div className="flex items-center gap-2 mb-2.5 pb-2.5 border-b border-border">
+        <div className="p-1 rounded-lg bg-muted">
+          <Activity className="size-3 text-muted-foreground" />
         </div>
-        <span className="text-sm font-semibold text-foreground">
+        <span className="text-xs font-semibold text-foreground">
           {label}
         </span>
       </div>
 
       {/* Traffic data */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {/* Upload */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-            <span className="text-sm font-medium text-muted-foreground">{t('common.actions.upload')}</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="size-2.5 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
+            <span className="text-xs font-medium text-muted-foreground">{t('common.actions.upload')}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
-            <span className="text-sm font-bold text-foreground tabular-nums">
+          <div className="flex items-center gap-1">
+            <ArrowUp className="size-3 text-chart-upload" strokeWidth={2} />
+            <span className="text-xs font-bold text-foreground tabular-nums">
               {formatTrafficBytes(upload)}
             </span>
           </div>
         </div>
 
         {/* Download */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-            <span className="text-sm font-medium text-muted-foreground">{t('common.actions.download')}</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="size-2.5 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
+            <span className="text-xs font-medium text-muted-foreground">{t('common.actions.download')}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
-            <span className="text-sm font-bold text-foreground tabular-nums">
+          <div className="flex items-center gap-1">
+            <ArrowDown className="size-3 text-chart-download" strokeWidth={2} />
+            <span className="text-xs font-bold text-foreground tabular-nums">
               {formatTrafficBytes(download)}
             </span>
           </div>
         </div>
 
         {/* Total */}
-        <div className="flex items-center justify-between gap-4 pt-3 mt-1 border-t border-border">
-          <span className="text-sm font-semibold text-foreground">{t('admin.traffic.total')}</span>
-          <span className="text-base font-bold text-foreground tabular-nums">
+        <div className="flex items-center justify-between gap-3 pt-2.5 mt-0.5 border-t border-border">
+          <span className="text-xs font-semibold text-foreground">{t('admin.traffic.total')}</span>
+          <span className="text-sm font-bold text-foreground tabular-nums">
             {formatTrafficBytes(total)}
           </span>
         </div>
@@ -150,37 +147,9 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
 };
 
 /**
- * Legend component
- */
-const ChartLegend = ({ totalUpload, totalDownload, t }: { totalUpload: number; totalDownload: number; t: (key: string) => string }) => (
-  <div className="flex flex-wrap items-center justify-center gap-3 @sm:gap-6 mt-4 @sm:mt-5 pt-4 @sm:pt-5 border-t border-border">
-    <div className="flex items-center gap-2 @sm:gap-3 px-3 @sm:px-4 py-2 rounded-lg @sm:rounded-xl bg-chart-upload/10 ring-1 ring-chart-upload/20">
-      <div className="flex items-center gap-1.5 @sm:gap-2">
-        <div className="size-2.5 @sm:size-3 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-        <ArrowUp className="size-3.5 @sm:size-4 text-chart-upload" strokeWidth={2} />
-      </div>
-      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('common.actions.upload')}</span>
-      <span className="text-xs @sm:text-sm font-bold text-chart-upload tabular-nums">
-        {formatTrafficBytes(totalUpload)}
-      </span>
-    </div>
-    <div className="flex items-center gap-2 @sm:gap-3 px-3 @sm:px-4 py-2 rounded-lg @sm:rounded-xl bg-chart-download/10 ring-1 ring-chart-download/20">
-      <div className="flex items-center gap-1.5 @sm:gap-2">
-        <div className="size-2.5 @sm:size-3 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-        <ArrowDown className="size-3.5 @sm:size-4 text-chart-download" strokeWidth={2} />
-      </div>
-      <span className="text-xs @sm:text-sm font-medium text-muted-foreground">{t('common.actions.download')}</span>
-      <span className="text-xs @sm:text-sm font-bold text-chart-download tabular-nums">
-        {formatTrafficBytes(totalDownload)}
-      </span>
-    </div>
-  </div>
-);
-
-/**
  * Traffic Trend Chart Component
  */
-export const TrafficTrendChart = ({ data, granularity, loading, headerAction, overview }: TrafficTrendChartProps) => {
+export const TrafficTrendChart = ({ data, granularity, loading, headerAction, trafficOverview, trafficLoading }: TrafficTrendChartProps) => {
   const { t } = useTranslation();
 
   // Transform data for recharts format
@@ -190,36 +159,18 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
     download: point.download,
   })), [data, granularity]);
 
-  // Use overview data if provided (more accurate), otherwise calculate from trend points
-  const { totalUpload, totalDownload } = useMemo(() => {
-    if (overview) {
-      return {
-        totalUpload: overview.totalUpload,
-        totalDownload: overview.totalDownload,
-      };
-    }
-    return data.reduce(
-      (acc, point) => ({
-        totalUpload: acc.totalUpload + point.upload,
-        totalDownload: acc.totalDownload + point.download,
-      }),
-      { totalUpload: 0, totalDownload: 0 }
-    );
-  }, [data, overview]);
+  const periodSummaryLoading = loading || trafficLoading;
+  const showPeriodOverlay = !!(trafficOverview || periodSummaryLoading);
 
   if (loading) {
     return (
       <AdminCard variant="bordered" noPadding>
         <div className="@container p-4 @sm:p-6">
-          <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
-            <Skeleton className="h-10 w-32" />
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <Skeleton className="h-6 w-32" />
             {headerAction}
           </div>
           <Skeleton className="w-full h-[200px] @sm:h-[280px] rounded-xl" />
-          <div className="flex flex-wrap justify-center gap-3 @sm:gap-6 mt-4 @sm:mt-5 pt-4 @sm:pt-5 border-t border-border">
-            <Skeleton className="h-8 w-28 @sm:w-32" />
-            <Skeleton className="h-8 w-28 @sm:w-32" />
-          </div>
         </div>
       </AdminCard>
     );
@@ -229,33 +180,55 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
     <AdminCard variant="bordered" noPadding>
       <div className="@container p-4 @sm:p-6">
         {/* Header */}
-        <div className="flex flex-col @sm:flex-row @sm:items-center justify-between gap-3 @sm:gap-4 mb-4 @sm:mb-6">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="p-2 @sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20">
-              <Activity className="size-4 @sm:size-5 text-primary" strokeWidth={1.5} />
-            </div>
-            <div>
-              <h3 className="text-base @sm:text-lg font-semibold text-foreground whitespace-nowrap">
-                {t('admin.traffic.trend')}
-              </h3>
-              <p className="text-[11px] @sm:text-xs text-muted-foreground">
-                {t('admin.traffic.trendDesc')}
-              </p>
-            </div>
-          </div>
-          {headerAction && (
-            <div className="shrink-0 -mx-1 @sm:mx-0">
-              {headerAction}
-            </div>
-          )}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h3 className="text-base font-semibold text-foreground">
+            {t('admin.traffic.trend')}
+          </h3>
+          {headerAction && <div className="shrink-0">{headerAction}</div>}
         </div>
 
-        {/* Chart */}
-        <div className="w-full h-[200px] @sm:h-[280px]">
+        {/* Chart with overlay stats */}
+        <div className="relative w-full h-[200px] @sm:h-[280px]">
+          {/* Period stats — glass overlay on chart top */}
+          {showPeriodOverlay && (
+            <div className="absolute top-0 left-[42px] right-0 z-10 flex items-center justify-center gap-2.5 @sm:gap-4 px-3 py-1.5 bg-card/80 backdrop-blur-sm border-b border-border/30 pointer-events-none">
+              <div className="flex items-center gap-1">
+                <ArrowUp className="size-2.5 @sm:size-3 text-chart-upload shrink-0" strokeWidth={2} />
+                {periodSummaryLoading ? (
+                  <Skeleton className="h-3.5 w-12" />
+                ) : (
+                  <span className="text-[11px] @sm:text-xs font-semibold tabular-nums text-foreground">
+                    {formatTrafficBytes(trafficOverview!.totalUpload)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <ArrowDown className="size-2.5 @sm:size-3 text-chart-download shrink-0" strokeWidth={2} />
+                {periodSummaryLoading ? (
+                  <Skeleton className="h-3.5 w-12" />
+                ) : (
+                  <span className="text-[11px] @sm:text-xs font-semibold tabular-nums text-foreground">
+                    {formatTrafficBytes(trafficOverview!.totalDownload)}
+                  </span>
+                )}
+              </div>
+              <div className="w-px h-3 bg-border/50" />
+              <div className="flex items-center gap-1">
+                <Activity className="size-2.5 @sm:size-3 text-relay shrink-0" strokeWidth={2} />
+                {periodSummaryLoading ? (
+                  <Skeleton className="h-3.5 w-12" />
+                ) : (
+                  <span className="text-[11px] @sm:text-xs font-bold tabular-nums text-foreground">
+                    {formatTrafficBytes(trafficOverview!.totalTraffic)}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              margin={{ top: showPeriodOverlay ? 28 : 10, right: 4, left: 0, bottom: 0 }}
             >
               <defs>
                 {/* Upload gradient - uses CSS variable */}
@@ -279,7 +252,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 dataKey="period"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'currentColor', fontSize: 11 }}
+                tick={{ fill: 'currentColor', fontSize: 10 }}
                 className="text-muted-foreground"
                 dy={10}
               />
@@ -287,9 +260,9 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 tickFormatter={formatYAxisLabel}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'currentColor', fontSize: 11 }}
+                tick={{ fill: 'currentColor', fontSize: 10 }}
                 className="text-muted-foreground"
-                width={55}
+                width={42}
               />
               <Tooltip
                 content={<CustomTooltip t={t} />}
@@ -305,11 +278,11 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 dataKey="download"
                 name={t('common.actions.download')}
                 stroke="var(--color-chart-download)"
-                strokeWidth={2.5}
+                strokeWidth={2}
                 fill="url(#downloadGradient)"
                 dot={false}
                 activeDot={{
-                  r: 5,
+                  r: 4,
                   fill: 'var(--color-chart-download)',
                   stroke: 'var(--color-card)',
                   strokeWidth: 2,
@@ -321,11 +294,11 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
                 dataKey="upload"
                 name={t('common.actions.upload')}
                 stroke="var(--color-chart-upload)"
-                strokeWidth={2.5}
+                strokeWidth={2}
                 fill="url(#uploadGradient)"
                 dot={false}
                 activeDot={{
-                  r: 5,
+                  r: 4,
                   fill: 'var(--color-chart-upload)',
                   stroke: 'var(--color-card)',
                   strokeWidth: 2,
@@ -336,8 +309,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, ov
           </ResponsiveContainer>
         </div>
 
-        {/* Legend with totals */}
-        <ChartLegend totalUpload={totalUpload} totalDownload={totalDownload} t={t} />
+        {/* Chart ends here - legend removed, totals shown in OverviewStrip */}
       </div>
     </AdminCard>
   );

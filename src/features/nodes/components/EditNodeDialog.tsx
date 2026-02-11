@@ -61,6 +61,7 @@ import {
   VmessConfigForm,
   Hysteria2ConfigForm,
   TuicConfigForm,
+  AnyTLSConfigForm,
 } from './protocol-forms';
 import { useEditNodeForm } from '../hooks/useEditNodeForm';
 
@@ -81,6 +82,7 @@ const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
   vmess: 'VMess',
   hysteria2: 'Hysteria2',
   tuic: 'TUIC',
+  anytls: 'AnyTLS',
 };
 
 
@@ -135,6 +137,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   const isVmess = node?.protocol === 'vmess';
   const isHysteria2 = node?.protocol === 'hysteria2';
   const isTuic = node?.protocol === 'tuic';
+  const isAnytls = node?.protocol === 'anytls';
 
   const handleSubmit = () => {
     if (!node) return;
@@ -558,6 +561,22 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                         allowInsecure={formData.tuicAllowInsecure}
                         alpn={formData.tuicAlpn}
                         disableSni={formData.tuicDisableSni}
+                        onFieldChange={handleChange}
+                        errors={errors}
+                      />
+                    </div>
+                  )}
+
+                  {/* AnyTLS Config */}
+                  {isAnytls && (
+                    <div className="@md:col-span-2">
+                      <AnyTLSConfigForm
+                        sni={formData.anytlsSni}
+                        allowInsecure={formData.anytlsAllowInsecure}
+                        fingerprint={formData.anytlsFingerprint}
+                        idleSessionCheckInterval={formData.anytlsIdleSessionCheckInterval}
+                        idleSessionTimeout={formData.anytlsIdleSessionTimeout}
+                        minIdleSession={formData.anytlsMinIdleSession}
                         onFieldChange={handleChange}
                         errors={errors}
                       />

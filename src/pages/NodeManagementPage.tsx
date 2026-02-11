@@ -11,14 +11,11 @@ import {
   Plus,
   RefreshCw,
   ArrowUpCircle,
-  Activity,
-  CheckCircle2,
   Radio,
-  XCircle,
   Terminal,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
+import { PageHeader, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -167,13 +164,11 @@ export function NodeManagementPage() {
     [nodes]
   );
 
-  // Calculate statistics
+  // Calculate stats for conditional action buttons
   const stats = useMemo(() => {
     const online = nodes.filter((n) => n.isOnline).length;
-    const offline = nodes.filter((n) => !n.isOnline).length;
-    const active = nodes.filter((n) => n.status === 'active').length;
     const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total: pagination.total, online, offline, active, updatable };
+    return { total: pagination.total, online, updatable };
   }, [nodes, pagination.total]);
 
   // Page header badge
@@ -184,20 +179,6 @@ export function NodeManagementPage() {
     }),
     [stats.total, t]
   );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    const items: PageHeaderMeta[] = [
-      { icon: Activity, text: `${stats.online} ${t('common.status.online')}` },
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
-    ];
-
-    if (stats.offline > 0) {
-      items.push({ icon: XCircle, text: `${stats.offline} ${t('common.status.offline')}` });
-    }
-
-    return items;
-  }, [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, node?: Node) => {
@@ -431,54 +412,14 @@ export function NodeManagementPage() {
   return (
     <AdminLayout>
       <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Page Header */}
+        {/* Simplified Page Header */}
         <PageHeader
           title={t('nav.nodeAgent')}
           icon={Server}
           badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              {selectedCount > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBatchInstallScriptClick}
-                  disabled={isGettingBatchInstallScript}
-                >
-                  <Terminal className="mr-2 size-4" />
-                  {t('admin.nodes.table.actions.batchInstallScript')} ({selectedCount})
-                </Button>
-              )}
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 size-4" />
-                {t('admin.nodes.addNode')}
-              </Button>
-              {stats.online > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
-                  <Radio className="mr-2 size-4" />
-                  {t('admin.nodes.broadcast.label')}
-                </Button>
-              )}
-              {stats.updatable > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
-                  <ArrowUpCircle className="mr-2 size-4" />
-                  {t('admin.nodes.update')}
-                </Button>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-              </Tooltip>
-            </div>
-          }
         />
 
-        {/* Filters */}
+        {/* Search-first Filter Bar with Actions */}
         <NodeFilters
           filters={extendedFilters}
           onFiltersChange={handleExtendedFiltersChange}
@@ -489,6 +430,45 @@ export function NodeManagementPage() {
           dragSortEnabled={dragSortEnabled}
           onDragSortEnabledChange={setDragSortEnabled}
           dragSortDisabled={isReordering}
+          action={
+            <>
+              {selectedCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBatchInstallScriptClick}
+                  disabled={isGettingBatchInstallScript}
+                >
+                  <Terminal className="mr-1.5 size-4" />
+                  {t('admin.nodes.table.actions.batchInstallScript')} ({selectedCount})
+                </Button>
+              )}
+              <Button onClick={handleCreate} size="sm">
+                <Plus className="mr-1.5 size-4" />
+                {t('admin.nodes.addNode')}
+              </Button>
+              {stats.online > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
+                  <Radio className="mr-1.5 size-4" />
+                  {t('admin.nodes.broadcast.label')}
+                </Button>
+              )}
+              {stats.updatable > 0 && (
+                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
+                  <ArrowUpCircle className="mr-1.5 size-4" />
+                  {t('admin.nodes.update')}
+                </Button>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
+                    <RefreshCw key={refreshKey} className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+              </Tooltip>
+            </>
+          }
         />
 
         {/* Node Table */}

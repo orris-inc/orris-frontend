@@ -45,6 +45,11 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
 const PROTOCOL_LABELS: Record<string, string> = {
   shadowsocks: 'Shadowsocks',
   trojan: 'Trojan',
+  vless: 'VLESS',
+  vmess: 'VMess',
+  hysteria2: 'Hysteria2',
+  tuic: 'TUIC',
+  anytls: 'AnyTLS',
 };
 
 // Transport protocol labels

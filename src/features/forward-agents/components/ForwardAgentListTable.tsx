@@ -7,7 +7,7 @@
 import { useMemo, useCallback, useState, useDeferredValue } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Key, Eye, Power, PowerOff, MoreHorizontal, Terminal, Copy, Download, Loader2, Package, ArrowUpCircle, Radio, Bell, BellOff, Circle, AlertTriangle } from 'lucide-react';
-import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardAgentMobileList } from './ForwardAgentMobileList';
 import { Badge } from '@/components/common/Badge';
@@ -91,7 +91,7 @@ interface ForwardAgentListTableProps {
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
-import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatDateTime, formatRelativeTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 
 export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   forwardAgents,
@@ -454,7 +454,20 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       header: t('common.fields.createdAt'),
       size: 115,
       meta: { priority: 4 } as ResponsiveColumnMeta,
-      cell: ({ row }) => <DateTimeCell value={row.original.createdAt} />,
+      cell: ({ row }) => {
+        const value = row.original.createdAt;
+        if (!value) return <span className="text-muted-foreground/50 text-sm">-</span>;
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+                {formatRelativeTime(value)}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>{formatDateTime(value)}</TooltipContent>
+          </Tooltip>
+        );
+      },
     },
     {
       id: 'actions',

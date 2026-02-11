@@ -6,7 +6,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Receipt, RefreshCw, CheckCircle2, Pause, Sparkles, XCircle } from 'lucide-react';
+import { Receipt, RefreshCw, CheckCircle2, Pause, Clock, XCircle } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
@@ -30,6 +30,7 @@ import { ChangePlanDialog } from '@/features/subscriptions/components/ChangePlan
 import { ChangePlanSheet } from '@/features/subscriptions/components/ChangePlanSheet';
 import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
 import { SubscriptionFilters } from '@/features/subscriptions/components/SubscriptionFilters';
+import { useDashboardStats } from '@/features/admin-traffic/hooks/useDashboardStats';
 import {
   adminCreateSubscription,
   adminUpdateSubscriptionStatus,
@@ -90,44 +91,41 @@ export function SubscriptionManagementPage() {
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Calculate statistics from current page data
-  const stats = useMemo(() => {
-    const active = subscriptions.filter((s) => s.status === 'active').length;
-    const trialing = subscriptions.filter((s) => s.status === 'trialing').length;
-    const suspended = subscriptions.filter((s) => s.status === 'suspended').length;
-    const cancelled = subscriptions.filter((s) => s.status === 'cancelled').length;
-    return { total: pagination.total, active, trialing, suspended, cancelled };
-  }, [subscriptions, pagination.total]);
+  // Global subscription stats from dashboard API
+  const { dashboard } = useDashboardStats();
+  const subs = dashboard?.subscriptions;
 
   // Page header badge
   const headerBadge = useMemo(
     (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.subscriptions.label')}`,
+      label: `${pagination.total} ${t('admin.subscriptions.label')}`,
       variant: 'default',
     }),
-    [stats.total, t]
+    [pagination.total, t]
   );
 
-  // Page header metadata
+  // Page header metadata — global stats from /admin/dashboard
   const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    if (!subs) return [];
+
     const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
+      { icon: CheckCircle2, text: `${subs.active} ${t('common.status.enabled')}` },
     ];
 
-    if (stats.trialing > 0) {
-      items.push({ icon: Sparkles, text: `${stats.trialing} ${t('subscriptionStatus.trialing')}` });
+    if (subs.suspended > 0) {
+      items.push({ icon: Pause, text: `${subs.suspended} ${t('common.status.suspended')}` });
     }
 
-    if (stats.suspended > 0) {
-      items.push({ icon: Pause, text: `${stats.suspended} ${t('common.status.suspended')}` });
+    if (subs.expired > 0) {
+      items.push({ icon: XCircle, text: `${subs.expired} ${t('common.status.expired')}` });
     }
 
-    if (stats.cancelled > 0) {
-      items.push({ icon: XCircle, text: `${stats.cancelled} ${t('subscriptionStatus.cancelled')}` });
+    if (subs.expiringIn7Days > 0) {
+      items.push({ icon: Clock, text: `${subs.expiringIn7Days} ${t('admin.subscriptions.expiringSoon')}` });
     }
 
     return items;
-  }, [stats, t]);
+  }, [subs, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, subscription?: Subscription) => {

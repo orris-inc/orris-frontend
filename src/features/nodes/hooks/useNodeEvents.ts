@@ -20,6 +20,13 @@ function isBatchNodeStatusEvent(event: NodeSSEEvent): event is NodeBatchStatusEv
   return event.type === 'nodes:status' && 'agents' in event;
 }
 
+// Validate SSE event timestamp is within a reasonable range (not in future beyond 1 min, not before 2020)
+const MIN_TIMESTAMP = 1577836800; // 2020-01-01
+function isValidTimestamp(ts: number): boolean {
+  const nowSec = Math.floor(Date.now() / 1000);
+  return Number.isFinite(ts) && ts >= MIN_TIMESTAMP && ts <= nowSec + 60;
+}
+
 interface UseNodeEventsOptions {
   /** Specific node IDs to subscribe to (omit for all nodes) */
   nodeIds?: string[];
@@ -111,6 +118,11 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
     (event: NodeEvent) => {
       const qc = queryClientRef.current;
 
+      // Skip events with invalid timestamps to prevent cache corruption
+      if ('timestamp' in event && !isValidTimestamp(event.timestamp)) {
+        return;
+      }
+
       switch (event.type) {
         case 'node:online':
           updateNodeInCache(event.agentId, (node) => ({
@@ -194,9 +206,7 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
       {
         onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: (error) => {
-          console.error('Node SSE connection error:', error);
-        },
+        onError: () => {},
       }
     );
 
@@ -347,9 +357,7 @@ export function useNodeDetailEvents(options: UseNodeDetailEventsOptions): UseNod
       {
         onStateChange: setConnectionState,
         onEvent: handleEvent,
-        onError: (error) => {
-          console.error('Node detail SSE connection error:', error);
-        },
+        onError: () => {},
       }
     );
 

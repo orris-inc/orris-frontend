@@ -42,6 +42,7 @@ import {
   VmessConfigForm,
   Hysteria2ConfigForm,
   TuicConfigForm,
+  AnyTLSConfigForm,
 } from './protocol-forms';
 import { NodeOtherSettingsFields } from './form-sections';
 import {
@@ -58,6 +59,7 @@ import {
   Layers,
   Gauge,
   Workflow,
+  ShieldCheck,
 } from 'lucide-react';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useCreateNodeForm } from '../hooks/useCreateNodeForm';
@@ -195,6 +197,7 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; descKey: string; ico
   vmess: { name: 'VMess', descKey: 'admin.nodes.form.protocolDesc.vmess', icon: Layers },
   hysteria2: { name: 'Hysteria2', descKey: 'admin.nodes.form.protocolDesc.hysteria2', icon: Gauge },
   tuic: { name: 'TUIC', descKey: 'admin.nodes.form.protocolDesc.tuic', icon: Workflow },
+  anytls: { name: 'AnyTLS', descKey: 'admin.nodes.form.protocolDesc.anytls', icon: ShieldCheck },
 };
 
 // Protocol Card Component - Compact version
@@ -298,7 +301,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
 
   const {
     formData, errors, pluginOptsString,
-    isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic,
+    isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, isAnytls,
     handleChange, handleRouteChange, handleCostLabelChange, handleGroupToggle,
     isFormValid, hasProtocolSettings, hasOtherSettings,
   } = form;
@@ -703,6 +706,20 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                     allowInsecure={formData.tuicAllowInsecure}
                     alpn={formData.tuicAlpn}
                     disableSni={formData.tuicDisableSni}
+                    onFieldChange={handleChange}
+                    errors={errors}
+                  />
+                )}
+
+                {/* AnyTLS Protocol Settings */}
+                {isAnytls && (
+                  <AnyTLSConfigForm
+                    sni={formData.anytlsSni}
+                    allowInsecure={formData.anytlsAllowInsecure}
+                    fingerprint={formData.anytlsFingerprint}
+                    idleSessionCheckInterval={formData.anytlsIdleSessionCheckInterval}
+                    idleSessionTimeout={formData.anytlsIdleSessionTimeout}
+                    minIdleSession={formData.anytlsMinIdleSession}
                     onFieldChange={handleChange}
                     errors={errors}
                   />

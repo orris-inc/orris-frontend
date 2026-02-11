@@ -20,3 +20,6 @@ export type { VlessConfigFormProps } from './VlessConfigForm';
 
 export { TuicConfigForm } from './TuicConfigForm';
 export type { TuicConfigFormProps } from './TuicConfigForm';
+
+export { AnyTLSConfigForm } from './AnyTLSConfigForm';
+export type { AnyTLSConfigFormProps } from './AnyTLSConfigForm';

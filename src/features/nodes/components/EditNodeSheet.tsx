@@ -18,6 +18,7 @@ import {
   Layers,
   Gauge,
   Workflow,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   Sheet,
@@ -79,6 +80,7 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { name: string; icon: React.ElementT
   vmess: { name: 'VMess', icon: Layers },
   hysteria2: { name: 'Hysteria2', icon: Gauge },
   tuic: { name: 'TUIC', icon: Workflow },
+  anytls: { name: 'AnyTLS', icon: ShieldCheck },
 };
 
 // Mobile Collapsible Section - Tailwind Application UI style

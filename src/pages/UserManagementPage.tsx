@@ -1,23 +1,18 @@
 /**
  * User Management Page (Admin)
- * Tailwind Application UI style
- * Mobile-first responsive design
+ *
+ * Redesigned layout:
+ * - Simplified PageHeader (title + total badge only)
+ * - Search-first filter bar with action buttons
+ * - Identity-first table with avatars, status dots, relative time
+ * - Mobile-first responsive design
  */
 
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Users,
-  Plus,
-  RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Shield,
-  UserX,
-} from 'lucide-react';
+import { Users, Plus, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
+import { PageHeader, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -84,45 +79,14 @@ export function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Calculate statistics from current page data
-  const stats = useMemo(() => {
-    const active = users.filter((u) => u.status === 'active').length;
-    const pending = users.filter((u) => u.status === 'pending').length;
-    const inactive = users.filter((u) => u.status === 'inactive').length;
-    const suspended = users.filter((u) => u.status === 'suspended').length;
-    const admins = users.filter((u) => u.role === 'admin').length;
-    return { total: pagination.total, active, pending, inactive, suspended, admins };
-  }, [users, pagination.total]);
-
   // Page header badge
   const headerBadge = useMemo(
     (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.users.usersLabel')}`,
+      label: `${pagination.total} ${t('admin.users.usersLabel')}`,
       variant: 'default',
     }),
-    [stats.total, t]
+    [pagination.total, t]
   );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
-    ];
-
-    if (stats.pending > 0) {
-      items.push({ icon: Clock, text: `${stats.pending} ${t('common.status.pending')}` });
-    }
-
-    items.push({ icon: XCircle, text: `${stats.inactive} ${t('common.status.disabled')}` });
-
-    if (stats.suspended > 0) {
-      items.push({ icon: UserX, text: `${stats.suspended} ${t('common.status.suspended')}` });
-    }
-
-    items.push({ icon: Shield, text: `${stats.admins} ${t('common.role.admin')}` });
-
-    return items;
-  }, [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, user?: UserResponse) => {
@@ -219,6 +183,24 @@ export function UserManagementPage() {
     [selectedUser, showSuccess, showError, closeDialog, t]
   );
 
+  // Filter bar action buttons
+  const filterActions = (
+    <>
+      <Button onClick={() => openDialog('create')} size="sm">
+        <Plus className="mr-1.5 size-4" />
+        {t('admin.users.createUser')}
+      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
+            <RefreshCw key={refreshKey} className="size-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+      </Tooltip>
+    </>
+  );
+
   // Mobile layout
   if (isMobile) {
     return (
@@ -284,36 +266,20 @@ export function UserManagementPage() {
   return (
     <AdminLayout>
       <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Page Header */}
+        {/* Simplified Page Header */}
         <PageHeader
           title={t('admin.users.title')}
           icon={Users}
           badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={() => openDialog('create')}>
-                <Plus className="mr-2 size-4" />
-                {t('admin.users.createUser')}
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-              </Tooltip>
-            </div>
-          }
         />
 
-        {/* Filters */}
+        {/* Search-first Filter Bar with Actions */}
         <UserFilters
           filters={filters}
           onFiltersChange={handleFiltersChange}
           hasFilters={hasFilters}
           onClearFilters={clearFilters}
+          action={filterActions}
         />
 
         {/* User Table */}
