@@ -1,6 +1,9 @@
 /**
- * Forward Rule Filters Component
- * Desktop filtering toolbar for forward rules
+ * Forward Rule Filters Component (Redesigned)
+ *
+ * Layout: [Protocol segmented tabs] [Status select] [Sort select] | [User rules] [Drag sort] [Clear]
+ * Protocol tabs are the primary filter — visually prominent segmented control.
+ * Status/sort remain compact selects.
  */
 
 import { useTranslation } from 'react-i18next';
@@ -37,6 +40,14 @@ export interface ForwardRuleFiltersProps {
   className?: string;
 }
 
+// Protocol tab items
+const PROTOCOL_TABS: { value: string; label: string }[] = [
+  { value: 'all', label: 'filter.all' },
+  { value: 'tcp', label: 'TCP' },
+  { value: 'udp', label: 'UDP' },
+  { value: 'both', label: 'TCP+UDP' },
+];
+
 // Sort options
 const SORT_OPTIONS = [
   { value: 'sort_order_asc', label: 'admin.forwardRules.sortOptions.default' },
@@ -63,7 +74,9 @@ export const ForwardRuleFilters = ({
 }: ForwardRuleFiltersProps) => {
   const { t } = useTranslation();
 
-  // Handle protocol change
+  const currentProtocol = filters.protocol ?? 'all';
+
+  // Handle protocol change via segmented tabs
   const handleProtocolChange = (value: string) => {
     onFiltersChange({
       protocol: value === 'all' ? undefined : (value as 'tcp' | 'udp' | 'both'),
@@ -93,28 +106,36 @@ export const ForwardRuleFilters = ({
 
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
-      {/* Protocol filter */}
-      <Select
-        value={filters.protocol ?? 'all'}
-        onValueChange={handleProtocolChange}
-      >
-        <SelectTrigger className="w-[100px] h-9">
-          <SelectValue placeholder={t('common.protocol')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.all')}</SelectItem>
-          <SelectItem value="tcp">TCP</SelectItem>
-          <SelectItem value="udp">UDP</SelectItem>
-          <SelectItem value="both">Both</SelectItem>
-        </SelectContent>
-      </Select>
+      {/* Protocol segmented tabs */}
+      <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+        {PROTOCOL_TABS.map((tab) => {
+          const isActive = currentProtocol === tab.value;
+          // Only translate "all", protocol labels are literal
+          const label = tab.value === 'all' ? t(tab.label) : tab.label;
+          return (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => handleProtocolChange(tab.value)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs font-medium transition-all',
+                isActive
+                  ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* Status filter */}
       <Select
         value={filters.status ?? 'all'}
         onValueChange={handleStatusChange}
       >
-        <SelectTrigger className="w-[100px] h-9">
+        <SelectTrigger className="w-[120px] h-9">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>

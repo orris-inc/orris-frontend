@@ -1,7 +1,9 @@
 /**
  * Forward Rules Management Page (Admin)
- * Tailwind Application UI style
- * Mobile-first responsive design
+ *
+ * Redesigned: catalog-style layout with card grid (default) + table toggle.
+ * Segmented protocol tabs + compact filter selects + view mode switch.
+ * Mobile-first responsive design.
  */
 
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';

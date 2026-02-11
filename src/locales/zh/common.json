@@ -1581,6 +1581,11 @@
         "confirmDeleteButton": "删除规则",
         "confirmDeleteTitle": "确认删除",
         "confirmDeleteDesc": "确定永久删除规则？"
+      },
+      "catalog": {
+        "gridView": "网格视图",
+        "tableView": "表格视图",
+        "noTraffic": "无流量"
       }
     },
     "forwardAgents": {
@@ -2417,6 +2422,16 @@
         "usdt": "USDT",
         "subscription": "订阅",
         "legal": "法律"
+      },
+      "category": {
+        "general": "基础",
+        "generalDesc": "平台基础配置",
+        "security": "安全",
+        "securityDesc": "访问控制与身份认证",
+        "notifications": "通知",
+        "notificationsDesc": "消息推送渠道",
+        "billing": "支付",
+        "billingDesc": "付款与订阅管理"
       },
       "source": {
         "database": "数据库",

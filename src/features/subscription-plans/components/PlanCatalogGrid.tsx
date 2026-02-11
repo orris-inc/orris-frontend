@@ -98,7 +98,7 @@ function GridPagination({
   return (
     <div className="flex items-center justify-between pt-4">
       <p className="text-xs text-muted-foreground">
-        {t('pagination.total', { count: total })}
+        {t('common.pagination.total', { count: total })}
       </p>
       <div className="flex items-center gap-1">
         <button
@@ -111,7 +111,7 @@ function GridPagination({
             'hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
-          {t('pagination.previous')}
+          {t('common.pagination.previous')}
         </button>
         <span className="px-3 text-xs text-muted-foreground tabular-nums">
           {page} / {totalPages}
@@ -126,7 +126,7 @@ function GridPagination({
             'hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed'
           )}
         >
-          {t('pagination.next')}
+          {t('common.pagination.next')}
         </button>
       </div>
     </div>

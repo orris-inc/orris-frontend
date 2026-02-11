@@ -1581,6 +1581,11 @@
         "confirmDeleteButton": "Delete Rule",
         "confirmDeleteTitle": "Confirm Delete",
         "confirmDeleteDesc": "Are you sure you want to permanently delete this rule?"
+      },
+      "catalog": {
+        "gridView": "Grid View",
+        "tableView": "Table View",
+        "noTraffic": "No traffic"
       }
     },
     "forwardAgents": {
@@ -2417,6 +2422,16 @@
         "usdt": "USDT",
         "subscription": "Subscription",
         "legal": "Legal"
+      },
+      "category": {
+        "general": "General",
+        "generalDesc": "Basic platform configuration",
+        "security": "Security",
+        "securityDesc": "Access control and authentication",
+        "notifications": "Notifications",
+        "notificationsDesc": "Messaging channels",
+        "billing": "Billing",
+        "billingDesc": "Payments and subscriptions"
       },
       "source": {
         "database": "Database",
