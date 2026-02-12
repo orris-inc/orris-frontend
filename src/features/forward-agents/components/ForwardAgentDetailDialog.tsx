@@ -206,10 +206,7 @@ export const ForwardAgentDetailDialog: React.FC<
                   <div className="flex items-center gap-2">
                     {isOnline ? (
                       <>
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
-                        </span>
+                        <span className="h-2.5 w-2.5 rounded-full bg-success"></span>
                         <span className="text-sm font-medium text-success">
                           {t("common.status.online")}
                         </span>

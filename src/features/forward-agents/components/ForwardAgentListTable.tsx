@@ -35,14 +35,12 @@ const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
   colorClass: string;
   bgClass: string;
   icon: React.ElementType;
-  showPulse?: boolean;
 }> = {
   running: {
     labelKey: 'common.status.running',
     colorClass: 'text-success',
     bgClass: 'bg-success/10',
     icon: Circle,
-    showPulse: true,
   },
   offline: {
     labelKey: 'common.status.offline',
@@ -313,12 +311,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
                   onClick={() => agent.status === 'enabled' ? onDisable(agent) : onEnable(agent)}
                   className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${config.bgClass} ${config.colorClass}`}
                 >
-                  <span className="relative flex">
-                    {config.showPulse && (
-                      <span className={`animate-ping absolute inline-flex size-full rounded-full ${config.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
-                    )}
-                    <StatusIcon className={`relative size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
-                  </span>
+                  <StatusIcon className={`size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
                   {t(config.labelKey)}
                 </button>
               </TooltipTrigger>

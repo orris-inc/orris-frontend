@@ -61,6 +61,7 @@ import {
   Workflow,
   ShieldCheck,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useCreateNodeForm } from '../hooks/useCreateNodeForm';
 
@@ -118,14 +119,14 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const badgeText = getBadgeText?.();
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden bg-card transition-all duration-200 hover:border-border/80">
+    <div className="rounded-xl ring-1 ring-border overflow-hidden bg-card transition-all duration-200 hover:ring-border/80">
       <button
         type="button"
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 text-left hover:bg-accent/30 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${isOpen ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'} transition-colors`}>
+          <div className={cn('p-2 rounded-lg transition-colors', isOpen ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground')}>
             <Icon className="size-4" strokeWidth={1.5} />
           </div>
           <div className="flex items-center gap-2">
@@ -142,11 +143,9 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             )}
           </div>
         </div>
-        <div className={`text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronDown className="size-4" />
-        </div>
+        <ChevronDown className={cn('size-4 text-muted-foreground transition-transform duration-200', isOpen && 'rotate-180')} />
       </button>
-      <div className={`overflow-hidden transition-all duration-200 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={cn('overflow-hidden transition-all duration-200', isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0')}>
         <div className="px-4 pb-4 pt-0">
           <Separator className="mb-4" />
           {children}
@@ -171,17 +170,17 @@ const FormField: React.FC<FormFieldProps> = ({
   required,
   error,
   hint,
-  className = '',
+  className,
   children,
 }) => (
-  <div className={`flex flex-col gap-1.5 ${className}`}>
+  <div className={cn('flex flex-col gap-1.5', className)}>
     <Label className="text-sm font-medium text-foreground flex items-center gap-1">
       {label}
       {required && <span className="text-destructive">*</span>}
     </Label>
     {children}
     {(error || hint) && (
-      <p className={`text-xs flex items-center gap-1 ${error ? 'text-destructive' : 'text-muted-foreground'}`}>
+      <p className={cn('text-xs flex items-center gap-1', error ? 'text-destructive' : 'text-muted-foreground')}>
         {error && <AlertCircle className="size-3" />}
         {error || hint}
       </p>
@@ -215,17 +214,18 @@ const ProtocolCard: React.FC<ProtocolCardProps & { t: (key: string) => string }>
     <button
       type="button"
       onClick={onSelect}
-      className={`relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition-all duration-200 cursor-pointer ${
+      className={cn(
+        'relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl ring-1 transition-all duration-200 cursor-pointer',
         selected
-          ? 'border-primary bg-primary/5 shadow-sm'
-          : 'border-border hover:border-primary/30 hover:bg-accent/30'
-      }`}
+          ? 'ring-primary bg-primary/5 shadow-sm'
+          : 'ring-border hover:ring-primary/30 hover:bg-accent/30'
+      )}
     >
-      <div className={`p-1.5 rounded-md ${selected ? 'bg-primary/10' : 'bg-muted'} transition-colors`}>
-        <Icon className={`size-4 ${selected ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} />
+      <div className={cn('p-1.5 rounded-lg transition-colors', selected ? 'bg-primary/10' : 'bg-muted/50')}>
+        <Icon className={cn('size-4', selected ? 'text-primary' : 'text-muted-foreground')} strokeWidth={1.5} />
       </div>
       <div className="text-left">
-        <p className={`text-sm font-medium leading-none ${selected ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <p className={cn('text-sm font-medium leading-none', selected ? 'text-foreground' : 'text-muted-foreground')}>
           {config.name}
         </p>
         <p className="text-[11px] text-muted-foreground mt-0.5">

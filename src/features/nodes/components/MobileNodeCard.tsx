@@ -46,14 +46,14 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const PROTOCOL_LABELS: Record<NodeProtocol, string> = {
-  shadowsocks: 'SS',
-  trojan: 'Trojan',
-  vless: 'VLESS',
-  vmess: 'VMess',
-  hysteria2: 'Hy2',
-  tuic: 'TUIC',
-  anytls: 'AnyTLS',
+const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
+  shadowsocks: { label: 'SS', color: 'text-info' },
+  trojan: { label: 'Trojan', color: 'text-destructive' },
+  vless: { label: 'VLESS', color: 'text-relay' },
+  vmess: { label: 'VMess', color: 'text-primary' },
+  hysteria2: { label: 'Hy2', color: 'text-warning' },
+  tuic: { label: 'TUIC', color: 'text-chart-3' },
+  anytls: { label: 'AnyTLS', color: 'text-success' },
 };
 
 // ============================================================================
@@ -75,10 +75,7 @@ const OnlineIndicator = memo(({
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1">
-        <span className="relative flex size-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden" />
-          <span className="relative inline-flex rounded-full size-2 bg-success" />
-        </span>
+        <span className="size-2 rounded-full bg-success" />
         {showLabel && (
           <span className="text-xs text-success font-medium">
             {t('common.status.online')}
@@ -140,7 +137,7 @@ export const MobileNodeCard = memo(({
 }: MobileNodeCardProps) => {
   const { t } = useTranslation();
 
-  const protocolLabel = PROTOCOL_LABELS[node.protocol] || node.protocol;
+  const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'text-muted-foreground' };
 
   return (
     <div
@@ -176,7 +173,7 @@ export const MobileNodeCard = memo(({
           </span>
 
           <span className="text-border">·</span>
-          <span className="shrink-0">{protocolLabel}</span>
+          <span className={`shrink-0 font-medium ${protocolConfig.color}`}>{protocolConfig.label}</span>
 
           {node.region && (
             <>

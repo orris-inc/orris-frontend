@@ -226,10 +226,7 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
                 {/* Online status */}
                 {agent.isOnline ? (
                   <span className="inline-flex items-center gap-1 text-success">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
-                    </span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
                     <span className="text-[10px] font-medium">{t('common.status.online')}</span>
                   </span>
                 ) : (

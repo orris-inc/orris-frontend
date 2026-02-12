@@ -48,10 +48,7 @@ const OnlineIndicator = memo(({
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1">
-        <span className="relative flex size-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75 motion-reduce:hidden" />
-          <span className="relative inline-flex rounded-full size-2 bg-success" />
-        </span>
+        <span className="size-2 rounded-full bg-success" />
         {showLabel && (
           <span className="text-xs text-success font-medium">{t('common.status.online')}</span>
         )}

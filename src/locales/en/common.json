@@ -1118,7 +1118,7 @@
         "rulesOrderHint": "Rules are matched in order from top to bottom. First matching rule wins.",
         "json": {
           "mustBeObject": "Configuration must be a JSON object",
-          "invalidFinal": "The 'final' field must be 'proxy', 'direct', 'block', or a valid node reference",
+          "invalidFinal": "The 'final' field must be 'proxy', 'direct', 'block', or a valid node/custom outbound reference",
           "parseErrorSwitch": "Invalid JSON format. Please fix errors before switching to visual mode.",
           "parseError": "Invalid JSON format",
           "hint": "Edit the raw JSON configuration directly. Supports all sing-box route rule options."
@@ -1131,7 +1131,21 @@
           "proxy": "Proxy",
           "direct": "Direct",
           "block": "Block",
-          "node": "Node: {{name}}"
+          "node": "Node: {{name}}",
+          "custom": "Custom: {{tag}}"
+        },
+        "customOutbound": {
+          "title": "Custom Outbounds",
+          "add": "Add Custom Outbound",
+          "tag": "Tag",
+          "type": "Protocol Type",
+          "server": "Server",
+          "serverPort": "Port",
+          "settings": "Settings",
+          "settingsHint": "Protocol-specific JSON configuration (password, uuid, tls, etc.)",
+          "tagHint": "Unique identifier, must start with custom_",
+          "deleteConfirm": "Are you sure you want to delete this custom outbound?",
+          "routeToCustom": "Custom Outbound"
         },
         "section": {
           "domain": "Domain Matching",

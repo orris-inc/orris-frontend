@@ -1118,7 +1118,7 @@
         "rulesOrderHint": "自上而下匹配，首条命中生效",
         "json": {
           "mustBeObject": "配置必须是 JSON 对象",
-          "invalidFinal": "'final' 字段必须是 'proxy'、'direct'、'block' 或有效的节点引用",
+          "invalidFinal": "'final' 字段必须是 'proxy'、'direct'、'block' 或有效的节点/自定义出站引用",
           "parseErrorSwitch": "JSON 格式无效，请修复错误后再切换到可视化模式。",
           "parseError": "JSON 格式无效",
           "hint": "直接编辑原始 JSON 配置，支持所有 sing-box 路由规则选项。"
@@ -1131,7 +1131,21 @@
           "proxy": "代理",
           "direct": "直连",
           "block": "阻止",
-          "node": "节点: {{name}}"
+          "node": "节点: {{name}}",
+          "custom": "自定义: {{tag}}"
+        },
+        "customOutbound": {
+          "title": "自定义出站",
+          "add": "添加自定义出站",
+          "tag": "标签",
+          "type": "协议类型",
+          "server": "服务器",
+          "serverPort": "端口",
+          "settings": "设置",
+          "settingsHint": "协议相关的 JSON 配置（password、uuid、tls 等）",
+          "tagHint": "唯一标识符，必须以 custom_ 开头",
+          "deleteConfirm": "确定要删除此自定义出站吗？",
+          "routeToCustom": "自定义出站"
         },
         "section": {
           "domain": "域名匹配",

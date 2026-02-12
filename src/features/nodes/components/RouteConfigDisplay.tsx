@@ -8,9 +8,10 @@ import { Badge } from '@/components/common/Badge';
 import { Card } from '@/components/common/Card';
 import {
   isNodeOutbound,
+  isCustomOutbound,
   type OutboundNodeOption,
 } from '../utils/route-rule-utils';
-import type { RouteConfig, RouteRule, OutboundType } from '@/api/node';
+import type { RouteConfig, RouteRule, OutboundType, CustomOutbound } from '@/api/node';
 
 interface RouteConfigDisplayProps {
   config: RouteConfig | undefined;
@@ -31,8 +32,19 @@ const PRESET_OUTBOUND_BADGE: Record<
 const getOutboundBadgeInfo = (
   outbound: OutboundType,
   nodes: OutboundNodeOption[] | undefined,
-  t: (key: string, options?: Record<string, unknown>) => string
+  t: (key: string, options?: Record<string, unknown>) => string,
+  customOutbounds?: CustomOutbound[]
 ): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
+  if (isCustomOutbound(outbound)) {
+    const entry = customOutbounds?.find((c) => c.tag === outbound);
+    const displayTag = outbound.replace(/^custom_/, '');
+    return {
+      label: entry
+        ? t('admin.nodes.route.outbound.custom', { tag: displayTag })
+        : t('admin.nodes.route.outbound.custom', { tag: displayTag }),
+      variant: 'outline',
+    };
+  }
   if (!isNodeOutbound(outbound)) {
     const preset = PRESET_OUTBOUND_BADGE[outbound];
     if (preset) {
@@ -111,8 +123,9 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
     );
   }
 
-  const finalInfo = getOutboundBadgeInfo(config.final, nodes, t);
+  const finalInfo = getOutboundBadgeInfo(config.final, nodes, t, config.customOutbounds);
   const rules = config.rules || [];
+  const customOutbounds = config.customOutbounds || [];
 
   return (
     <div className="space-y-4">
@@ -130,7 +143,7 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
           </div>
           <div className="space-y-2">
             {rules.map((rule, index) => {
-              const outboundInfo = getOutboundBadgeInfo(rule.outbound, nodes, t);
+              const outboundInfo = getOutboundBadgeInfo(rule.outbound, nodes, t, config.customOutbounds);
               const conditions = getRuleConditions(rule, t);
 
               return (
@@ -169,6 +182,24 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
       ) : (
         <div className="text-sm text-muted-foreground">
           {t('admin.nodes.route.display.noRules')}
+        </div>
+      )}
+
+      {/* Custom outbounds summary */}
+      {customOutbounds.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            {t('admin.nodes.route.customOutbound.title')} ({customOutbounds.length}):
+          </div>
+          <div className="space-y-1.5">
+            {customOutbounds.map((co) => (
+              <div key={co.tag} className="flex items-center gap-2 text-sm">
+                <Badge variant="outline">{co.tag.replace(/^custom_/, '')}</Badge>
+                <span className="text-muted-foreground">{co.type}</span>
+                <span>{co.server}:{co.serverPort}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

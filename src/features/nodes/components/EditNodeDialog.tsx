@@ -40,6 +40,7 @@ import type {
   CongestionControl,
   TUICUDPRelayMode,
 } from '@/api/node';
+import { Server, Network, Shield, Settings, Route, Pencil } from 'lucide-react';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
@@ -85,7 +86,12 @@ const PROTOCOL_NAMES: Record<NodeProtocol, string> = {
   anytls: 'AnyTLS',
 };
 
-
+// Section icon container for Accordion triggers
+const SectionIcon: React.FC<{ icon: React.ElementType }> = ({ icon: Icon }) => (
+  <div className="p-2 rounded-lg bg-muted/50 text-muted-foreground">
+    <Icon className="size-4" strokeWidth={1.5} />
+  </div>
+);
 
 export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
   open,
@@ -154,21 +160,34 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>{t('admin.nodes.form.editNode')}</DialogTitle>
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh] p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10">
+              <Pencil className="size-5 text-primary" strokeWidth={1.5} />
+            </div>
+            <div>
+              <DialogTitle className="text-lg font-semibold">
+                {t('admin.nodes.form.editNode')}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {PROTOCOL_NAMES[node.protocol]} &middot; {node.name}
+              </p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
           <Accordion
             type="multiple"
             defaultValue={['basic', 'network']}
             className="w-full"
           >
             {/* Basic Info */}
-            <AccordionItem value="basic" className="border rounded-md px-3 mb-2">
+            <AccordionItem value="basic" className="rounded-xl ring-1 ring-border px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Server} />
                   <span className="text-sm font-medium">{t('common.sections.basicInfo')}</span>
                 </div>
               </AccordionTrigger>
@@ -432,9 +451,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             </AccordionItem>
 
             {/* Network Config */}
-            <AccordionItem value="network" className="border rounded-md px-3 mb-2">
+            <AccordionItem value="network" className="rounded-xl ring-1 ring-border px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Network} />
                   <span className="text-sm font-medium">{t('common.sections.networkConfig')}</span>
                 </div>
               </AccordionTrigger>
@@ -451,9 +471,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             </AccordionItem>
 
             {/* Protocol Config */}
-            <AccordionItem value="protocol" className="border rounded-md px-3 mb-2">
+            <AccordionItem value="protocol" className="rounded-xl ring-1 ring-border px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Shield} />
                   <span className="text-sm font-medium">
                     {PROTOCOL_NAMES[node.protocol]} {t('admin.nodes.form.config')}
                   </span>
@@ -587,9 +608,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             </AccordionItem>
 
             {/* Other Settings */}
-            <AccordionItem value="other" className="border rounded-md px-3 mb-2">
+            <AccordionItem value="other" className="rounded-xl ring-1 ring-border px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Settings} />
                   <span className="text-sm font-medium">{t('admin.nodes.form.section.otherSettings')}</span>
                 </div>
               </AccordionTrigger>
@@ -629,9 +651,10 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
             </AccordionItem>
 
             {/* Route Config */}
-            <AccordionItem value="route" className="border rounded-md px-3 mb-2">
+            <AccordionItem value="route" className="rounded-xl ring-1 ring-border px-3 mb-2">
               <AccordionTrigger className="py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Route} />
                   <span className="text-sm font-medium">{t('admin.nodes.form.section.routeConfig')}</span>
                   {formData.route && (
                     <Badge variant="secondary" className="text-xs">{t('admin.nodes.form.configured')}</Badge>

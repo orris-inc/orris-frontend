@@ -42,14 +42,14 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
 };
 
 // Protocol type label mapping
-const PROTOCOL_LABELS: Record<string, string> = {
-  shadowsocks: 'Shadowsocks',
-  trojan: 'Trojan',
-  vless: 'VLESS',
-  vmess: 'VMess',
-  hysteria2: 'Hysteria2',
-  tuic: 'TUIC',
-  anytls: 'AnyTLS',
+const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
+  shadowsocks: { label: 'Shadowsocks', color: 'bg-info/10 text-info border-info/20' },
+  trojan: { label: 'Trojan', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+  vless: { label: 'VLESS', color: 'bg-relay/10 text-relay border-relay/20' },
+  vmess: { label: 'VMess', color: 'bg-primary/10 text-primary border-primary/20' },
+  hysteria2: { label: 'Hysteria2', color: 'bg-warning/10 text-warning border-warning/20' },
+  tuic: { label: 'TUIC', color: 'bg-chart-3/10 text-chart-3 border-chart-3/20' },
+  anytls: { label: 'AnyTLS', color: 'bg-success/10 text-success border-success/20' },
 };
 
 // Transport protocol labels
@@ -132,8 +132,8 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">
               {node.name}
-              <Badge variant="outline" className="font-normal">
-                {PROTOCOL_LABELS[node.protocol] || node.protocol}
+              <Badge variant="outline" className={`font-normal ${(PROTOCOL_CONFIG[node.protocol] || { color: '' }).color}`}>
+                {(PROTOCOL_CONFIG[node.protocol] || { label: node.protocol }).label}
               </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2 mr-6">
@@ -189,10 +189,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                 <div className="flex items-center gap-2">
                   {isOnline ? (
                     <>
-                      <span className="relative flex h-2.5 w-2.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
-                      </span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-success"></span>
                       <span className="text-sm font-medium text-success">{t('common.status.online')}</span>
                     </>
                   ) : (

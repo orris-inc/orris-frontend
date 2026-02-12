@@ -3,7 +3,7 @@
  * Extracted for Fast Refresh compatibility
  */
 
-import type { OutboundType } from '@/api/node';
+import type { OutboundType, CustomOutbound } from '@/api/node';
 
 /** Simple node info for outbound selection */
 export interface OutboundNodeOption {
@@ -22,18 +22,31 @@ export const isNodeOutbound = (outbound: OutboundType): boolean => {
   return outbound.startsWith('node_');
 };
 
+/** Check if outbound value is a custom outbound reference */
+export const isCustomOutbound = (outbound: OutboundType): boolean => {
+  return outbound.startsWith('custom_');
+};
+
 /** Get display label for outbound value */
 export const getOutboundLabel = (
   outbound: OutboundType,
   nodes?: OutboundNodeOption[],
-  t?: (key: string, options?: Record<string, unknown>) => string
+  t?: (key: string, options?: Record<string, unknown>) => string,
+  customOutbounds?: CustomOutbound[]
 ): string => {
+  if (isCustomOutbound(outbound)) {
+    const entry = customOutbounds?.find((c) => c.tag === outbound);
+    const displayTag = outbound.replace(/^custom_/, '');
+    if (t) {
+      return t('admin.nodes.route.outbound.custom', { tag: entry ? displayTag : displayTag });
+    }
+    return `Custom: ${displayTag}`;
+  }
   if (!isNodeOutbound(outbound)) {
     const preset = PRESET_OUTBOUND_OPTIONS.find((o) => o.value === outbound);
     if (preset && t) {
       return t(preset.labelKey);
     }
-    // Fallback if no translation function
     const fallback: Record<string, string> = { proxy: 'Proxy', direct: 'Direct', block: 'Block' };
     return fallback[outbound] || outbound;
   }

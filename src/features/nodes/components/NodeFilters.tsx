@@ -1,9 +1,10 @@
 /**
- * Node Filters Component
- * Search-first desktop toolbar: search input + status/protocol/online dropdowns + toggles + action slot
+ * Node Filters Component (Redesigned)
+ *
+ * Layout: [Search] [Protocol chips with identity colors] [Status▼] [Online▼] | [Toggles] [Clear] {Actions→}
+ * Protocol chips are the primary filter — colored pills matching table protocol identity.
  */
 
-import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, X } from 'lucide-react';
 import {
@@ -36,19 +37,18 @@ export interface NodeFiltersProps {
   onDragSortEnabledChange: (enabled: boolean) => void;
   /** Disable drag sort toggle (e.g., during reordering) */
   dragSortDisabled?: boolean;
-  /** Action slot rendered at the right end (e.g. create + refresh buttons) */
-  action?: ReactNode;
   className?: string;
 }
 
-// Protocol options
-const PROTOCOL_OPTIONS: { value: NodeProtocol; label: string }[] = [
-  { value: 'shadowsocks', label: 'Shadowsocks' },
-  { value: 'vmess', label: 'VMess' },
-  { value: 'vless', label: 'VLESS' },
-  { value: 'trojan', label: 'Trojan' },
-  { value: 'hysteria2', label: 'Hysteria2' },
-  { value: 'tuic', label: 'TUIC' },
+// Protocol chip config — colors match table protocol identity
+const PROTOCOL_CHIPS: { value: NodeProtocol; label: string; activeColor: string }[] = [
+  { value: 'shadowsocks' as NodeProtocol, label: 'SS', activeColor: 'bg-info/15 text-info ring-info/25' },
+  { value: 'trojan' as NodeProtocol, label: 'Trojan', activeColor: 'bg-destructive/15 text-destructive ring-destructive/25' },
+  { value: 'vless' as NodeProtocol, label: 'VLESS', activeColor: 'bg-relay/15 text-relay ring-relay/25' },
+  { value: 'vmess' as NodeProtocol, label: 'VMess', activeColor: 'bg-primary/15 text-primary ring-primary/25' },
+  { value: 'hysteria2' as NodeProtocol, label: 'Hy2', activeColor: 'bg-warning/15 text-warning ring-warning/25' },
+  { value: 'tuic' as NodeProtocol, label: 'TUIC', activeColor: 'bg-chart-3/15 text-chart-3 ring-chart-3/25' },
+  { value: 'anytls' as NodeProtocol, label: 'AnyTLS', activeColor: 'bg-success/15 text-success ring-success/25' },
 ];
 
 // ============================================================================
@@ -65,7 +65,6 @@ export const NodeFilters = ({
   dragSortEnabled,
   onDragSortEnabledChange,
   dragSortDisabled,
-  action,
   className,
 }: NodeFiltersProps) => {
   const { t } = useTranslation();
@@ -74,15 +73,15 @@ export const NodeFilters = ({
     onFiltersChange({ search: e.target.value || undefined });
   };
 
-  const handleStatusChange = (value: string) => {
-    onFiltersChange({
-      status: value === 'all' ? undefined : (value as NodeStatus),
-    });
-  };
-
   const handleProtocolChange = (value: string) => {
     onFiltersChange({
       protocol: value === 'all' ? undefined : (value as NodeProtocol),
+    });
+  };
+
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({
+      status: value === 'all' ? undefined : (value as NodeStatus),
     });
   };
 
@@ -100,6 +99,8 @@ export const NodeFilters = ({
       ? 'online'
       : 'offline';
 
+  const currentProtocol = filters.protocol ?? 'all';
+
   return (
     <div className={cn('flex flex-wrap items-center gap-3', className)}>
       {/* Search input */}
@@ -110,15 +111,46 @@ export const NodeFilters = ({
           value={filters.search ?? ''}
           onChange={handleSearchChange}
           placeholder={t('admin.nodes.searchPlaceholder')}
-          className="h-9 w-[240px] rounded-lg ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 w-[220px] rounded-xl ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
 
+      {/* Protocol chips — identity colored */}
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => handleProtocolChange('all')}
+          className={cn(
+            'px-2.5 h-7 rounded-lg text-xs font-medium transition-all cursor-pointer',
+            currentProtocol === 'all'
+              ? 'bg-foreground/10 text-foreground ring-1 ring-foreground/15'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+          )}
+        >
+          {t('filter.all')}
+        </button>
+        {PROTOCOL_CHIPS.map((chip) => {
+          const isActive = currentProtocol === chip.value;
+          return (
+            <button
+              key={chip.value}
+              type="button"
+              onClick={() => handleProtocolChange(chip.value)}
+              className={cn(
+                'px-2.5 h-7 rounded-lg text-xs font-medium transition-all cursor-pointer',
+                isActive
+                  ? `ring-1 ${chip.activeColor}`
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+              )}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Status filter */}
-      <Select
-        value={filters.status ?? 'all'}
-        onValueChange={handleStatusChange}
-      >
+      <Select value={filters.status ?? 'all'} onValueChange={handleStatusChange}>
         <SelectTrigger className="w-[120px] h-9">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
@@ -129,29 +161,8 @@ export const NodeFilters = ({
         </SelectContent>
       </Select>
 
-      {/* Protocol filter */}
-      <Select
-        value={filters.protocol ?? 'all'}
-        onValueChange={handleProtocolChange}
-      >
-        <SelectTrigger className="w-[140px] h-9">
-          <SelectValue placeholder={t('common.protocol')} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t('filter.allTypes')}</SelectItem>
-          {PROTOCOL_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
       {/* Online status filter */}
-      <Select
-        value={onlineStatusValue}
-        onValueChange={handleOnlineStatusChange}
-      >
+      <Select value={onlineStatusValue} onValueChange={handleOnlineStatusChange}>
         <SelectTrigger className="w-[130px] h-9">
           <SelectValue placeholder={t('filter.onlineStatus')} />
         </SelectTrigger>
@@ -198,12 +209,6 @@ export const NodeFilters = ({
         </Button>
       )}
 
-      {/* Right-aligned action slot */}
-      {action && (
-        <div className="ml-auto flex items-center gap-2">
-          {action}
-        </div>
-      )}
     </div>
   );
 };

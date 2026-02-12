@@ -917,25 +917,25 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         // Determine overall health status
         const getHealthConfig = () => {
           if (isPolling && !polledStatus && !rule.syncStatus) {
-            return { labelKey: 'common.status.syncing', colorClass: 'text-info', bgClass: 'bg-info/10', showPulse: true };
+            return { labelKey: 'common.status.syncing', colorClass: 'text-info', bgClass: 'bg-info/10' };
           }
           if (!syncStatus) {
-            return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
+            return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10' };
           }
           if (syncStatus === 'failed') {
-            return { labelKey: 'common.status.syncFailed', colorClass: 'text-destructive', bgClass: 'bg-destructive/10', showPulse: false };
+            return { labelKey: 'common.status.syncFailed', colorClass: 'text-destructive', bgClass: 'bg-destructive/10' };
           }
           if (syncStatus === 'pending') {
-            return { labelKey: 'common.status.syncing', colorClass: 'text-warning', bgClass: 'bg-warning/10', showPulse: true };
+            return { labelKey: 'common.status.syncing', colorClass: 'text-warning', bgClass: 'bg-warning/10' };
           }
           // synced
           if (runStatus === 'running') {
-            return { labelKey: 'common.status.running', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: true };
+            return { labelKey: 'common.status.running', colorClass: 'text-success', bgClass: 'bg-success/10' };
           }
           if (runStatus === 'error') {
-            return { labelKey: 'common.status.error', colorClass: 'text-destructive', bgClass: 'bg-destructive/10', showPulse: false };
+            return { labelKey: 'common.status.error', colorClass: 'text-destructive', bgClass: 'bg-destructive/10' };
           }
-          return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10', showPulse: false };
+          return { labelKey: 'common.status.enabled', colorClass: 'text-success', bgClass: 'bg-success/10' };
         };
 
         const healthConfig = getHealthConfig();
@@ -966,16 +966,11 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                 onClick={() => onDisable(rule)}
                 className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all whitespace-nowrap ${healthConfig.bgClass} ${healthConfig.colorClass}`}
               >
-                <span className="relative flex">
-                  {healthConfig.showPulse && (
-                    <span className={`animate-ping absolute inline-flex size-full rounded-full ${healthConfig.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
-                  )}
-                  {isPolling && !polledStatus && !rule.syncStatus ? (
-                    <Loader2 className="relative size-3 animate-spin" />
-                  ) : (
-                    <RunIcon className={`relative size-3 ${runStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={runStatus === 'stopped' ? 1.5 : 2} />
-                  )}
-                </span>
+                {isPolling && !polledStatus && !rule.syncStatus ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <RunIcon className={`size-3 ${runStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={runStatus === 'stopped' ? 1.5 : 2} />
+                )}
                 {t(healthConfig.labelKey)}
                 {(totalAgents ?? 0) > 1 && (
                   <span className="text-[10px] opacity-70">

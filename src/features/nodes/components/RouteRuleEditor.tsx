@@ -21,7 +21,7 @@ import {
   AccordionContent,
 } from '@/components/common/Accordion';
 import { Badge } from '@/components/common/Badge';
-import type { RouteRule, OutboundType } from '@/api/node';
+import type { RouteRule, OutboundType, CustomOutbound } from '@/api/node';
 import {
   type OutboundNodeOption,
   PRESET_OUTBOUND_OPTIONS,
@@ -37,6 +37,8 @@ interface RouteRuleEditorProps {
   nodes?: OutboundNodeOption[];
   /** Current node ID (to exclude from selection) */
   currentNodeId?: string;
+  /** Custom outbounds defined in route config */
+  customOutbounds?: CustomOutbound[];
 }
 
 // Parse comma/newline separated string to array
@@ -106,6 +108,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
   idPrefix = 'rule',
   nodes = [],
   currentNodeId,
+  customOutbounds,
 }) => {
   const { t } = useTranslation();
   // Filter out current node from available options
@@ -166,7 +169,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         >
           <SelectTrigger id={`${idPrefix}-outbound`}>
             <SelectValue>
-              {getOutboundLabel(rule.outbound, nodes, t)}
+              {getOutboundLabel(rule.outbound, nodes, t, customOutbounds)}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -187,6 +190,18 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 ))}
               </>
             )}
+            {customOutbounds && customOutbounds.length > 0 && (
+              <>
+                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                  {t('admin.nodes.route.customOutbound.routeToCustom')}
+                </div>
+                {customOutbounds.map((co) => (
+                  <SelectItem key={co.tag} value={co.tag}>
+                    {co.tag.replace(/^custom_/, '')} ({co.type})
+                  </SelectItem>
+                ))}
+              </>
+            )}
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
@@ -201,7 +216,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         className="w-full"
       >
         {/* Domain matching */}
-        <AccordionItem value="domain" className="border rounded-md px-3 mb-2">
+        <AccordionItem value="domain" className="rounded-xl ring-1 ring-border px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('admin.nodes.route.section.domain')}</span>
@@ -286,7 +301,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         </AccordionItem>
 
         {/* IP matching */}
-        <AccordionItem value="ip" className="border rounded-md px-3 mb-2">
+        <AccordionItem value="ip" className="rounded-xl ring-1 ring-border px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('admin.nodes.route.section.ip')}</span>
@@ -354,7 +369,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         </AccordionItem>
 
         {/* GeoIP/GeoSite */}
-        <AccordionItem value="geo" className="border rounded-md px-3 mb-2">
+        <AccordionItem value="geo" className="rounded-xl ring-1 ring-border px-3 mb-2">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('admin.nodes.route.section.geo')}</span>
@@ -407,7 +422,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         {/* Port/Protocol */}
         <AccordionItem
           value="port-protocol"
-          className="border rounded-md px-3 mb-2"
+          className="rounded-xl ring-1 ring-border px-3 mb-2"
         >
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
@@ -489,7 +504,7 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
         </AccordionItem>
 
         {/* Rule set */}
-        <AccordionItem value="rule-set" className="border rounded-md px-3">
+        <AccordionItem value="rule-set" className="rounded-xl ring-1 ring-border px-3">
           <AccordionTrigger className="py-3 hover:no-underline">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('admin.nodes.route.section.ruleSet')}</span>

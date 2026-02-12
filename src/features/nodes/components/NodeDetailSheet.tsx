@@ -84,12 +84,12 @@ const STATUS_CONFIG: Record<
 
 const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = {
   shadowsocks: { label: 'Shadowsocks', color: 'bg-info/10 text-info' },
-  trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary' },
-  vless: { label: 'VLESS', color: 'bg-success/10 text-success' },
-  vmess: { label: 'VMess', color: 'bg-warning/10 text-warning' },
-  hysteria2: { label: 'Hysteria2', color: 'bg-info/10 text-info' },
-  tuic: { label: 'TUIC', color: 'bg-warning/10 text-warning' },
-  anytls: { label: 'AnyTLS', color: 'bg-primary/10 text-primary' },
+  trojan: { label: 'Trojan', color: 'bg-destructive/10 text-destructive' },
+  vless: { label: 'VLESS', color: 'bg-relay/10 text-relay' },
+  vmess: { label: 'VMess', color: 'bg-primary/10 text-primary' },
+  hysteria2: { label: 'Hysteria2', color: 'bg-warning/10 text-warning' },
+  tuic: { label: 'TUIC', color: 'bg-chart-3/10 text-chart-3' },
+  anytls: { label: 'AnyTLS', color: 'bg-success/10 text-success' },
 };
 
 // ============================================================================
@@ -489,9 +489,6 @@ export const NodeDetailSheet = ({
                     (isOnline || node.isOnline) ? 'bg-success' : 'bg-muted-foreground/30'
                   )}
                 >
-                  {(isOnline || node.isOnline) && (
-                    <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-75 motion-reduce:hidden" />
-                  )}
                 </span>
               </div>
 

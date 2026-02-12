@@ -13,9 +13,13 @@ import {
   ArrowUpCircle,
   Radio,
   Terminal,
+  Wifi,
+  WifiOff,
+  Wrench,
+  X,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderBadge } from '@/components/admin';
+import { PageHeader, type PageHeaderBadge, type PageHeaderMeta } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -167,8 +171,10 @@ export function NodeManagementPage() {
   // Calculate stats for conditional action buttons
   const stats = useMemo(() => {
     const online = nodes.filter((n) => n.isOnline).length;
+    const offline = nodes.filter((n) => !n.isOnline && n.status !== 'maintenance').length;
+    const maintenance = nodes.filter((n) => n.status === 'maintenance').length;
     const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total: pagination.total, online, updatable };
+    return { total: pagination.total, online, offline, maintenance, updatable };
   }, [nodes, pagination.total]);
 
   // Page header badge
@@ -179,6 +185,20 @@ export function NodeManagementPage() {
     }),
     [stats.total, t]
   );
+
+  // Page header metadata
+  const headerMetadata = useMemo((): PageHeaderMeta[] => {
+    const items: PageHeaderMeta[] = [
+      { icon: Wifi, text: `${stats.online} ${t('common.status.online')}` },
+    ];
+    if (stats.offline > 0) {
+      items.push({ icon: WifiOff, text: `${stats.offline} ${t('common.status.offline')}` });
+    }
+    if (stats.maintenance > 0) {
+      items.push({ icon: Wrench, text: `${stats.maintenance} ${t('common.status.maintenance')}` });
+    }
+    return items;
+  }, [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, node?: Node) => {
@@ -412,37 +432,14 @@ export function NodeManagementPage() {
   return (
     <AdminLayout>
       <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Simplified Page Header */}
+        {/* Page Header with metadata + actions */}
         <PageHeader
           title={t('nav.nodeAgent')}
           icon={Server}
           badge={headerBadge}
-        />
-
-        {/* Search-first Filter Bar with Actions */}
-        <NodeFilters
-          filters={extendedFilters}
-          onFiltersChange={handleExtendedFiltersChange}
-          hasFilters={hasFilters}
-          onClearFilters={clearFilters}
-          includeUserNodes={includeUserNodes}
-          onIncludeUserNodesChange={handleIncludeUserNodesChange}
-          dragSortEnabled={dragSortEnabled}
-          onDragSortEnabledChange={setDragSortEnabled}
-          dragSortDisabled={isReordering}
+          metadata={headerMetadata}
           action={
-            <>
-              {selectedCount > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBatchInstallScriptClick}
-                  disabled={isGettingBatchInstallScript}
-                >
-                  <Terminal className="mr-1.5 size-4" />
-                  {t('admin.nodes.table.actions.batchInstallScript')} ({selectedCount})
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
               <Button onClick={handleCreate} size="sm">
                 <Plus className="mr-1.5 size-4" />
                 {t('admin.nodes.addNode')}
@@ -467,9 +464,53 @@ export function NodeManagementPage() {
                 </TooltipTrigger>
                 <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
               </Tooltip>
-            </>
+            </div>
           }
         />
+
+        {/* Filter Bar */}
+        <NodeFilters
+          filters={extendedFilters}
+          onFiltersChange={handleExtendedFiltersChange}
+          hasFilters={hasFilters}
+          onClearFilters={clearFilters}
+          includeUserNodes={includeUserNodes}
+          onIncludeUserNodesChange={handleIncludeUserNodesChange}
+          dragSortEnabled={dragSortEnabled}
+          onDragSortEnabledChange={setDragSortEnabled}
+          dragSortDisabled={isReordering}
+        />
+
+        {/* Batch Action Bar */}
+        {selectedCount > 0 && (
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">{t('common.selected', { count: selectedCount })}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBatchInstallScriptClick}
+                disabled={isGettingBatchInstallScript}
+                className="h-8 px-2.5 gap-1.5"
+              >
+                <Terminal className="size-3.5" />
+                {t('admin.nodes.table.actions.batchInstallScript')}
+              </Button>
+              <div className="w-px h-5 bg-border mx-1" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRowSelection({})}
+                className="h-8 px-2.5 gap-1.5"
+              >
+                <X className="size-3.5" />
+                {t('common.actions.cancel')}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Node Table */}
         <NodeListTable

@@ -21,7 +21,6 @@ import {
   Copy,
   User,
   Shield,
-  Package,
   ArrowUpCircle,
   Radio,
   Bell,
@@ -84,14 +83,12 @@ const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
   colorClass: string;
   bgClass: string;
   icon: React.ElementType;
-  showPulse?: boolean;
 }> = {
   running: {
     labelKey: 'common.status.running',
     colorClass: 'text-success',
     bgClass: 'bg-success/10',
     icon: Circle,
-    showPulse: true,
   },
   offline: {
     labelKey: 'common.status.offline',
@@ -121,10 +118,15 @@ const getHealthStatus = (node: { status: NodeStatus; isOnline?: boolean }): Heal
   return node.isOnline ? 'running' : 'offline';
 };
 
-// Protocol configuration with semantic styling
+// Protocol identity colors — text only, no badge treatment
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  shadowsocks: { label: 'SS', color: 'bg-info-muted text-info border border-info/20' },
-  trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary border border-primary/20' },
+  shadowsocks: { label: 'SS', color: 'text-info' },
+  trojan: { label: 'Trojan', color: 'text-destructive' },
+  vless: { label: 'VLESS', color: 'text-relay' },
+  vmess: { label: 'VMess', color: 'text-primary' },
+  hysteria2: { label: 'Hy2', color: 'text-warning' },
+  tuic: { label: 'TUIC', color: 'text-chart-3' },
+  anytls: { label: 'AnyTLS', color: 'text-success' },
 };
 
 
@@ -191,6 +193,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           {t('admin.nodes.actions.broadcastUrl')}
         </ContextMenuItem>
       )}
+      {onToggleMute && (
+        <ContextMenuItem onClick={() => onToggleMute(node)}>
+          {node.muteNotification ? <Bell className="mr-2 size-4" /> : <BellOff className="mr-2 size-4" />}
+          {node.muteNotification ? t('admin.nodes.tooltip.clickToUnmute') : t('admin.nodes.tooltip.clickToMute')}
+        </ContextMenuItem>
+      )}
       <ContextMenuSeparator />
       {node.status === 'active' ? (
         <ContextMenuItem onClick={() => onDeactivate(node)}>
@@ -208,7 +216,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         {t('admin.nodes.actions.delete')}
       </ContextMenuItem>
     </>
-  ), [t, onViewDetail, onEdit, onGetInstallScript, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
+  ), [t, onViewDetail, onEdit, onGetInstallScript, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL, onToggleMute]);
 
   // Node dropdown menu content
   const renderDropdownMenuActions = useCallback((node: Node) => (
@@ -225,6 +233,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         <DropdownMenuItem onSelect={() => onNotifyURL(node)}>
           <Radio className="mr-2 size-4" />
           {t('admin.nodes.actions.broadcastUrl')}
+        </DropdownMenuItem>
+      )}
+      {onToggleMute && (
+        <DropdownMenuItem onSelect={() => onToggleMute(node)}>
+          {node.muteNotification ? <Bell className="mr-2 size-4" /> : <BellOff className="mr-2 size-4" />}
+          {node.muteNotification ? t('admin.nodes.tooltip.clickToUnmute') : t('admin.nodes.tooltip.clickToMute')}
         </DropdownMenuItem>
       )}
       <DropdownMenuSeparator />
@@ -244,7 +258,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         {t('admin.nodes.actions.delete')}
       </DropdownMenuItem>
     </>
-  ), [t, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL]);
+  ), [t, onCopy, onGenerateToken, onActivate, onDeactivate, onDelete, onNotifyURL, onToggleMute]);
 
   const columns = useMemo<ColumnDef<Node>[]>(() => [
     {
@@ -254,7 +268,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 1, sticky: 'left' } as ResponsiveColumnMeta, // Core column, always visible, sticky left
       cell: ({ row }) => {
         const node = row.original;
-        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'bg-muted text-muted-foreground' };
+        const protocolConfig = PROTOCOL_CONFIG[node.protocol] || { label: node.protocol, color: 'text-muted-foreground' };
         const hasSubscriptionPort = node.subscriptionPort && node.subscriptionPort !== node.agentPort;
 
         // Build hover items including ID and config details
@@ -283,21 +297,21 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             )}
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
-                <span className={`px-1.5 py-0.5 text-[10px] font-semibold rounded shrink-0 ${protocolConfig.color}`}>
-                  {protocolConfig.label}
-                </span>
-                <span className="font-semibold text-foreground truncate">
-                  {node.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
-                <code className="font-mono text-[11px] bg-muted/50 px-1 py-0.5 rounded">
+              <span className="font-semibold text-foreground truncate whitespace-nowrap">
+                {node.name}
+              </span>
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
+                <span className={`font-semibold ${protocolConfig.color}`}>{protocolConfig.label}</span>
+                <span className="text-border">·</span>
+                <span className="font-mono">
                   {node.serverAddress}:{node.agentPort}
                   {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
-                </code>
+                </span>
                 {node.region && (
-                  <span className="text-muted-foreground/60">• {node.region}</span>
+                  <>
+                    <span className="text-border">·</span>
+                    <span>{node.region}</span>
+                  </>
                 )}
               </div>
             </div>
@@ -315,7 +329,6 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         const healthStatus = getHealthStatus(node);
         const config = HEALTH_STATUS_CONFIG[healthStatus];
         const StatusIcon = config.icon;
-        const muteButtonClass = 'p-0.5 rounded hover:bg-accent/50 transition-colors cursor-pointer';
 
         // Build tooltip content
         const getTooltipContent = () => {
@@ -352,12 +365,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                   onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
                   className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${config.bgClass} ${config.colorClass}`}
                 >
-                  <span className="relative flex">
-                    {config.showPulse && (
-                      <span className={`animate-ping absolute inline-flex size-full rounded-full ${config.colorClass.replace('text-', 'bg-')} opacity-75`}></span>
-                    )}
-                    <StatusIcon className={`relative size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
-                  </span>
+                  <StatusIcon className={`size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
                   {t(config.labelKey)}
                 </button>
               </TooltipTrigger>
@@ -372,26 +380,14 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
                 {t('common.status.expired')}
               </Badge>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className={muteButtonClass}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleMute?.(node);
-                  }}
-                >
-                  {node.muteNotification ? (
-                    <BellOff className="size-3.5 text-muted-foreground" />
-                  ) : (
-                    <Bell className="size-3.5 text-muted-foreground/30" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {node.muteNotification ? t('admin.nodes.tooltip.clickToUnmute') : t('admin.nodes.tooltip.clickToMute')}
-              </TooltipContent>
-            </Tooltip>
+            {node.muteNotification && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <BellOff className="size-3 text-muted-foreground/50" />
+                </TooltipTrigger>
+                <TooltipContent>{t('admin.nodes.tooltip.clickToUnmute')}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         );
       },
@@ -471,16 +467,14 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             )}
             contentClassName="w-56"
           >
-            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md cursor-default transition-colors ${node.hasUpdate ? 'bg-warning-muted border border-warning/20' : 'bg-muted/30 border border-transparent'}`}>
-              {node.hasUpdate ? (
-                <ArrowUpCircle className="size-3.5 text-warning" strokeWidth={1.5} />
-              ) : (
-                <Package className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
-              )}
-              <code className={`text-[11px] font-mono ${node.hasUpdate ? 'text-warning' : 'text-muted-foreground'}`}>
-                v{version}
-              </code>
-            </div>
+            {node.hasUpdate ? (
+              <div className="inline-flex items-center gap-1 cursor-default">
+                <ArrowUpCircle className="size-3 text-warning" strokeWidth={1.5} />
+                <code className="text-[11px] font-mono font-medium text-warning">v{version}</code>
+              </div>
+            ) : (
+              <code className="text-[11px] font-mono text-muted-foreground cursor-default">v{version}</code>
+            )}
           </TableHoverCardList>
         );
       },

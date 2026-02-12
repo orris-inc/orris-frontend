@@ -76,8 +76,13 @@ const STATUS_CONFIG: Record<NodeStatus, { labelKey: string; variant: 'success' |
 
 // Protocol configuration with semantic styling
 const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
-  shadowsocks: { label: 'SS', color: 'bg-info-muted text-info' },
-  trojan: { label: 'Trojan', color: 'bg-primary/10 text-primary' },
+  shadowsocks: { label: 'SS', color: 'bg-info/10 text-info' },
+  trojan: { label: 'Trojan', color: 'bg-destructive/10 text-destructive' },
+  vless: { label: 'VLESS', color: 'bg-relay/10 text-relay' },
+  vmess: { label: 'VMess', color: 'bg-primary/10 text-primary' },
+  hysteria2: { label: 'Hy2', color: 'bg-warning/10 text-warning' },
+  tuic: { label: 'TUIC', color: 'bg-chart-3/10 text-chart-3' },
+  anytls: { label: 'AnyTLS', color: 'bg-success/10 text-success' },
 };
 
 import { formatDateTime } from '@/shared/utils/date-utils';
@@ -133,10 +138,7 @@ const OnlineIndicator: React.FC<{ isOnline: boolean; lastSeenAt?: string; t: (ke
   if (isOnline) {
     return (
       <span className="inline-flex items-center gap-1 text-success">
-        <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success"></span>
-        </span>
+        <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
         <span className="text-[10px] font-medium">{t('common.status.online')}</span>
       </span>
     );

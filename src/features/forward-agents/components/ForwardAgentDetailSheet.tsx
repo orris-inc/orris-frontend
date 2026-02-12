@@ -529,9 +529,6 @@ export const ForwardAgentDetailSheet = ({
                     (isOnline || agent.isOnline) ? 'bg-success' : 'bg-muted-foreground/30'
                   )}
                 >
-                  {(isOnline || agent.isOnline) && (
-                    <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-75 motion-reduce:hidden" />
-                  )}
                 </span>
               </div>
 

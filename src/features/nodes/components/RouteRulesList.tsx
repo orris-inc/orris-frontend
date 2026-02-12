@@ -12,15 +12,17 @@ import {
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { RouteRuleEditor } from './RouteRuleEditor';
 import {
   isNodeOutbound,
+  isCustomOutbound,
   type OutboundNodeOption,
 } from '../utils/route-rule-utils';
-import type { RouteRule, OutboundType } from '@/api/node';
+import type { RouteRule, OutboundType, CustomOutbound } from '@/api/node';
 
 interface RouteRulesListProps {
   rules: RouteRule[];
@@ -31,6 +33,8 @@ interface RouteRulesListProps {
   nodes?: OutboundNodeOption[];
   /** Current node ID (to exclude from selection) */
   currentNodeId?: string;
+  /** Custom outbounds defined in route config */
+  customOutbounds?: CustomOutbound[];
 }
 
 const PRESET_OUTBOUND_BADGE: Record<
@@ -42,12 +46,34 @@ const PRESET_OUTBOUND_BADGE: Record<
   block: { labelKey: 'admin.nodes.route.outbound.block', variant: 'destructive' },
 };
 
+// Outbound type to left-border color for visual scanning
+const OUTBOUND_BORDER_COLOR: Record<string, string> = {
+  proxy: 'border-l-primary',
+  direct: 'border-l-success',
+  block: 'border-l-destructive',
+};
+
+const getOutboundBorderColor = (outbound: OutboundType): string => {
+  if (isCustomOutbound(outbound)) return 'border-l-warning';
+  if (isNodeOutbound(outbound)) return 'border-l-info';
+  return OUTBOUND_BORDER_COLOR[outbound] || 'border-l-border';
+};
+
 /** Get badge info for outbound value */
 const getOutboundBadge = (
   outbound: OutboundType,
   nodes: OutboundNodeOption[] | undefined,
-  t: (key: string) => string
+  t: (key: string) => string,
+  customOutbounds?: CustomOutbound[]
 ): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
+  if (isCustomOutbound(outbound)) {
+    const entry = customOutbounds?.find((c) => c.tag === outbound);
+    const displayTag = outbound.replace(/^custom_/, '');
+    return {
+      label: entry ? `${displayTag} (${entry.type})` : displayTag,
+      variant: 'outline',
+    };
+  }
   if (!isNodeOutbound(outbound)) {
     const preset = PRESET_OUTBOUND_BADGE[outbound];
     if (preset) {
@@ -89,6 +115,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
   idPrefix = 'rules',
   nodes = [],
   currentNodeId,
+  customOutbounds,
 }) => {
   const { t } = useTranslation();
   const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
@@ -190,17 +217,17 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
       </div>
 
       {rules.length === 0 ? (
-        <div className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded-md">
+        <div className="text-sm text-muted-foreground text-center py-4 rounded-xl ring-1 ring-dashed ring-border">
           {t('admin.nodes.detail.noRouteRules')}
         </div>
       ) : (
         <div className="space-y-2">
           {rules.map((rule, index) => {
             const isExpanded = expandedIndices.has(index);
-            const outboundInfo = getOutboundBadge(rule.outbound, nodes, t);
+            const outboundInfo = getOutboundBadge(rule.outbound, nodes, t, customOutbounds);
 
             return (
-              <Card key={index} className="overflow-hidden">
+              <Card key={index} className={cn('overflow-hidden border-l-[3px]', getOutboundBorderColor(rule.outbound))}>
                 {/* Header */}
                 <div
                   className="flex items-center justify-between p-3 cursor-pointer hover:bg-accent/50 transition-colors"
@@ -208,9 +235,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <ChevronRight
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${
-                        isExpanded ? 'rotate-90' : ''
-                      }`}
+                      className={cn('h-4 w-4 text-muted-foreground transition-transform', isExpanded && 'rotate-90')}
                     />
                     <span className="text-sm font-medium">#{index + 1}</span>
                     <Badge variant={outboundInfo.variant} className="shrink-0">
@@ -270,6 +295,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       idPrefix={`${idPrefix}-${index}`}
                       nodes={nodes}
                       currentNodeId={currentNodeId}
+                      customOutbounds={customOutbounds}
                     />
                   </div>
                 )}
