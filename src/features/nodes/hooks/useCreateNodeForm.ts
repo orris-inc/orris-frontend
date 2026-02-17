@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import type {
   CreateNodeRequest,
   RouteConfig,
+  DnsConfig,
 } from '@/api/node';
 
 // Extended form data type with UI-only fields
@@ -38,6 +39,7 @@ const getDefaultFormData = (): CreateNodeFormData => ({
   sni: '',
   allowInsecure: false,
   route: undefined,
+  dns: undefined,
   // VLESS fields
   vlessTransportType: 'tcp',
   vlessFlow: '',
@@ -162,6 +164,11 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
   // Route change handler
   const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
+  }, []);
+
+  // DNS change handler
+  const handleDnsChange = useCallback((dns: DnsConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, dns }));
   }, []);
 
   // Cost label change handler
@@ -438,6 +445,10 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
       submitData.route = formData.route;
     }
 
+    if (formData.dns) {
+      submitData.dns = formData.dns;
+    }
+
     if (formData.groupSids && formData.groupSids.length > 0) {
       submitData.groupSids = formData.groupSids;
     }
@@ -511,6 +522,7 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
     // Handlers
     handleChange,
     handleRouteChange,
+    handleDnsChange,
     handleCostLabelChange,
     handleGroupToggle,
     handlePluginOptsChange,

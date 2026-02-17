@@ -903,7 +903,8 @@
         "config": "Settings",
         "section": {
           "otherSettings": "Other Settings",
-          "routeConfig": "Route Configuration"
+          "routeConfig": "Route Configuration",
+          "dnsConfig": "DNS Configuration"
         },
         "nodeName": "Node Name",
         "nodeNamePlaceholder": "e.g., Hong Kong Node 01",
@@ -1206,6 +1207,75 @@
           "sourcePort": "Source Port",
           "network": "Network",
           "ruleSet": "Rule Set"
+        }
+      },
+      "dns": {
+        "title": "DNS Configuration",
+        "noConfigHint": "No DNS configuration. Click to enable DNS-based unlocking.",
+        "enableConfig": "Enable DNS Config",
+        "disableConfig": "Disable DNS Config",
+        "modeVisual": "Visual",
+        "strategy": "DNS Strategy",
+        "strategyHint": "Global DNS resolution strategy",
+        "strategyOptions": {
+          "prefer_ipv4": "Prefer IPv4",
+          "prefer_ipv6": "Prefer IPv6",
+          "ipv4_only": "IPv4 Only",
+          "ipv6_only": "IPv6 Only"
+        },
+        "cache": {
+          "title": "Cache Settings",
+          "disableCache": "Disable Cache",
+          "disableCacheHint": "Disable DNS query caching",
+          "disableExpire": "Disable Expiration",
+          "disableExpireHint": "Disable DNS cache expiration",
+          "independentCache": "Independent Cache",
+          "independentCacheHint": "Independent cache per DNS server",
+          "reverseMapping": "Reverse Mapping",
+          "reverseMappingHint": "Enable reverse DNS mapping"
+        },
+        "servers": {
+          "title": "DNS Servers",
+          "add": "Add Server",
+          "tag": "Server Tag",
+          "tagHint": "Unique identifier for this server",
+          "address": "Server Address",
+          "addressHint": "Supports: 223.5.5.5, tls://8.8.8.8, https://1.1.1.1/dns-query",
+          "addressResolver": "Address Resolver",
+          "addressResolverHint": "DNS server used to resolve this server's address",
+          "addressStrategy": "Address Strategy",
+          "strategy": "Query Strategy",
+          "detour": "Outbound",
+          "detourHint": "Outbound used for this DNS server"
+        },
+        "rules": {
+          "title": "DNS Rules",
+          "add": "Add Rule",
+          "server": "Target DNS Server",
+          "serverHint": "DNS server to use for matched queries",
+          "disableCache": "Disable Cache",
+          "outbound": "Match Outbound",
+          "outboundHint": "Match by outbound tag (one per line)"
+        },
+        "defaultServer": "Default DNS Server",
+        "defaultServerHint": "DNS server used when no rules match",
+        "json": {
+          "mustBeObject": "Configuration must be a JSON object",
+          "invalidFinal": "The 'final' field must reference a valid DNS server tag",
+          "parseErrorSwitch": "Invalid JSON format. Please fix errors before switching to visual mode.",
+          "parseError": "Invalid JSON format",
+          "hint": "Edit the raw JSON configuration directly. Supports all sing-box DNS options."
+        },
+        "display": {
+          "noConfig": "No DNS configuration",
+          "defaultServer": "Default DNS Server",
+          "strategy": "Strategy",
+          "serversCount": "{{count}} DNS servers",
+          "rulesCount": "{{count}} DNS rules",
+          "noServers": "No DNS servers configured",
+          "noRules": "No DNS rules configured",
+          "cacheEnabled": "Cache enabled",
+          "cacheDisabled": "Cache disabled"
         }
       }
     },

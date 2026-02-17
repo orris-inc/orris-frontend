@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/common/Badge';
 import { Separator } from '@/components/common/Separator';
 import { RouteConfigEditor } from './RouteConfigEditor';
+import { DnsConfigEditor } from './DnsConfigEditor';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import type {
   CreateNodeRequest,
@@ -60,6 +61,7 @@ import {
   Gauge,
   Workflow,
   ShieldCheck,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
@@ -302,7 +304,7 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
   const {
     formData, errors, pluginOptsString,
     isShadowsocks, isTrojan, isVless, isVmess, isHysteria2, isTuic, isAnytls,
-    handleChange, handleRouteChange, handleCostLabelChange, handleGroupToggle,
+    handleChange, handleRouteChange, handleDnsChange, handleCostLabelChange, handleGroupToggle,
     isFormValid, hasProtocolSettings, hasOtherSettings,
   } = form;
 
@@ -767,6 +769,22 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 value={formData.route}
                 onChange={handleRouteChange}
                 idPrefix="create-node-route"
+                nodes={nodes}
+              />
+            </CollapsibleSection>
+
+            {/* DNS Configuration */}
+            <CollapsibleSection
+              config={{ id: 'dns', title: t('admin.nodes.form.section.dnsConfig'), icon: Globe }}
+              isOpen={openSections.has('dns')}
+              onToggle={() => toggleSection('dns')}
+              getBadgeText={() => formData.dns ? t('admin.nodes.form.configured') : null}
+              requiredLabel={t('admin.nodes.form.required')}
+            >
+              <DnsConfigEditor
+                value={formData.dns}
+                onChange={handleDnsChange}
+                idPrefix="create-node-dns"
                 nodes={nodes}
               />
             </CollapsibleSection>

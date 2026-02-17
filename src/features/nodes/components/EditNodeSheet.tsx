@@ -11,6 +11,7 @@ import {
   Shield,
   Settings,
   Route,
+  Globe,
   ChevronDown,
   Zap,
   Lock,
@@ -34,6 +35,7 @@ import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/compon
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
+import { DnsConfigEditor } from './DnsConfigEditor';
 import { MobileProtocolSettingsFields, NodeOtherSettingsFields, NodeNetworkFields } from './form-sections';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
@@ -181,7 +183,7 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
 
   const {
     formData, errors, pluginOptsStr,
-    handleChange, handlePluginOptsChange, handleRouteChange, handleCostLabelChange,
+    handleChange, handlePluginOptsChange, handleRouteChange, handleDnsChange, handleCostLabelChange,
     getHasChanges, getHasProtocolSettings,
   } = form;
 
@@ -548,6 +550,23 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               value={formData.route ?? undefined}
               onChange={handleRouteChange}
               idPrefix="edit-node-sheet-route"
+              nodes={nodes}
+              currentNodeId={node?.id}
+            />
+          </MobileSection>
+
+          {/* DNS Config */}
+          <MobileSection
+            title={t('admin.nodes.form.section.dnsConfig')}
+            icon={Globe}
+            badge={formData.dns ? t('admin.nodes.form.configured') : null}
+            isOpen={openSections.has('dns')}
+            onToggle={() => toggleSection('dns')}
+          >
+            <DnsConfigEditor
+              value={formData.dns ?? undefined}
+              onChange={handleDnsChange}
+              idPrefix="edit-node-sheet-dns"
               nodes={nodes}
               currentNodeId={node?.id}
             />

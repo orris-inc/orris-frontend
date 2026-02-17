@@ -22,6 +22,7 @@ import { Cpu, MemoryStick, HardDrive, ShieldCheck, ShieldAlert, Globe, Activity,
 import type { Node, NodeVersionInfo } from '@/api/node';
 import { getNodeVersion, triggerNodeUpdate } from '@/api/node';
 import { RouteConfigDisplay } from './RouteConfigDisplay';
+import { DnsConfigDisplay } from './DnsConfigDisplay';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import { formatBitRate, formatBytes, formatUptime } from '@/shared/utils/format-utils';
 import { useNodeDetailEvents } from '../hooks/useNodeEvents';
@@ -592,6 +593,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
               <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.detail.routeConfig')}</h3>
               <Separator className="mb-4" />
               <RouteConfigDisplay config={node.route} nodes={nodes} />
+            </div>
+          )}
+
+          {/* DNS Config */}
+          {node.dns && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">{t('admin.nodes.form.section.dnsConfig')}</h3>
+              <Separator className="mb-4" />
+              <DnsConfigDisplay config={node.dns} />
             </div>
           )}
 

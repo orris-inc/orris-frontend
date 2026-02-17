@@ -903,7 +903,8 @@
         "config": "配置",
         "section": {
           "otherSettings": "其他设置",
-          "routeConfig": "路由配置"
+          "routeConfig": "路由配置",
+          "dnsConfig": "DNS 配置"
         },
         "nodeName": "节点名称",
         "nodeNamePlaceholder": "例如：香港节点 01",
@@ -1206,6 +1207,75 @@
           "sourcePort": "源端口",
           "network": "网络",
           "ruleSet": "规则集"
+        }
+      },
+      "dns": {
+        "title": "DNS 配置",
+        "noConfigHint": "未配置 DNS。点击启用 DNS 解锁配置。",
+        "enableConfig": "启用 DNS 配置",
+        "disableConfig": "禁用 DNS 配置",
+        "modeVisual": "可视化",
+        "strategy": "DNS 策略",
+        "strategyHint": "全局 DNS 解析策略",
+        "strategyOptions": {
+          "prefer_ipv4": "优先 IPv4",
+          "prefer_ipv6": "优先 IPv6",
+          "ipv4_only": "仅 IPv4",
+          "ipv6_only": "仅 IPv6"
+        },
+        "cache": {
+          "title": "缓存设置",
+          "disableCache": "禁用缓存",
+          "disableCacheHint": "禁用 DNS 查询缓存",
+          "disableExpire": "禁用过期",
+          "disableExpireHint": "禁用 DNS 缓存过期",
+          "independentCache": "独立缓存",
+          "independentCacheHint": "每个 DNS 服务器使用独立缓存",
+          "reverseMapping": "反向映射",
+          "reverseMappingHint": "启用反向 DNS 映射"
+        },
+        "servers": {
+          "title": "DNS 服务器",
+          "add": "添加服务器",
+          "tag": "服务器标签",
+          "tagHint": "此服务器的唯一标识符",
+          "address": "服务器地址",
+          "addressHint": "支持：223.5.5.5、tls://8.8.8.8、https://1.1.1.1/dns-query",
+          "addressResolver": "地址解析器",
+          "addressResolverHint": "用于解析此服务器地址的 DNS 服务器",
+          "addressStrategy": "地址策略",
+          "strategy": "查询策略",
+          "detour": "出站",
+          "detourHint": "用于此 DNS 服务器的出站"
+        },
+        "rules": {
+          "title": "DNS 规则",
+          "add": "添加规则",
+          "server": "目标 DNS 服务器",
+          "serverHint": "匹配查询使用的 DNS 服务器",
+          "disableCache": "禁用缓存",
+          "outbound": "匹配出站",
+          "outboundHint": "按出站标签匹配（每行一个）"
+        },
+        "defaultServer": "默认 DNS 服务器",
+        "defaultServerHint": "未匹配任何规则时使用的 DNS 服务器",
+        "json": {
+          "mustBeObject": "配置必须是 JSON 对象",
+          "invalidFinal": "'final' 字段必须引用有效的 DNS 服务器标签",
+          "parseErrorSwitch": "JSON 格式无效，请修复错误后再切换到可视化模式。",
+          "parseError": "JSON 格式无效",
+          "hint": "直接编辑原始 JSON 配置，支持所有 sing-box DNS 选项。"
+        },
+        "display": {
+          "noConfig": "未配置 DNS",
+          "defaultServer": "默认 DNS 服务器",
+          "strategy": "策略",
+          "serversCount": "{{count}} 个 DNS 服务器",
+          "rulesCount": "{{count}} 条 DNS 规则",
+          "noServers": "未配置 DNS 服务器",
+          "noRules": "未配置 DNS 规则",
+          "cacheEnabled": "缓存已启用",
+          "cacheDisabled": "缓存已禁用"
         }
       }
     },

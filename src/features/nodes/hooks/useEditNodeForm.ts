@@ -11,6 +11,7 @@ import type {
   Node,
   UpdateNodeRequest,
   RouteConfig,
+  DnsConfig,
 } from '@/api/node';
 
 // Extended form data type with UI-only fields
@@ -49,6 +50,8 @@ export function useEditNodeForm() {
       allowInsecure: node.allowInsecure,
       // Route configuration
       route: node.route,
+      // DNS configuration
+      dns: node.dns,
       // Resource groups
       groupSids: node.groupSids ?? [],
       // Notification setting
@@ -141,6 +144,11 @@ export function useEditNodeForm() {
   // Route change handler
   const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
     setFormData((prev) => ({ ...prev, route }));
+  }, []);
+
+  // DNS change handler
+  const handleDnsChange = useCallback((dns: DnsConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, dns }));
   }, []);
 
   // Cost label change handler
@@ -413,7 +421,21 @@ export function useEditNodeForm() {
     // Route configuration
     const routeChanged = JSON.stringify(formData.route) !== JSON.stringify(node.route);
     if (routeChanged) {
-      updates.route = formData.route === undefined ? null : formData.route;
+      if (formData.route === undefined) {
+        updates.clearRoute = true;
+      } else {
+        updates.route = formData.route;
+      }
+    }
+
+    // DNS configuration
+    const dnsChanged = JSON.stringify(formData.dns) !== JSON.stringify(node.dns);
+    if (dnsChanged) {
+      if (formData.dns === undefined) {
+        updates.clearDns = true;
+      } else {
+        updates.dns = formData.dns;
+      }
     }
 
     // Mute notification
@@ -479,6 +501,7 @@ export function useEditNodeForm() {
     handleChange,
     handlePluginOptsChange,
     handleRouteChange,
+    handleDnsChange,
     handleCostLabelChange,
     initializeForm,
     reset,

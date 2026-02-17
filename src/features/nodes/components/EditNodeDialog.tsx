@@ -40,10 +40,11 @@ import type {
   CongestionControl,
   TUICUDPRelayMode,
 } from '@/api/node';
-import { Server, Network, Shield, Settings, Route, Pencil } from 'lucide-react';
+import { Server, Network, Shield, Settings, Route, Globe, Pencil } from 'lucide-react';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
+import { DnsConfigEditor } from './DnsConfigEditor';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
 import {
   SS_ENCRYPTION_METHODS,
@@ -112,7 +113,7 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
 
   const {
     formData, errors, pluginOptsStr,
-    handleChange, handlePluginOptsChange, handleRouteChange, handleCostLabelChange,
+    handleChange, handlePluginOptsChange, handleRouteChange, handleDnsChange, handleCostLabelChange,
     getHasChanges, getHasProtocolSettings,
   } = form;
 
@@ -666,6 +667,28 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   value={formData.route ?? undefined}
                   onChange={handleRouteChange}
                   idPrefix="edit-node-route"
+                  nodes={nodes}
+                  currentNodeId={node?.id}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* DNS Config */}
+            <AccordionItem value="dns" className="rounded-xl ring-1 ring-border px-3 mb-2">
+              <AccordionTrigger className="py-3 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <SectionIcon icon={Globe} />
+                  <span className="text-sm font-medium">{t('admin.nodes.form.section.dnsConfig')}</span>
+                  {formData.dns && (
+                    <Badge variant="secondary" className="text-xs">{t('admin.nodes.form.configured')}</Badge>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <DnsConfigEditor
+                  value={formData.dns ?? undefined}
+                  onChange={handleDnsChange}
+                  idPrefix="edit-node-dns"
                   nodes={nodes}
                   currentNodeId={node?.id}
                 />

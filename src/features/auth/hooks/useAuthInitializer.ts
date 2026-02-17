@@ -11,30 +11,10 @@ import * as authApi from '@/api/auth';
 // This ensures initialization only happens once during the entire app lifecycle
 let globalHasInitialized = false;
 
-// Public pages that don't require authentication check
-const PUBLIC_PATHS = [
-  '/',
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
-  '/verify-email',
-  '/verification-pending',
-  '/pricing',
-];
-
-/**
- * Check if current path is a public page
- */
-const isPublicPath = (): boolean => {
-  const currentPath = window.location.pathname;
-  return PUBLIC_PATHS.includes(currentPath);
-};
-
 /**
  * Initialize authentication state
  * Call /auth/me to get current user info on app startup
- * Only called once, skipped on public pages
+ * Only called once, runs on all pages to support "Remember Me" sessions
  */
 export const useAuthInitializer = () => {
   const hasInitialized = useRef(false);
@@ -53,17 +33,13 @@ export const useAuthInitializer = () => {
     globalHasInitialized = true;
     hasInitialized.current = true;
 
-    // Skip auth check on public pages
-    if (isPublicPath()) {
-      useAuthStore.getState().setLoading(false);
-      return;
-    }
-
     const initializeAuth = async () => {
       try {
         const user = await authApi.getCurrentUser();
         useAuthStore.getState().login(user);
       } catch {
+        // On public pages, silently clear auth state without redirect
+        // On protected pages, ProtectedRoute will handle the redirect
         useAuthStore.getState().clearAuth();
       } finally {
         useAuthStore.getState().setLoading(false);

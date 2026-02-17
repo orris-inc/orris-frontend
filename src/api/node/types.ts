@@ -11,6 +11,9 @@
  * - Node: "node_xK9mP2vL3nQ" (prefix: node_)
  *
  * Recent changes:
+ * - 2026-02-12: Added clearRoute, dns, clearDns fields to UpdateNodeRequest for DNS configuration management
+ * - 2026-02-12: Added DnsConfig, DnsServer, DnsRule, DnsStrategy types for DNS-based unlocking configuration (sing-box compatible)
+ * - 2026-02-12: Added dns field to Node, CreateNodeRequest, UpdateNodeRequest; added clearDns to UpdateNodeRequest
  * - 2026-02-12: Added CustomOutbound type; added customOutbounds to RouteConfig; extended OutboundType with custom_xxx support
  * - 2026-02-11: Added 'anytls' to NodeProtocol; added AnyTLS-specific fields to Node, CreateNodeRequest, UpdateNodeRequest, UserNode
  * - 2026-02-04: Added BatchInstallScriptRequest, NodeInstallInfo, BatchInstallScriptResponse for multi-node batch install
@@ -174,6 +177,84 @@ export interface RouteRule {
   // Action
   /** Action: direct/block/proxy or node SID (node_xxx) for routing to specific node */
   outbound: OutboundType;
+}
+
+/**
+ * DNS resolution strategy
+ * Compatible with sing-box dns.strategy field
+ * Added: 2026-02-12
+ */
+export type DnsStrategy = 'prefer_ipv4' | 'prefer_ipv6' | 'ipv4_only' | 'ipv6_only';
+
+/**
+ * DNS server configuration entry
+ * Compatible with sing-box dns.servers[] entry
+ * Added: 2026-02-12
+ */
+export interface DnsServer {
+  /** Unique identifier for this DNS server */
+  tag: string;
+  /** DNS server address (e.g., "https://1.1.1.1/dns-query", "tls://8.8.8.8", "223.5.5.5") */
+  address: string;
+  /** Tag of another DNS server used to resolve this server's address */
+  addressResolver?: string;
+  /** Strategy for resolving this server's address */
+  addressStrategy?: DnsStrategy;
+  /** DNS resolution strategy for queries sent to this server */
+  strategy?: DnsStrategy;
+  /** Outbound tag for this DNS server (direct/proxy/node_xxx/custom_xxx) */
+  detour?: string;
+}
+
+/**
+ * DNS routing rule
+ * Compatible with sing-box dns.rules[] entry
+ * Added: 2026-02-12
+ */
+export interface DnsRule {
+  /** Exact domain match */
+  domain?: string[];
+  /** Domain suffix match */
+  domainSuffix?: string[];
+  /** Domain keyword match */
+  domainKeyword?: string[];
+  /** Domain regex match */
+  domainRegex?: string[];
+  /** GeoSite categories */
+  geosite?: string[];
+  /** GeoIP country codes */
+  geoip?: string[];
+  /** Rule set references */
+  ruleSet?: string[];
+  /** Match by outbound tag */
+  outbound?: string[];
+  /** Target DNS server tag */
+  server: string;
+  /** Disable cache for matched queries */
+  disableCache: boolean;
+}
+
+/**
+ * DNS configuration for DNS-based unlocking (sing-box compatible)
+ * Added: 2026-02-12
+ */
+export interface DnsConfig {
+  /** DNS servers */
+  servers?: DnsServer[];
+  /** DNS routing rules */
+  rules?: DnsRule[];
+  /** Default DNS server tag */
+  final: string;
+  /** Global DNS strategy */
+  strategy?: DnsStrategy;
+  /** Disable DNS cache */
+  disableCache: boolean;
+  /** Disable DNS cache expiration */
+  disableExpire: boolean;
+  /** Independent cache per DNS server */
+  independentCache: boolean;
+  /** Enable reverse DNS mapping */
+  reverseMapping: boolean;
 }
 
 /**
@@ -348,6 +429,8 @@ export interface Node {
   owner?: NodeOwner;
   /** Routing configuration for traffic splitting (sing-box compatible) */
   route?: RouteConfig;
+  /** DNS configuration for DNS-based unlocking (sing-box compatible) (Added: 2026-02-12) */
+  dns?: DnsConfig;
 }
 
 /**
@@ -555,6 +638,8 @@ export interface CreateNodeRequest {
   allowInsecure?: boolean;
   /** Routing configuration for traffic splitting (sing-box compatible) */
   route?: RouteConfig;
+  /** DNS configuration for DNS-based unlocking (sing-box compatible) (Added: 2026-02-12) */
+  dns?: DnsConfig;
 
   // VLESS specific fields (Added: 2026-01-09)
   /** VLESS transport type (tcp, ws, grpc, h2) */
@@ -654,6 +739,7 @@ export interface CreateNodeRequest {
 /**
  * Update node request
  * PUT /nodes/:id
+ * Updated: 2026-02-12 - Added clearRoute, dns, clearDns fields for DNS configuration management
  * Updated: 2026-02-03 - Added expiresAt, renewalAmount fields for expiration management
  * Updated: 2026-01-31 - Added vlessRealityPrivateKey (auto-generated if empty for Reality security)
  * Updated: 2026-01-09 - Added VLESS, VMess, Hysteria2, TUIC protocol-specific fields
@@ -694,8 +780,14 @@ export interface UpdateNodeRequest {
   sni?: string;
   /** Allow insecure TLS connection */
   allowInsecure?: boolean;
-  /** Routing configuration for traffic splitting (sing-box compatible, null to clear) */
-  route?: RouteConfig | null;
+  /** Routing configuration for traffic splitting (sing-box compatible) */
+  route?: RouteConfig;
+  /** Set to true to clear route configuration (Added: 2026-02-12) */
+  clearRoute?: boolean;
+  /** DNS configuration for DNS-based unlocking (sing-box compatible) (Added: 2026-02-12) */
+  dns?: DnsConfig;
+  /** Set to true to clear DNS configuration (Added: 2026-02-12) */
+  clearDns?: boolean;
 
   // VLESS specific fields (Added: 2026-01-09)
   /** VLESS transport type (tcp, ws, grpc, h2) */

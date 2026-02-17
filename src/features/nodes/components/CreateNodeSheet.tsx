@@ -39,6 +39,7 @@ import { MobileFormInput, MobileSelect, type MobileSelectOption } from '@/compon
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { useSubscriptionPlans } from '@/features/subscription-plans/hooks/useSubscriptionPlans';
 import { RouteConfigEditor } from './RouteConfigEditor';
+import { DnsConfigEditor } from './DnsConfigEditor';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
 import type { OutboundNodeOption } from '../utils/route-rule-utils';
@@ -110,6 +111,7 @@ const STEPS: StepConfig[] = [
   { id: 'protocol', titleKey: 'admin.nodes.form.protocolType', icon: Shield },
   { id: 'other', titleKey: 'admin.nodes.form.section.otherSettings', icon: Settings },
   { id: 'route', titleKey: 'admin.nodes.form.section.routeConfig', icon: Route },
+  { id: 'dns', titleKey: 'admin.nodes.form.section.dnsConfig', icon: Globe },
 ];
 
 // Collapsible Section - Tailwind Application UI style
@@ -365,7 +367,7 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
     showWsFields, showGrpcFields,
     showVlessWsFields, showVlessGrpcFields, showVlessRealityFields,
     showVmessWsFields, showVmessGrpcFields,
-    handleChange, handleRouteChange,
+    handleChange, handleRouteChange, handleDnsChange,
     isFormValid, hasProtocolSettings, hasOtherSettings,
   } = form;
 
@@ -559,6 +561,11 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 5: Route Config */}
           <StepSection step={STEPS[4]} title={t(STEPS[4].titleKey)} badge={formData.route ? t('admin.nodes.form.configured') : null} isOpen={openSections.has('route')} isCompleted={completedSteps.has('route')} onToggle={() => toggleSection('route')}>
             <RouteConfigEditor value={formData.route} onChange={handleRouteChange} idPrefix="create-node-sheet-route" nodes={nodes} />
+          </StepSection>
+
+          {/* Step 6: DNS Config */}
+          <StepSection step={STEPS[5]} title={t(STEPS[5].titleKey)} badge={formData.dns ? t('admin.nodes.form.configured') : null} isOpen={openSections.has('dns')} isCompleted={completedSteps.has('dns')} onToggle={() => toggleSection('dns')}>
+            <DnsConfigEditor value={formData.dns} onChange={handleDnsChange} idPrefix="create-node-sheet-dns" nodes={nodes} />
           </StepSection>
         </SheetBody>
 
