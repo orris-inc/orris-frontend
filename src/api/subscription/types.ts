@@ -49,6 +49,10 @@ export interface Subscription {
   currentPeriodEnd: string;
   isExpired: boolean;
   isActive: boolean;
+  /** Current online device count */
+  onlineDeviceCount: number;
+  /** Max concurrent devices (0=unlimited) */
+  deviceLimit: number;
   cancelledAt?: string;
   cancelReason?: string;
   createdAt: string;

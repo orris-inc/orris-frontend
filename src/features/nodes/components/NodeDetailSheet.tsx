@@ -510,6 +510,14 @@ export const NodeDetailSheet = ({
                       ? t('common.status.online')
                       : t('common.status.offline')}
                   </span>
+                  {node.onlineSubscriptionCount > 0 && (
+                    <>
+                      <span className="text-border">·</span>
+                      <span className="text-xs text-success font-medium">
+                        {node.onlineSubscriptionCount} {t('admin.nodes.detail.onlineSubscriptions')}
+                      </span>
+                    </>
+                  )}
                 </SheetDescription>
               </div>
             </div>

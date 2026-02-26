@@ -162,6 +162,20 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       },
     },
     {
+      id: 'devices',
+      header: t('subscription.onlineDeviceCount'),
+      size: 80,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const { onlineDeviceCount, deviceLimit } = row.original;
+        return (
+          <span className="text-sm tabular-nums">
+            {onlineDeviceCount} / {deviceLimit === 0 ? '∞' : deviceLimit}
+          </span>
+        );
+      },
+    },
+    {
       accessorKey: 'startDate',
       header: t('tableColumns.startDate'),
       size: 100,

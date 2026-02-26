@@ -15,6 +15,7 @@ import {
   ArrowUpCircle,
   Radio,
   Terminal,
+  Users,
   Wifi,
   WifiOff,
   Wrench,
@@ -177,7 +178,8 @@ export function NodeManagementPage() {
     const offline = nodes.filter((n) => !n.isOnline && n.status !== 'maintenance').length;
     const maintenance = nodes.filter((n) => n.status === 'maintenance').length;
     const updatable = nodes.filter((n) => n.hasUpdate && n.isOnline).length;
-    return { total: pagination.total, online, offline, maintenance, updatable };
+    const onlineSubscriptions = nodes.reduce((sum, n) => sum + (n.onlineSubscriptionCount || 0), 0);
+    return { total: pagination.total, online, offline, maintenance, updatable, onlineSubscriptions };
   }, [nodes, pagination.total]);
 
   // Page header badge
@@ -199,6 +201,9 @@ export function NodeManagementPage() {
     }
     if (stats.maintenance > 0) {
       items.push({ icon: Wrench, text: `${stats.maintenance} ${t('common.status.maintenance')}` });
+    }
+    if (stats.onlineSubscriptions > 0) {
+      items.push({ icon: Users, text: `${stats.onlineSubscriptions} ${t('admin.nodes.detail.onlineSubscriptions')}` });
     }
     return items;
   }, [stats, t]);

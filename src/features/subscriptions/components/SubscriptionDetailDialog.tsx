@@ -10,6 +10,7 @@ import {
   Copy,
   CreditCard,
   Link as LinkIcon,
+  Monitor,
   User,
   XCircle,
 } from 'lucide-react';
@@ -225,6 +226,12 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               icon={subscription.isExpired ? <XCircle className="size-4 text-destructive" /> : <CheckCircle className="size-4 text-success" />}
               label={t('subscription.isExpired')}
               value={subscription.isExpired ? t('common.status.expired') : t('subscriptionStatus.notExpired')}
+              successMessage={t('common.messages.copySuccess')}
+            />
+            <DetailItem
+              icon={<Monitor className="size-4" />}
+              label={t('subscription.deviceUsage')}
+              value={`${subscription.onlineDeviceCount} / ${subscription.deviceLimit === 0 ? t('subscription.unlimited') : subscription.deviceLimit}`}
               successMessage={t('common.messages.copySuccess')}
             />
             {subscription.cancelledAt && (

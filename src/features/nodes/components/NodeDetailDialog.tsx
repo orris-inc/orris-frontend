@@ -18,7 +18,7 @@ import { Separator } from '@/components/common/Separator';
 import { Progress, ProgressIndicator } from '@/components/common/Progress';
 import { TruncatedId, ExtendedMetricsPanel, hasExtendedMetrics } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { Cpu, MemoryStick, HardDrive, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2, Wifi, WifiOff } from 'lucide-react';
+import { Cpu, MemoryStick, HardDrive, ShieldCheck, ShieldAlert, Globe, Activity, Network, Package, RefreshCw, ArrowUpCircle, Loader2, Wifi, WifiOff, Users } from 'lucide-react';
 import type { Node, NodeVersionInfo } from '@/api/node';
 import { getNodeVersion, triggerNodeUpdate } from '@/api/node';
 import { RouteConfigDisplay } from './RouteConfigDisplay';
@@ -200,6 +200,15 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                     </>
                   )}
                 </div>
+                {node.onlineSubscriptionCount > 0 && (
+                  <>
+                    <span className="text-border">|</span>
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Users className="h-3.5 w-3.5 text-success" />
+                      <span>{node.onlineSubscriptionCount} {t('admin.nodes.detail.onlineSubscriptions')}</span>
+                    </div>
+                  </>
+                )}
                 {systemStatus?.uptimeSeconds !== undefined && systemStatus.uptimeSeconds > 0 && (
                   <>
                     <span className="text-border">|</span>

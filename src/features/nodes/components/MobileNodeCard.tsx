@@ -10,7 +10,7 @@
 
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Activity, ArrowUpCircle, Network } from 'lucide-react';
+import { Activity, ArrowUpCircle, Network, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import type { Node, NodeStatus, NodeProtocol } from '@/api/node';
@@ -160,6 +160,12 @@ export const MobileNodeCard = memo(({
             {node.name}
           </span>
           <OnlineIndicator isOnline={node.isOnline} showLabel={false} t={t} />
+          {node.onlineSubscriptionCount > 0 && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] text-success font-medium shrink-0">
+              <Users className="size-3" strokeWidth={2} />
+              {node.onlineSubscriptionCount}
+            </span>
+          )}
           {node.hasUpdate && node.isOnline && (
             <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
           )}

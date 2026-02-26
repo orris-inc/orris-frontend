@@ -12,6 +12,7 @@ import {
   Upload,
   Download,
   Link2,
+  Monitor,
   RefreshCw,
   Loader2,
   Zap,
@@ -465,10 +466,20 @@ export const SubscriptionOverviewTab: React.FC<
               </span>
             </div>
             {/* Total Days */}
-            <div className="flex items-center justify-between py-1 @sm:py-1.5">
+            <div className="flex items-center justify-between py-1 @sm:py-1.5 border-b border-border/50">
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.cycleDays")}</span>
               <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
                 {neverExpires ? t("common.fields.neverExpires") : totalDays !== null ? `${totalDays} ${t("common.days")}` : "-"}
+              </span>
+            </div>
+            {/* Device Usage */}
+            <div className="flex items-center justify-between py-1 @sm:py-1.5">
+              <span className="text-[10px] @sm:text-xs text-muted-foreground flex items-center gap-1">
+                <Monitor className="size-3" />
+                {t("subscription.onlineDeviceCount")}
+              </span>
+              <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
+                {subscription.onlineDeviceCount} / {subscription.deviceLimit === 0 ? t("subscription.unlimited") : subscription.deviceLimit}
               </span>
             </div>
           </div>

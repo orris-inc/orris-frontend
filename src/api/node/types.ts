@@ -14,6 +14,7 @@
  * - 2026-02-12: Added clearRoute, dns, clearDns fields to UpdateNodeRequest for DNS configuration management
  * - 2026-02-12: Added DnsConfig, DnsServer, DnsRule, DnsStrategy types for DNS-based unlocking configuration (sing-box compatible)
  * - 2026-02-12: Added dns field to Node, CreateNodeRequest, UpdateNodeRequest; added clearDns to UpdateNodeRequest
+ * - 2026-02-26: Added onlineSubscriptionCount to Node for real-time online subscription tracking per node
  * - 2026-02-26: Added RuleSetEntry type; added ruleSetEntries to RouteConfig for remote rule-set sources (sing-box 1.12+)
  * - 2026-02-12: Added CustomOutbound type; added customOutbounds to RouteConfig; extended OutboundType with custom_xxx support
  * - 2026-02-11: Added 'anytls' to NodeProtocol; added AnyTLS-specific fields to Node, CreateNodeRequest, UpdateNodeRequest, UserNode
@@ -424,6 +425,8 @@ export interface Node {
 
   /** Indicates if the node agent is online (reported within 5 minutes) */
   isOnline: boolean;
+  /** Number of online subscriptions on this node - Added 2026-02-26 */
+  onlineSubscriptionCount: number;
   /** Last time the node agent reported status */
   lastSeenAt?: string;
   /** Expiration time in ISO8601 format (null = never expires) (Added: 2026-02-03) */

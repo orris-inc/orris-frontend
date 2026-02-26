@@ -17,6 +17,7 @@ import {
   Copy,
   CreditCard,
   Link as LinkIcon,
+  Monitor,
   User,
   XCircle,
   Receipt,
@@ -474,6 +475,11 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                   <div className="text-xs mt-1">{subscription.isExpired ? t('common.status.expired') : t('subscriptionStatus.notExpired')}</div>
                 </div>
               </div>
+              <DetailRow
+                icon={<Monitor className="size-3.5" />}
+                label={t('subscription.deviceUsage')}
+                value={`${subscription.onlineDeviceCount} / ${subscription.deviceLimit === 0 ? t('subscription.unlimited') : subscription.deviceLimit}`}
+              />
 
               {(subscription.cancelledAt || subscription.cancelReason) && (
                 <>

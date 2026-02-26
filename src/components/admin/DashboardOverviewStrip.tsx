@@ -224,6 +224,12 @@ export function DashboardOverviewStrip({
           <span className="size-1.5 rounded-full bg-status-offline" />
           <span className="tabular-nums">{dashboard.nodes.offline}</span>
         </span>
+        {dashboard.nodes.totalOnlineSubscriptions > 0 && (
+          <span className="flex items-center gap-1">
+            <Users className="size-3 text-muted-foreground" strokeWidth={1.5} />
+            <span className="tabular-nums">{dashboard.nodes.totalOnlineSubscriptions}</span>
+          </span>
+        )}
       </div>
     );
   })();

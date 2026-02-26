@@ -25,6 +25,7 @@ import {
   Radio,
   Bell,
   BellOff,
+  Users,
 } from 'lucide-react';
 import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -345,6 +346,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           } else if (node.expiresAt && !isNeverExpiresDate(node.expiresAt)) {
             lines.push(`${t('admin.nodes.tooltip.expiresAt')}: ${formatDateTime(node.expiresAt)}`);
           }
+          if (node.onlineSubscriptionCount > 0) {
+            lines.push(`${t('admin.nodes.detail.onlineSubscriptions')}: ${node.onlineSubscriptionCount}`);
+          }
           if (node.costLabel) {
             lines.push(`${t('common.fields.costLabel')}: ${node.costLabel}`);
           }
@@ -379,6 +383,12 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
                 {t('common.status.expired')}
               </Badge>
+            )}
+            {node.onlineSubscriptionCount > 0 && (
+              <span className="inline-flex items-center gap-0.5 text-[11px] text-success font-medium">
+                <Users className="size-3" strokeWidth={2} />
+                {node.onlineSubscriptionCount}
+              </span>
             )}
             {node.muteNotification && (
               <Tooltip>
