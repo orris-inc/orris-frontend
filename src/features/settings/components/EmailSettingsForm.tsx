@@ -76,17 +76,21 @@ export const EmailSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      smtpHost: (settings.smtpHost.value as string) || '',
-      smtpPort: (settings.smtpPort.value as number) || 587,
-      smtpUser: (settings.smtpUser.value as string) || '',
-      smtpPassword: (settings.smtpPassword.value as string) || '',
-      fromAddress: (settings.fromAddress.value as string) || '',
-      fromName: (settings.fromName.value as string) || '',
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        smtpHost: (settings.smtpHost.value as string) || '',
+        smtpPort: (settings.smtpPort.value as number) || 587,
+        smtpUser: (settings.smtpUser.value as string) || '',
+        smtpPassword: (settings.smtpPassword.value as string) || '',
+        fromAddress: (settings.fromAddress.value as string) || '',
+        fromName: (settings.fromName.value as string) || '',
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: EmailSettingsFormData) => {
     const updates: UpdateEmailSettingsRequest = {};
@@ -112,6 +116,8 @@ export const EmailSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

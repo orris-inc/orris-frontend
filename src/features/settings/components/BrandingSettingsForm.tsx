@@ -175,14 +175,18 @@ export const BrandingSettingsForm = ({
   const logoUrl = watch('logoUrl') || '';
   const faviconUrl = watch('faviconUrl') || '';
 
-  // Reset form when settings change (after successful save)
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      appName: settings.appName.value as string,
-      logoUrl: settings.logoUrl.value as string,
-      faviconUrl: settings.faviconUrl.value as string,
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        appName: settings.appName.value as string,
+        logoUrl: settings.logoUrl.value as string,
+        faviconUrl: settings.faviconUrl.value as string,
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: BrandingSettingsFormData) => {
     const updates: UpdateBrandingSettingsRequest = {};
@@ -199,6 +203,8 @@ export const BrandingSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

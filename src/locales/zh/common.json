@@ -1148,6 +1148,20 @@
           "deleteConfirm": "确定要删除此自定义出站吗？",
           "routeToCustom": "自定义出站"
         },
+        "ruleSetEntry": {
+          "title": "规则集源",
+          "add": "添加规则集",
+          "tag": "标签",
+          "tagHint": "唯一标识符，路由规则通过 ruleSet 字段引用",
+          "url": "URL",
+          "urlHint": "规则集资源的远程 URL",
+          "format": "格式",
+          "formatHint": "资源格式，默认为 binary",
+          "downloadDetour": "下载出站",
+          "downloadDetourHint": "用于下载规则集的出站标签",
+          "updateInterval": "更新间隔",
+          "updateIntervalHint": "例如 1d、12h"
+        },
         "section": {
           "domain": "域名匹配",
           "ip": "IP 匹配",

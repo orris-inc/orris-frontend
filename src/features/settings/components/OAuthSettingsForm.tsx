@@ -252,19 +252,23 @@ export const OAuthSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      google: {
-        clientId: (settings.google.clientId.value as string) || '',
-        clientSecret: (settings.google.clientSecret.value as string) || '',
-      },
-      github: {
-        clientId: (settings.github.clientId.value as string) || '',
-        clientSecret: (settings.github.clientSecret.value as string) || '',
-      },
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        google: {
+          clientId: (settings.google.clientId.value as string) || '',
+          clientSecret: (settings.google.clientSecret.value as string) || '',
+        },
+        github: {
+          clientId: (settings.github.clientId.value as string) || '',
+          clientSecret: (settings.github.clientSecret.value as string) || '',
+        },
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const toggleProvider = (provider: string) => {
     setExpandedProviders((prev) => {
@@ -323,6 +327,8 @@ export const OAuthSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

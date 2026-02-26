@@ -101,16 +101,20 @@ export const TelegramSettingsForm = ({
     },
   });
 
-  // Reset form only when config values actually change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed config from the next query refetch.
   useEffect(() => {
-    reset({
-      enabled: config.enabled,
-      botToken: config.botToken,
-      webhookUrl: config.webhookUrl,
-      webhookSecret: config.webhookSecret,
-    });
+    if (!isDirty) {
+      reset({
+        enabled: config.enabled,
+        botToken: config.botToken,
+        webhookUrl: config.webhookUrl,
+        webhookSecret: config.webhookSecret,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [configKey]);
+  }, [configKey, isDirty]);
 
   const enabled = watch('enabled');
 
@@ -133,6 +137,8 @@ export const TelegramSettingsForm = ({
     }
 
     await onSubmit(updates);
+    // Clear isDirty so the useEffect can sync with refreshed API values
+    reset(data);
   };
 
   return (

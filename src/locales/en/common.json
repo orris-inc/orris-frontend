@@ -1148,6 +1148,20 @@
           "deleteConfirm": "Are you sure you want to delete this custom outbound?",
           "routeToCustom": "Custom Outbound"
         },
+        "ruleSetEntry": {
+          "title": "Rule Set Sources",
+          "add": "Add Rule Set",
+          "tag": "Tag",
+          "tagHint": "Unique identifier referenced by route rules via ruleSet field",
+          "url": "URL",
+          "urlHint": "Remote URL of the rule-set resource",
+          "format": "Format",
+          "formatHint": "Resource format, default is binary",
+          "downloadDetour": "Download Detour",
+          "downloadDetourHint": "Outbound tag used for downloading the rule-set",
+          "updateInterval": "Update Interval",
+          "updateIntervalHint": "e.g. 1d, 12h"
+        },
         "section": {
           "domain": "Domain Matching",
           "ip": "IP Matching",

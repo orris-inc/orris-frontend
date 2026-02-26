@@ -6,6 +6,8 @@
 
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/lib/query-client';
 import {
   Server,
   Plus,
@@ -86,6 +88,7 @@ type DialogType =
 export function NodeManagementPage() {
   const { t } = useTranslation();
   usePageTitle(t('nav.nodeAgent'));
+  const queryClient = useQueryClient();
 
   const { isMobile } = useBreakpoint();
 
@@ -202,9 +205,16 @@ export function NodeManagementPage() {
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, node?: Node) => {
-    setSelectedNode(node ?? null);
+    if (node) {
+      // Merge with cached detail data to preserve fields (dns, route, etc.)
+      // that the list endpoint may omit
+      const cachedDetail = queryClient.getQueryData<Node>(queryKeys.nodes.detail(node.id));
+      setSelectedNode(cachedDetail ? { ...node, ...cachedDetail } : node);
+    } else {
+      setSelectedNode(null);
+    }
     setActiveDialog(type);
-  }, []);
+  }, [queryClient]);
 
   const closeDialog = useCallback(() => {
     setActiveDialog(null);

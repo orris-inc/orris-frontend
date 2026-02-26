@@ -72,13 +72,17 @@ export const SystemSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      subscriptionBaseUrl: (settings.subscriptionBaseUrl.value as string) || '',
-      frontendUrl: (settings.frontendUrl.value as string) || '',
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        subscriptionBaseUrl: (settings.subscriptionBaseUrl.value as string) || '',
+        frontendUrl: (settings.frontendUrl.value as string) || '',
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: SystemSettingsFormData) => {
     const updates: UpdateSystemSettingsRequest = {};
@@ -92,6 +96,8 @@ export const SystemSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

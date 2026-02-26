@@ -76,20 +76,24 @@ export const SecuritySettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      passwordMinLength: settings.passwordMinLength.value as number,
-      passwordRequireUppercase: settings.passwordRequireUppercase.value as boolean,
-      passwordRequireLowercase: settings.passwordRequireLowercase.value as boolean,
-      passwordRequireNumber: settings.passwordRequireNumber.value as boolean,
-      passwordRequireSpecial: settings.passwordRequireSpecial.value as boolean,
-      passwordExpiryDays: settings.passwordExpiryDays.value as number,
-      sessionTimeoutMinutes: settings.sessionTimeoutMinutes.value as number,
-      maxLoginAttempts: settings.maxLoginAttempts.value as number,
-      lockoutDurationMinutes: settings.lockoutDurationMinutes.value as number,
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        passwordMinLength: settings.passwordMinLength.value as number,
+        passwordRequireUppercase: settings.passwordRequireUppercase.value as boolean,
+        passwordRequireLowercase: settings.passwordRequireLowercase.value as boolean,
+        passwordRequireNumber: settings.passwordRequireNumber.value as boolean,
+        passwordRequireSpecial: settings.passwordRequireSpecial.value as boolean,
+        passwordExpiryDays: settings.passwordExpiryDays.value as number,
+        sessionTimeoutMinutes: settings.sessionTimeoutMinutes.value as number,
+        maxLoginAttempts: settings.maxLoginAttempts.value as number,
+        lockoutDurationMinutes: settings.lockoutDurationMinutes.value as number,
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: SecuritySettingsFormData) => {
     const updates: UpdateSecuritySettingsRequest = {};
@@ -124,6 +128,8 @@ export const SecuritySettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

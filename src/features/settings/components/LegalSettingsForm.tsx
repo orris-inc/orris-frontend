@@ -57,13 +57,17 @@ export const LegalSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      termsOfServiceUrl: settings.termsOfServiceUrl.value as string,
-      privacyPolicyUrl: settings.privacyPolicyUrl.value as string,
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        termsOfServiceUrl: settings.termsOfServiceUrl.value as string,
+        privacyPolicyUrl: settings.privacyPolicyUrl.value as string,
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: LegalSettingsFormData) => {
     const updates: UpdateLegalSettingsRequest = {};
@@ -77,6 +81,8 @@ export const LegalSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

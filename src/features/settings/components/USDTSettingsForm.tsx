@@ -151,19 +151,23 @@ export const USDTSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      enabled: settings.enabled.value as boolean,
-      polReceivingAddresses: ((settings.polReceivingAddresses.value as string[]) || []).join('\n'),
-      trcReceivingAddresses: ((settings.trcReceivingAddresses.value as string[]) || []).join('\n'),
-      polygonscanApiKey: (settings.polygonscanApiKey.value as string) || '',
-      trongridApiKey: (settings.trongridApiKey.value as string) || '',
-      paymentTtlMinutes: (settings.paymentTtlMinutes.value as number) || 10,
-      polConfirmations: (settings.polConfirmations.value as number) || 12,
-      trcConfirmations: (settings.trcConfirmations.value as number) || 19,
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        enabled: settings.enabled.value as boolean,
+        polReceivingAddresses: ((settings.polReceivingAddresses.value as string[]) || []).join('\n'),
+        trcReceivingAddresses: ((settings.trcReceivingAddresses.value as string[]) || []).join('\n'),
+        polygonscanApiKey: (settings.polygonscanApiKey.value as string) || '',
+        trongridApiKey: (settings.trongridApiKey.value as string) || '',
+        paymentTtlMinutes: (settings.paymentTtlMinutes.value as number) || 10,
+        polConfirmations: (settings.polConfirmations.value as number) || 12,
+        trcConfirmations: (settings.trcConfirmations.value as number) || 19,
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const enabled = watch('enabled');
 
@@ -218,6 +222,8 @@ export const USDTSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

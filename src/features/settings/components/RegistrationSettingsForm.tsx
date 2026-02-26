@@ -57,13 +57,17 @@ export const RegistrationSettingsForm = ({
     },
   });
 
-  // Reset form when settings change
+  // Sync form with API values only when the user has no unsaved edits.
+  // After a successful save, handleFormSubmit calls reset() to clear isDirty,
+  // so this effect will pick up the refreshed settings from the next query refetch.
   useEffect(() => {
-    reset({
-      registrationEnabled: settings.registrationEnabled.value as boolean,
-      emailVerificationRequired: settings.emailVerificationRequired.value as boolean,
-    });
-  }, [settings, reset]);
+    if (!isDirty) {
+      reset({
+        registrationEnabled: settings.registrationEnabled.value as boolean,
+        emailVerificationRequired: settings.emailVerificationRequired.value as boolean,
+      });
+    }
+  }, [settings, reset, isDirty]);
 
   const handleFormSubmit = async (data: RegistrationSettingsFormData) => {
     const updates: UpdateRegistrationSettingsRequest = {};
@@ -77,6 +81,8 @@ export const RegistrationSettingsForm = ({
 
     if (Object.keys(updates).length > 0) {
       await onSubmit(updates);
+      // Clear isDirty so the useEffect can sync with refreshed API values
+      reset(data);
     }
   };
 

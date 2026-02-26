@@ -126,6 +126,7 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
   const finalInfo = getOutboundBadgeInfo(config.final, nodes, t, config.customOutbounds);
   const rules = config.rules || [];
   const customOutbounds = config.customOutbounds || [];
+  const ruleSetEntries = config.ruleSetEntries || [];
 
   return (
     <div className="space-y-4">
@@ -197,6 +198,29 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
                 <Badge variant="outline">{co.tag.replace(/^custom_/, '')}</Badge>
                 <span className="text-muted-foreground">{co.type}</span>
                 <span>{co.server}:{co.serverPort}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rule set entries summary */}
+      {ruleSetEntries.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground">
+            {t('admin.nodes.route.ruleSetEntry.title')} ({ruleSetEntries.length}):
+          </div>
+          <div className="space-y-1.5">
+            {ruleSetEntries.map((rs) => (
+              <div key={rs.tag} className="flex items-center gap-2 text-sm">
+                <Badge variant="outline" className="font-mono">{rs.tag}</Badge>
+                {rs.format && rs.format !== 'binary' && (
+                  <Badge variant="secondary" className="text-[11px]">{rs.format}</Badge>
+                )}
+                <span className="text-muted-foreground truncate">{rs.url}</span>
+                {rs.updateInterval && (
+                  <span className="text-muted-foreground text-xs">({rs.updateInterval})</span>
+                )}
               </div>
             ))}
           </div>

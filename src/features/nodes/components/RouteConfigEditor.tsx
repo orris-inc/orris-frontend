@@ -32,7 +32,7 @@ import {
   getOutboundLabel,
   type OutboundNodeOption,
 } from '../utils/route-rule-utils';
-import type { RouteConfig, OutboundType, CustomOutbound } from '@/api/node';
+import type { RouteConfig, OutboundType, CustomOutbound, RuleSetEntry } from '@/api/node';
 
 interface RouteConfigEditorProps {
   value: RouteConfig | undefined;
@@ -93,10 +93,13 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [customOutboundsOpen, setCustomOutboundsOpen] = useState(false);
+  const [ruleSetEntriesOpen, setRuleSetEntriesOpen] = useState(false);
+  const [editingRuleSetIndex, setEditingRuleSetIndex] = useState<number | null>(null);
 
   // Filter out current node from available options
   const availableNodes = nodes.filter((n) => n.id !== currentNodeId);
   const customOutbounds = value?.customOutbounds || [];
+  const ruleSetEntries = value?.ruleSetEntries || [];
 
   // Sync JSON text when switching to JSON mode or when value changes
   useEffect(() => {
@@ -216,6 +219,36 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
     handleCustomOutboundsChange(updated);
     if (editingIndex === index) setEditingIndex(null);
     else if (editingIndex !== null && editingIndex > index) setEditingIndex(editingIndex - 1);
+  };
+
+  const handleRuleSetEntriesChange = (newEntries: RuleSetEntry[]) => {
+    onChange({
+      ...(value || getDefaultConfig()),
+      ruleSetEntries: newEntries.length > 0 ? newEntries : undefined,
+    });
+  };
+
+  const handleAddRuleSetEntry = () => {
+    const newEntry: RuleSetEntry = {
+      tag: '',
+      url: '',
+    };
+    const updated = [...ruleSetEntries, newEntry];
+    handleRuleSetEntriesChange(updated);
+    setEditingRuleSetIndex(updated.length - 1);
+    setRuleSetEntriesOpen(true);
+  };
+
+  const handleUpdateRuleSetEntry = (index: number, entry: RuleSetEntry) => {
+    const updated = ruleSetEntries.map((e, i) => (i === index ? entry : e));
+    handleRuleSetEntriesChange(updated);
+  };
+
+  const handleDeleteRuleSetEntry = (index: number) => {
+    const updated = ruleSetEntries.filter((_, i) => i !== index);
+    handleRuleSetEntriesChange(updated);
+    if (editingRuleSetIndex === index) setEditingRuleSetIndex(null);
+    else if (editingRuleSetIndex !== null && editingRuleSetIndex > index) setEditingRuleSetIndex(editingRuleSetIndex - 1);
   };
 
   // No config - show enable button
@@ -381,6 +414,61 @@ export const RouteConfigEditor: React.FC<RouteConfigEditorProps> = ({
                       onDelete={() => handleDeleteCustomOutbound(index)}
                       disabled={disabled}
                       idPrefix={`${idPrefix}-co-${index}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+
+          <Separator />
+
+          {/* Rule Set Entries management */}
+          <Collapsible open={ruleSetEntriesOpen} onOpenChange={setRuleSetEntriesOpen}>
+            <div className="flex justify-between items-center">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-sm font-medium hover:text-foreground/80 transition-colors"
+                >
+                  <ChevronDown
+                    className={cn('h-4 w-4 transition-transform', !ruleSetEntriesOpen && '-rotate-90')}
+                  />
+                  {t('admin.nodes.route.ruleSetEntry.title')}
+                  {ruleSetEntries.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {ruleSetEntries.length}
+                    </Badge>
+                  )}
+                </button>
+              </CollapsibleTrigger>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAddRuleSetEntry}
+                disabled={disabled}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                {t('admin.nodes.route.ruleSetEntry.add')}
+              </Button>
+            </div>
+            <CollapsibleContent className="mt-3">
+              {ruleSetEntries.length === 0 ? (
+                <div className="text-sm text-muted-foreground text-center py-3 rounded-xl ring-1 ring-dashed ring-border">
+                  {t('admin.nodes.route.ruleSetEntry.title')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {ruleSetEntries.map((entry, index) => (
+                    <RuleSetEntryItem
+                      key={index}
+                      entry={entry}
+                      isEditing={editingRuleSetIndex === index}
+                      onEdit={() => setEditingRuleSetIndex(editingRuleSetIndex === index ? null : index)}
+                      onChange={(updated) => handleUpdateRuleSetEntry(index, updated)}
+                      onDelete={() => handleDeleteRuleSetEntry(index)}
+                      disabled={disabled}
+                      idPrefix={`${idPrefix}-rs-${index}`}
                     />
                   ))}
                 </div>
@@ -619,6 +707,158 @@ const CustomOutboundEntry: React.FC<{
         <p className="text-xs text-muted-foreground">
           {t('admin.nodes.route.customOutbound.settingsHint')}
         </p>
+      </div>
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={onEdit}>
+          {t('common.actions.close')}
+        </Button>
+      </div>
+    </Card>
+  );
+};
+
+/** Single rule-set entry with inline editing */
+const RuleSetEntryItem: React.FC<{
+  entry: RuleSetEntry;
+  isEditing: boolean;
+  onEdit: () => void;
+  onChange: (entry: RuleSetEntry) => void;
+  onDelete: () => void;
+  disabled: boolean;
+  idPrefix: string;
+}> = ({ entry, isEditing, onEdit, onChange, onDelete, disabled, idPrefix }) => {
+  const { t } = useTranslation();
+
+  if (!isEditing) {
+    return (
+      <Card className="p-3 border-l-[3px] border-l-info overflow-hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <Badge variant="outline" className="shrink-0 font-mono text-[11px]">
+              {entry.tag || '—'}
+            </Badge>
+            {entry.format && entry.format !== 'binary' && (
+              <Badge variant="secondary" className="shrink-0 text-[11px]">
+                {entry.format}
+              </Badge>
+            )}
+            <span className="text-sm text-muted-foreground truncate">{entry.url || '—'}</span>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={onEdit}
+              disabled={disabled}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-destructive hover:text-destructive"
+              onClick={onDelete}
+              disabled={disabled}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-4 space-y-3 border-l-[3px] border-l-info overflow-hidden">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-tag`} className="text-xs">
+            {t('admin.nodes.route.ruleSetEntry.tag')}
+          </Label>
+          <Input
+            id={`${idPrefix}-tag`}
+            value={entry.tag}
+            onChange={(e) => onChange({ ...entry, tag: e.target.value })}
+            placeholder="geoip-cn"
+            disabled={disabled}
+            className="text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            {t('admin.nodes.route.ruleSetEntry.tagHint')}
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-format`} className="text-xs">
+            {t('admin.nodes.route.ruleSetEntry.format')}
+          </Label>
+          <Select
+            value={entry.format || 'binary'}
+            onValueChange={(v) => onChange({ ...entry, format: v as 'binary' | 'source' })}
+            disabled={disabled}
+          >
+            <SelectTrigger id={`${idPrefix}-format`} className="text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="binary">binary</SelectItem>
+              <SelectItem value="source">source</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {t('admin.nodes.route.ruleSetEntry.formatHint')}
+          </p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}-url`} className="text-xs">
+          {t('admin.nodes.route.ruleSetEntry.url')}
+        </Label>
+        <Input
+          id={`${idPrefix}-url`}
+          value={entry.url}
+          onChange={(e) => onChange({ ...entry, url: e.target.value })}
+          placeholder="https://example.com/rule-set.srs"
+          disabled={disabled}
+          className="text-sm"
+        />
+        <p className="text-xs text-muted-foreground">
+          {t('admin.nodes.route.ruleSetEntry.urlHint')}
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-detour`} className="text-xs">
+            {t('admin.nodes.route.ruleSetEntry.downloadDetour')}
+          </Label>
+          <Input
+            id={`${idPrefix}-detour`}
+            value={entry.downloadDetour || ''}
+            onChange={(e) => onChange({ ...entry, downloadDetour: e.target.value || undefined })}
+            placeholder="proxy"
+            disabled={disabled}
+            className="text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            {t('admin.nodes.route.ruleSetEntry.downloadDetourHint')}
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-interval`} className="text-xs">
+            {t('admin.nodes.route.ruleSetEntry.updateInterval')}
+          </Label>
+          <Input
+            id={`${idPrefix}-interval`}
+            value={entry.updateInterval || ''}
+            onChange={(e) => onChange({ ...entry, updateInterval: e.target.value || undefined })}
+            placeholder="1d"
+            disabled={disabled}
+            className="text-sm"
+          />
+          <p className="text-xs text-muted-foreground">
+            {t('admin.nodes.route.ruleSetEntry.updateIntervalHint')}
+          </p>
+        </div>
       </div>
       <div className="flex justify-end">
         <Button variant="outline" size="sm" onClick={onEdit}>

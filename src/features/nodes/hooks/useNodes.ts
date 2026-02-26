@@ -116,8 +116,11 @@ export const useNodes = (options: UseNodesOptions = {}) => {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateNodeRequest }) =>
       updateNode(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedNode) => {
       showSuccess(t('messages.nodeUpdateSuccess'));
+      // Cache the full node detail so that re-opening the edit dialog
+      // uses the complete data (dns, route, etc.) even if the list endpoint omits them
+      queryClient.setQueryData(queryKeys.nodes.detail(updatedNode.id), updatedNode);
       queryClient.invalidateQueries({ queryKey: queryKeys.nodes.lists() });
     },
     onError: (error) => {
