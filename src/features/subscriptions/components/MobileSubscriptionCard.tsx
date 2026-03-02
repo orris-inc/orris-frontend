@@ -11,6 +11,7 @@
 import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
+  HardDrive,
   User as UserIcon,
   Calendar,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatBytesCompact } from '@/shared/utils/format-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user';
@@ -92,7 +94,13 @@ export const MobileSubscriptionCard = ({
             <span className="tabular-nums">{subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}</span>
           </div>
 
-          {/* Auto-renew display hidden - feature not complete */}
+          <span className="text-border">·</span>
+          <div className="flex items-center gap-1">
+            <HardDrive className="size-3" />
+            <span className="tabular-nums">
+              {formatBytesCompact(subscription.dataUsedBytes)}{subscription.dataLimitBytes > 0 ? `/${formatBytesCompact(subscription.dataLimitBytes)}` : ''}
+            </span>
+          </div>
         </div>
       </div>
 

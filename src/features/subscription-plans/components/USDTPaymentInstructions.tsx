@@ -115,7 +115,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
                 <Copy className="h-4 w-4" />
               )}
               <span className="ml-1.5 text-xs">
-                {copiedField === 'address' ? t('common.actions.copied') : t('pricing.confirm.usdt.copyAddress')}
+                {copiedField === 'address' ? t('common.copied') : t('pricing.confirm.usdt.copyAddress')}
               </span>
             </Button>
           </div>
@@ -160,7 +160,7 @@ export const USDTPaymentInstructions: React.FC<USDTPaymentInstructionsProps> = (
                 <Copy className="h-4 w-4" />
               )}
               <span className="ml-1.5 text-xs">
-                {copiedField === 'amount' ? t('common.actions.copied') : t('pricing.confirm.usdt.copyAmount')}
+                {copiedField === 'amount' ? t('common.copied') : t('pricing.confirm.usdt.copyAmount')}
               </span>
             </Button>
           </div>

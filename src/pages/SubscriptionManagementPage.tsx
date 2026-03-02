@@ -26,6 +26,8 @@ import { SuspendSubscriptionSheet } from '@/features/subscriptions/components/Su
 import { DeleteSubscriptionSheet } from '@/features/subscriptions/components/DeleteSubscriptionSheet';
 import { RenewSubscriptionDialog } from '@/features/subscriptions/components/RenewSubscriptionDialog';
 import { RenewSubscriptionSheet } from '@/features/subscriptions/components/RenewSubscriptionSheet';
+import { EditSubscriptionDialog } from '@/features/subscriptions/components/EditSubscriptionDialog';
+import { EditSubscriptionSheet } from '@/features/subscriptions/components/EditSubscriptionSheet';
 import { ChangePlanDialog } from '@/features/subscriptions/components/ChangePlanDialog';
 import { ChangePlanSheet } from '@/features/subscriptions/components/ChangePlanSheet';
 import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
@@ -42,8 +44,9 @@ import {
   resetSubscriptionUsage,
   renewSubscription,
   changeSubscriptionPlan,
+  updateAdminSubscription,
 } from '@/api/admin';
-import type { ChangePlanRequest, RenewSubscriptionRequest } from '@/api/admin/types';
+import type { AdminUpdateSubscriptionRequest, ChangePlanRequest, RenewSubscriptionRequest } from '@/api/admin/types';
 import type { Subscription } from '@/api/subscription/types';
 
 // ============================================================================
@@ -57,6 +60,7 @@ type DialogType =
   | 'delete'
   | 'suspend'
   | 'renew'
+  | 'edit'
   | 'changePlan'
   | null;
 
@@ -176,6 +180,11 @@ export function SubscriptionManagementPage() {
 
   const handleChangePlanClick = useCallback(
     (subscription: Subscription) => openDialog('changePlan', subscription),
+    [openDialog]
+  );
+
+  const handleEditClick = useCallback(
+    (subscription: Subscription) => openDialog('edit', subscription),
     [openDialog]
   );
 
@@ -314,6 +323,21 @@ export function SubscriptionManagementPage() {
     [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
   );
 
+  const handleEditConfirm = useCallback(
+    async (data: AdminUpdateSubscriptionRequest) => {
+      if (!selectedSubscription) return;
+      try {
+        await updateAdminSubscription(selectedSubscription.id, data);
+        showSuccess(t('messages.subscriptionUpdated'));
+        closeDialog();
+        refetch();
+      } catch {
+        showError(t('messages.subscriptionUpdateFailed'));
+      }
+    },
+    [selectedSubscription, showSuccess, showError, closeDialog, refetch, t]
+  );
+
   // Get user for selected subscription
   const selectedUser = selectedSubscription ? usersMap[selectedSubscription.userId] : undefined;
 
@@ -342,6 +366,7 @@ export function SubscriptionManagementPage() {
             onResetUsage={handleResetUsage}
             onDelete={handleDeleteClick}
             onChangePlan={handleChangePlanClick}
+            onEdit={handleEditClick}
             onPageChange={handlePageChange}
           />
         </div>
@@ -382,6 +407,13 @@ export function SubscriptionManagementPage() {
           onOpenChange={(open) => !open && closeDialog()}
           subscription={selectedSubscription}
           onConfirm={handleRenewConfirm}
+        />
+
+        <EditSubscriptionSheet
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => !open && closeDialog()}
+          subscription={selectedSubscription}
+          onConfirm={handleEditConfirm}
         />
 
         <ChangePlanSheet
@@ -441,6 +473,7 @@ export function SubscriptionManagementPage() {
           onResetUsage={handleResetUsage}
           onDelete={handleDeleteClick}
           onChangePlan={handleChangePlanClick}
+          onEdit={handleEditClick}
         />
       </div>
 
@@ -472,6 +505,13 @@ export function SubscriptionManagementPage() {
         onOpenChange={(open) => !open && closeDialog()}
         subscription={selectedSubscription}
         onConfirm={handleSuspendConfirm}
+      />
+
+      <EditSubscriptionDialog
+        open={activeDialog === 'edit'}
+        subscription={selectedSubscription}
+        onClose={closeDialog}
+        onConfirm={handleEditConfirm}
       />
 
       <RenewSubscriptionDialog

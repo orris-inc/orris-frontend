@@ -50,6 +50,7 @@
     "selected": "{{count}} selected",
     "copyAddress": "Copy address",
     "copied": "Copied",
+    "viewMore": "View more",
     "token": {
       "defaultDescription": "You can retrieve this token later from the detail page.",
       "copied": "Token copied to clipboard",
@@ -754,7 +755,8 @@
         "configDescription": "Protocol, encryption, transport settings",
         "monitorDescription": "CPU, memory, network in real-time",
         "expiresAt": "Expires at",
-        "renewalAmount": "Renewal amount"
+        "renewalAmount": "Renewal amount",
+        "protocol": "Protocol"
       },
       "deleteSheet": {
         "title": "Delete Node",
@@ -832,7 +834,8 @@
         "expiresAt": "Expires at",
         "renewalAmount": "Renewal amount",
         "renewalPeriod": "Renewal period",
-        "neverExpires": "Never expires"
+        "neverExpires": "Never expires",
+        "systemStatus": "System Status"
       },
       "emptyState": "No nodes",
       "batchUpdate": {
@@ -1811,7 +1814,8 @@
       "actions": {
         "broadcast": "Broadcast",
         "update": "Update",
-        "refreshList": "Refresh list"
+        "refreshList": "Refresh list",
+        "batchUpdate": "Batch Update"
       },
       "table": {
         "columns": {
@@ -1893,6 +1897,7 @@
         "current": "Current:",
         "latest": "Latest:",
         "update": "Update",
+        "triggerUpdate": "Trigger Update",
         "updateToVersion": "Update to v{{version}}",
         "upToDate": "Up to date",
         "refreshVersion": "Refresh version info",
@@ -2813,7 +2818,19 @@
     "confirmChangePlan": "Confirm Change",
     "selectNewPlan": "Select a new plan",
     "noOtherPlans": "No other plans available",
-    "lifetimeCannotRenew": "Lifetime subscriptions cannot be renewed"
+    "lifetimeCannotRenew": "Lifetime subscriptions cannot be renewed",
+    "trafficUsage": "Traffic Usage",
+    "dataUsage": "Data Used",
+    "dataLimit": "Data Limit",
+    "edit": "Edit",
+    "editTitle": "Edit Subscription",
+    "editDesc": "Edit subscription {{id}}",
+    "dataLimitOverride": "Traffic Limit Override",
+    "dataUsedOverride": "Traffic Used Override",
+    "clearOverride": "Clear Override",
+    "usesPlanDefault": "Uses plan default when cleared",
+    "dataLimitInGB": "Traffic limit in GB (leave empty for plan default)",
+    "dataUsedInGB": "Traffic used in GB"
   },
   "subscriptionLink": {
     "nodeMode": {
@@ -2965,6 +2982,8 @@
     "subscriptionDeleteFailed": "Failed to delete subscription",
     "subscriptionPlanChanged": "Subscription plan changed successfully",
     "subscriptionPlanChangeFailed": "Failed to change subscription plan",
+    "subscriptionUpdated": "Subscription updated successfully",
+    "subscriptionUpdateFailed": "Failed to update subscription",
     "confirmCancel": "Confirm Cancel",
     "clearFilters": "Clear Filters",
     "deleteIrreversible": "This cannot be undone.",

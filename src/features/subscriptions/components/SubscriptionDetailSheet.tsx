@@ -16,8 +16,10 @@ import {
   Clock,
   Copy,
   CreditCard,
+  HardDrive,
   Link as LinkIcon,
   Monitor,
+  Pencil,
   User,
   XCircle,
   Receipt,
@@ -45,6 +47,7 @@ import { Separator } from '@/components/common/Separator';
 import { TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatTrafficUsage } from '@/shared/utils/format-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { cn } from '@/lib/utils';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
@@ -67,6 +70,7 @@ interface SubscriptionDetailSheetProps {
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
   onChangePlan?: (subscription: Subscription) => void;
+  onEdit?: (subscription: Subscription) => void;
 }
 
 // Status configuration using CSS variables (synced with SDK 2025-01-14)
@@ -236,6 +240,7 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
   onResetUsage,
   onDelete,
   onChangePlan,
+  onEdit,
 }) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -249,6 +254,17 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
 
   // Build action sheet actions based on subscription status
   const moreActions = [];
+
+  if (onEdit) {
+    moreActions.push({
+      label: t('subscription.edit'),
+      icon: <Pencil className="size-5" />,
+      onPress: async () => {
+        onEdit(subscription);
+        onOpenChange(false);
+      },
+    });
+  }
 
   if (canActivate(subscription) && onActivate) {
     moreActions.push({
@@ -479,6 +495,11 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                 icon={<Monitor className="size-3.5" />}
                 label={t('subscription.deviceUsage')}
                 value={`${subscription.onlineDeviceCount} / ${subscription.deviceLimit === 0 ? t('subscription.unlimited') : subscription.deviceLimit}`}
+              />
+              <DetailRow
+                icon={<HardDrive className="size-3.5" />}
+                label={t('subscription.trafficUsage')}
+                value={formatTrafficUsage(subscription.dataUsedBytes, subscription.dataLimitBytes)}
               />
 
               {(subscription.cancelledAt || subscription.cancelReason) && (

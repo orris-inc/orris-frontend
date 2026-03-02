@@ -53,6 +53,7 @@ export interface MobileSubscriptionManagementProps {
   onResetUsage: (subscription: Subscription) => void;
   onDelete: (subscription: Subscription) => void;
   onChangePlan?: (subscription: Subscription) => void;
+  onEdit?: (subscription: Subscription) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -79,6 +80,7 @@ export const MobileSubscriptionManagement = ({
   onResetUsage,
   onDelete,
   onChangePlan,
+  onEdit,
   onPageChange,
 }: MobileSubscriptionManagementProps) => {
   const { t } = useTranslation();
@@ -208,6 +210,7 @@ export const MobileSubscriptionManagement = ({
         onResetUsage={onResetUsage}
         onDelete={onDelete}
         onChangePlan={onChangePlan}
+        onEdit={onEdit}
       />
 
       {/* Filters Sheet */}

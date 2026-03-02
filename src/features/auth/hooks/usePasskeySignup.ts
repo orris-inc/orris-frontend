@@ -106,7 +106,7 @@ export function usePasskeySignup(): UsePasskeySignupReturn {
         case 'timeout':
           return t('auth.passkey.errors.aborted');
         case 'invalid_state':
-          return t('auth.passkey.errors.alreadyRegistered');
+          return t('auth.passkey.errors.invalidState');
         case 'not_allowed':
           return t('auth.passkey.errors.notAllowed');
         default:

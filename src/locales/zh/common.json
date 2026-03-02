@@ -50,6 +50,7 @@
     "selected": "已选择 {{count}} 项",
     "copyAddress": "复制地址",
     "copied": "已复制",
+    "viewMore": "查看更多",
     "token": {
       "defaultDescription": "您可以稍后在详情页面获取此 Token",
       "copied": "Token已复制到剪贴板",
@@ -754,7 +755,8 @@
         "configDescription": "协议配置：加密方式、传输协议等",
         "monitorDescription": "系统状态：CPU、内存、网络等",
         "expiresAt": "过期时间",
-        "renewalAmount": "续费金额"
+        "renewalAmount": "续费金额",
+        "protocol": "协议"
       },
       "deleteSheet": {
         "title": "删除节点",
@@ -832,7 +834,8 @@
         "expiresAt": "过期时间",
         "renewalAmount": "续费金额",
         "renewalPeriod": "续费周期",
-        "neverExpires": "永不过期"
+        "neverExpires": "永不过期",
+        "systemStatus": "系统状态"
       },
       "emptyState": "暂无节点",
       "batchUpdate": {
@@ -1811,7 +1814,8 @@
       "actions": {
         "broadcast": "下发",
         "update": "更新",
-        "refreshList": "刷新列表"
+        "refreshList": "刷新列表",
+        "batchUpdate": "批量更新"
       },
       "table": {
         "columns": {
@@ -1893,6 +1897,7 @@
         "current": "当前:",
         "latest": "最新:",
         "update": "更新",
+        "triggerUpdate": "触发更新",
         "updateToVersion": "更新到 v{{version}}",
         "upToDate": "已是最新",
         "refreshVersion": "刷新版本信息",
@@ -2813,7 +2818,19 @@
     "confirmChangePlan": "确认更改",
     "selectNewPlan": "请选择新计划",
     "noOtherPlans": "暂无其他可用计划",
-    "lifetimeCannotRenew": "终身订阅无法续订"
+    "lifetimeCannotRenew": "终身订阅无法续订",
+    "trafficUsage": "流量使用",
+    "dataUsage": "已用流量",
+    "dataLimit": "流量限制",
+    "edit": "编辑",
+    "editTitle": "编辑订阅",
+    "editDesc": "编辑订阅 {{id}}",
+    "dataLimitOverride": "流量限制覆盖",
+    "dataUsedOverride": "已用流量覆盖",
+    "clearOverride": "清除覆盖",
+    "usesPlanDefault": "清除后使用计划默认值",
+    "dataLimitInGB": "流量限制（GB），留空使用计划默认值",
+    "dataUsedInGB": "已用流量（GB）"
   },
   "subscriptionLink": {
     "nodeMode": {
@@ -2965,6 +2982,8 @@
     "subscriptionDeleteFailed": "删除订阅失败",
     "subscriptionPlanChanged": "订阅计划已更改",
     "subscriptionPlanChangeFailed": "更改订阅计划失败",
+    "subscriptionUpdated": "订阅已更新",
+    "subscriptionUpdateFailed": "更新订阅失败",
     "confirmCancel": "确认取消",
     "clearFilters": "清除筛选",
     "deleteIrreversible": "此操作不可恢复，请确认是否继续",

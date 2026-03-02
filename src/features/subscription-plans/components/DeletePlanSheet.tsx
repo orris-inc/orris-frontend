@@ -171,7 +171,7 @@ export const DeletePlanSheet: React.FC<DeletePlanSheetProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 size-5 animate-spin" />
-                  {t('subscriptionPlans.deleting')}
+                  {t('common.loading.deleting')}
                 </>
               ) : (
                 t('subscriptionPlans.confirmDelete')

@@ -9,6 +9,7 @@ import {
   Clock,
   Copy,
   CreditCard,
+  HardDrive,
   Link as LinkIcon,
   Monitor,
   User,
@@ -27,6 +28,7 @@ import { Separator } from '@/components/common/Separator';
 import { AdminBadge, TruncatedId } from '@/components/admin';
 import { SubscriptionLinkSelector } from '@/components/subscription';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatTrafficUsage } from '@/shared/utils/format-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { SUBSCRIPTION_STATUS_CONFIG, PLAN_TYPE_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
@@ -232,6 +234,12 @@ export const SubscriptionDetailDialog: React.FC<SubscriptionDetailDialogProps> =
               icon={<Monitor className="size-4" />}
               label={t('subscription.deviceUsage')}
               value={`${subscription.onlineDeviceCount} / ${subscription.deviceLimit === 0 ? t('subscription.unlimited') : subscription.deviceLimit}`}
+              successMessage={t('common.messages.copySuccess')}
+            />
+            <DetailItem
+              icon={<HardDrive className="size-4" />}
+              label={t('subscription.trafficUsage')}
+              value={formatTrafficUsage(subscription.dataUsedBytes, subscription.dataLimitBytes)}
               successMessage={t('common.messages.copySuccess')}
             />
             {subscription.cancelledAt && (

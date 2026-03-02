@@ -14,9 +14,11 @@ import {
   RefreshCcw,
   Eye,
   Copy,
+  Pencil,
   Trash2,
   User,
   Calendar,
+  HardDrive,
   ArrowRightLeft,
 } from 'lucide-react';
 import {
@@ -46,6 +48,7 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { cardStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
+import { formatBytesCompact } from '@/shared/utils/format-utils';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -65,6 +68,7 @@ interface SubscriptionMobileListProps {
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
   onChangePlan?: (subscription: Subscription) => void;
+  onEdit?: (subscription: Subscription) => void;
 }
 
 
@@ -99,6 +103,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
   onResetUsage,
   onDelete,
   onChangePlan,
+  onEdit,
 }) => {
   const { t } = useTranslation();
 
@@ -128,7 +133,13 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
+        {onEdit && (
+          <ContextMenuItem onClick={() => onEdit(subscription)}>
+            <Pencil className="mr-2 size-4" />
+            {t('subscription.edit')}
+          </ContextMenuItem>
+        )}
+        {(onViewDetail || onDuplicate || onEdit) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
         {canChangePlan && onChangePlan && (
           <ContextMenuItem onClick={() => onChangePlan(subscription)}>
             <ArrowRightLeft className="mr-2 size-4" />
@@ -227,7 +238,13 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 {t('subscription.duplicate')}
               </DropdownMenuItem>
             )}
-            {(onViewDetail || onDuplicate) && (canActivate || canRenew || canResetUsage || canCancel || canChangePlan) && <DropdownMenuSeparator />}
+            {onEdit && (
+              <DropdownMenuItem onSelect={() => onEdit(subscription)}>
+                <Pencil className="mr-2 size-4" />
+                {t('subscription.edit')}
+              </DropdownMenuItem>
+            )}
+            {(onViewDetail || onDuplicate || onEdit) && (canActivate || canRenew || canResetUsage || canCancel || canChangePlan) && <DropdownMenuSeparator />}
             {canChangePlan && onChangePlan && (
               <DropdownMenuItem onSelect={() => onChangePlan(subscription)}>
                 <ArrowRightLeft className="mr-2 size-4" />
@@ -411,7 +428,14 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                   </span>
                 </div>
 
-                {/* Auto renew row hidden - feature not complete */}
+                {/* Traffic usage */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">{t('subscription.trafficUsage')}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <HardDrive className="size-3 flex-shrink-0" />
+                    {formatBytesCompact(subscription.dataUsedBytes)} / {subscription.dataLimitBytes === 0 ? '∞' : formatBytesCompact(subscription.dataLimitBytes)}
+                  </span>
+                </div>
 
                 {/* Created at */}
                 <div className="flex items-center gap-2">

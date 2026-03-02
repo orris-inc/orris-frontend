@@ -6,7 +6,8 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw, ArrowRightLeft } from 'lucide-react';
+import { MoreHorizontal, Play, XCircle, RefreshCw, Eye, Copy, Trash2, Pause, PlayCircle, RefreshCcw, ArrowRightLeft, Pencil } from 'lucide-react';
+import { formatBytesCompact } from '@/shared/utils/format-utils';
 import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { SubscriptionMobileList } from './SubscriptionMobileList';
@@ -48,6 +49,7 @@ interface SubscriptionListTableProps {
   onResetUsage?: (subscription: Subscription) => void;
   onDelete?: (subscription: Subscription) => void;
   onChangePlan?: (subscription: Subscription) => void;
+  onEdit?: (subscription: Subscription) => void;
 }
 
 
@@ -71,6 +73,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   onResetUsage,
   onDelete,
   onChangePlan,
+  onEdit,
 }) => {
   const { t } = useTranslation();
   // Detect mobile screen
@@ -171,6 +174,20 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         return (
           <span className="text-sm tabular-nums">
             {onlineDeviceCount} / {deviceLimit === 0 ? '∞' : deviceLimit}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'traffic',
+      header: t('subscription.trafficUsage'),
+      size: 100,
+      meta: { priority: 3 } as ResponsiveColumnMeta,
+      cell: ({ row }) => {
+        const { dataUsedBytes, dataLimitBytes } = row.original;
+        return (
+          <span className="text-sm tabular-nums">
+            {formatBytesCompact(dataUsedBytes)} / {dataLimitBytes === 0 ? '∞' : formatBytesCompact(dataLimitBytes)}
           </span>
         );
       },
@@ -281,7 +298,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
                       {t('subscription.duplicate')}
                     </DropdownMenuItem>
                   )}
-                  {(onViewDetail || onDuplicate) && (canRenew || canCancel || canSuspend || canChangePlan) && <DropdownMenuSeparator />}
+                  {onEdit && (
+                    <DropdownMenuItem onSelect={() => onEdit(subscription)}>
+                      <Pencil className="mr-2 size-4" />
+                      {t('subscription.edit')}
+                    </DropdownMenuItem>
+                  )}
+                  {(onViewDetail || onDuplicate || onEdit) && (canRenew || canCancel || canSuspend || canChangePlan) && <DropdownMenuSeparator />}
                   {canChangePlan && onChangePlan && (
                     <DropdownMenuItem onSelect={() => onChangePlan(subscription)}>
                       <ArrowRightLeft className="mr-2 size-4" />
@@ -338,7 +361,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         );
       },
     },
-  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onActivate, onCancel, onRenew, onSuspend, onUnsuspend, onResetUsage, onDelete, onChangePlan]);
+  ], [t, usersMap, usersLoading, onViewDetail, onDuplicate, onEdit, onActivate, onCancel, onRenew, onSuspend, onUnsuspend, onResetUsage, onDelete, onChangePlan]);
 
   // Context menu content renderer
   const renderContextMenuContent = useCallback((subscription: Subscription) => {
@@ -366,7 +389,13 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             {t('subscription.duplicate')}
           </ContextMenuItem>
         )}
-        {(onViewDetail || onDuplicate) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
+        {onEdit && (
+          <ContextMenuItem onClick={() => onEdit(subscription)}>
+            <Pencil className="mr-2 size-4" />
+            {t('subscription.edit')}
+          </ContextMenuItem>
+        )}
+        {(onViewDetail || onDuplicate || onEdit) && (canActivate || canUnsuspend || canRenew || canCancel || canSuspend || canChangePlan) && <ContextMenuSeparator />}
         {canChangePlan && onChangePlan && (
           <ContextMenuItem onClick={() => onChangePlan(subscription)}>
             <ArrowRightLeft className="mr-2 size-4" />
@@ -429,7 +458,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         )}
       </>
     );
-  }, [t, onViewDetail, onDuplicate, onActivate, onUnsuspend, onCancel, onSuspend, onResetUsage, onRenew, onDelete, onChangePlan]);
+  }, [t, onViewDetail, onDuplicate, onEdit, onActivate, onUnsuspend, onCancel, onSuspend, onResetUsage, onRenew, onDelete, onChangePlan]);
 
   // Render mobile card list on small screens
   if (isMobile) {
@@ -441,6 +470,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
         loading={loading}
         onViewDetail={onViewDetail}
         onDuplicate={onDuplicate}
+        onEdit={onEdit}
         onActivate={onActivate}
         onCancel={onCancel}
         onRenew={onRenew}
