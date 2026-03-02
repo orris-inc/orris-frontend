@@ -610,11 +610,13 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                         error={!!errors.targetAddress}
                         disabled={isUpdating}
                       />
-                      {errors.targetAddress && (
+                      {errors.targetAddress ? (
                         <p className="text-xs text-destructive flex items-center gap-1">
                           <AlertCircle className="h-3 w-3" />
                           {errors.targetAddress}
                         </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">{t('admin.forwardRules.form.targetAddressLanHint')}</p>
                       )}
                     </div>
 

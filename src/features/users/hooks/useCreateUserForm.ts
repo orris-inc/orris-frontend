@@ -10,11 +10,13 @@ interface UseCreateUserFormParams {
   open: boolean;
 }
 
-// Password strength rules (8-72 chars, must contain letter and number)
+// Password strength rules (12-72 chars, must contain uppercase, lowercase, number, and special character)
 const PASSWORD_RULES = [
-  { key: 'length', labelKey: 'admin.users.form.passwordLength', test: (p: string) => p.length >= 8 && p.length <= 72 },
-  { key: 'letter', labelKey: 'admin.users.form.containsLetter', test: (p: string) => /[a-zA-Z]/.test(p) },
+  { key: 'length', labelKey: 'admin.users.form.passwordLength', test: (p: string) => p.length >= 12 && p.length <= 72 },
+  { key: 'uppercase', labelKey: 'admin.users.form.containsUppercase', test: (p: string) => /[A-Z]/.test(p) },
+  { key: 'lowercase', labelKey: 'admin.users.form.containsLowercase', test: (p: string) => /[a-z]/.test(p) },
   { key: 'number', labelKey: 'admin.users.form.containsNumber', test: (p: string) => /\d/.test(p) },
+  { key: 'special', labelKey: 'admin.users.form.containsSpecial', test: (p: string) => /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(p) },
 ];
 
 export function useCreateUserForm({ open: _open }: UseCreateUserFormParams) {
@@ -42,10 +44,12 @@ export function useCreateUserForm({ open: _open }: UseCreateUserFormParams) {
   const validatePassword = useCallback((value: string): string | undefined => {
     const trimmed = value.trim();
     if (!trimmed) return t('admin.users.form.passwordRequired');
-    if (trimmed.length < 8) return t('admin.users.form.passwordMinLength');
+    if (trimmed.length < 12) return t('admin.users.form.passwordMinLength');
     if (trimmed.length > 72) return t('admin.users.form.passwordMaxLength');
-    if (!/[a-zA-Z]/.test(trimmed)) return t('admin.users.form.passwordNeedsLetter');
+    if (!/[A-Z]/.test(trimmed)) return t('admin.users.form.passwordNeedsUppercase');
+    if (!/[a-z]/.test(trimmed)) return t('admin.users.form.passwordNeedsLowercase');
     if (!/\d/.test(trimmed)) return t('admin.users.form.passwordNeedsNumber');
+    if (!/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(trimmed)) return t('admin.users.form.passwordNeedsSpecial');
     return undefined;
   }, [t]);
 
@@ -119,10 +123,12 @@ export function useCreateUserForm({ open: _open }: UseCreateUserFormParams) {
   const isFormValid = !!(
     email.trim() &&
     name.trim() &&
-    trimmedPassword.length >= 8 &&
+    trimmedPassword.length >= 12 &&
     trimmedPassword.length <= 72 &&
-    /[a-zA-Z]/.test(trimmedPassword) &&
-    /\d/.test(trimmedPassword)
+    /[A-Z]/.test(trimmedPassword) &&
+    /[a-z]/.test(trimmedPassword) &&
+    /\d/.test(trimmedPassword) &&
+    /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(trimmedPassword)
   );
 
   // Password strength

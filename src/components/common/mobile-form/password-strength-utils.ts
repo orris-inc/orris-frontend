@@ -21,17 +21,27 @@ export const getDefaultPasswordRules = (
   {
     key: 'length',
     label: t('auth.passwordRules.length'),
-    test: (p: string) => p.length >= 8 && p.length <= 72,
+    test: (p: string) => p.length >= 12 && p.length <= 72,
   },
   {
-    key: 'letter',
-    label: t('auth.passwordRules.letter'),
-    test: (p: string) => /[a-zA-Z]/.test(p),
+    key: 'uppercase',
+    label: t('auth.passwordRules.uppercase'),
+    test: (p: string) => /[A-Z]/.test(p),
+  },
+  {
+    key: 'lowercase',
+    label: t('auth.passwordRules.lowercase'),
+    test: (p: string) => /[a-z]/.test(p),
   },
   {
     key: 'number',
     label: t('auth.passwordRules.number'),
     test: (p: string) => /\d/.test(p),
+  },
+  {
+    key: 'special',
+    label: t('auth.passwordRules.special'),
+    test: (p: string) => /[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(p),
   },
 ];
 

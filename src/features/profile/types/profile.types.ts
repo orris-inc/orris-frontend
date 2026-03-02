@@ -22,7 +22,7 @@ export const createUpdateProfileSchema = (t: TFunction) =>
 
 /**
  * Change password validation schema factory
- * Password requirements: 8-72 characters, must contain at least one letter and one number
+ * Password requirements: 12-72 characters, must contain uppercase, lowercase, number, and special character
  */
 export const createChangePasswordSchema = (t: TFunction) =>
   z
@@ -30,10 +30,12 @@ export const createChangePasswordSchema = (t: TFunction) =>
       oldPassword: z.string().min(1, t('profile.validation.currentPasswordRequired')),
       newPassword: z
         .string()
-        .min(8, t('profile.validation.newPasswordTooShort'))
+        .min(12, t('profile.validation.newPasswordTooShort'))
         .max(72, t('profile.validation.newPasswordTooLong'))
-        .regex(/[a-zA-Z]/, t('profile.validation.passwordNeedsLetter'))
-        .regex(/\d/, t('profile.validation.passwordNeedsNumber')),
+        .regex(/[A-Z]/, t('profile.validation.passwordNeedsUppercase'))
+        .regex(/[a-z]/, t('profile.validation.passwordNeedsLowercase'))
+        .regex(/\d/, t('profile.validation.passwordNeedsNumber'))
+        .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, t('profile.validation.passwordNeedsSpecial')),
       confirmPassword: z.string().min(1, t('profile.validation.confirmPasswordRequired')),
       logoutAllDevices: z.boolean().optional(),
     })

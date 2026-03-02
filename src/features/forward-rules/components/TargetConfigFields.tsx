@@ -88,6 +88,7 @@ export const TargetConfigFields: React.FC<TargetConfigFieldsProps> = ({
             label={t('admin.forwardRules.form.targetAddress')}
             required
             error={errors.targetAddress}
+            hint={t('admin.forwardRules.form.targetAddressLanHint')}
             className="col-span-6 sm:col-span-4"
           >
             <Input

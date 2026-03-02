@@ -13,6 +13,7 @@
  * - Subscription: "sub_xK9mP2vL3nQ" (prefix: sub_)
  *
  * Recent changes:
+ * - 2026-03-02: targetAddress supports private/internal IPs for LAN forwarding
  * - 2026-02-03: Synced with types.ts changes (groupSids array, UserGroupInfo)
  * - 2026-02-02: Synced with LoadBalanceStrategy type updates in types.ts
  * - 2026-01-10: Added batch operation APIs (batchCreateForwardRules, batchDeleteForwardRules, etc.)
@@ -78,6 +79,9 @@ import type {
 /**
  * Create forward rule (Admin only)
  * POST /forward-rules
+ *
+ * targetAddress accepts both public and private/internal IPs (e.g., 192.168.x, 10.x)
+ * for LAN forwarding scenarios. The forwarding agent connects to the target, not the backend.
  */
 export const createForwardRule = async (
   data: CreateForwardRuleRequest
@@ -98,6 +102,7 @@ export const getForwardRule = async (id: number | string): Promise<ForwardRule> 
 /**
  * Update forward rule (Admin only)
  * PUT /forward-rules/:id
+ *
  */
 export const updateForwardRule = async (
   id: number | string,
@@ -772,6 +777,8 @@ export const getInstallCommand = async (
  * Create user forward rule
  * POST /user/forward-rules
  * Note: User must have an active subscription with forward feature enabled
+ *
+ * targetAddress accepts private/internal IPs for LAN forwarding.
  */
 export const createUserForwardRule = async (
   data: CreateForwardRuleRequest
@@ -1253,7 +1260,7 @@ export function subscribeForwardAgentEvents(
  *   agentId: 'fa_xK9mP2vL3nQ',
  *   ruleType: 'direct',
  *   name: 'MySQL Forward',
- *   targetAddress: '192.168.1.100',
+ *   targetAddress: '192.168.1.100',  // Private IPs allowed for LAN forwarding
  *   targetPort: 3306,
  *   protocol: 'tcp'
  * });

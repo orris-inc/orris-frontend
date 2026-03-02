@@ -23,6 +23,7 @@ import {
   Scale,
   Bell,
   CreditCard,
+  Fingerprint,
 } from 'lucide-react';
 import { useTelegramSettings } from '@/features/telegram/hooks/useTelegramSettings';
 import {
@@ -38,6 +39,7 @@ import {
   useBrandingSettings,
   useSecuritySettings,
   useRegistrationSettings,
+  useAuthMethodsSettings,
   useLegalSettings,
   SystemSettingsForm,
   SystemSettingsFormSkeleton,
@@ -55,6 +57,8 @@ import {
   SecuritySettingsFormSkeleton,
   RegistrationSettingsForm,
   RegistrationSettingsFormSkeleton,
+  AuthMethodsSettingsForm,
+  AuthMethodsSettingsFormSkeleton,
   LegalSettingsForm,
   LegalSettingsFormSkeleton,
 } from '@/features/settings';
@@ -112,6 +116,7 @@ const CATEGORIES: SettingsCategory[] = [
     icon: Shield,
     items: [
       { id: 'security', labelKey: 'admin.settings.nav.security', icon: Shield },
+      { id: 'authMethods', labelKey: 'admin.settings.nav.authMethods', icon: Fingerprint },
       { id: 'registration', labelKey: 'admin.settings.nav.registration', icon: UserPlus },
       { id: 'oauth', labelKey: 'admin.settings.nav.oauth', icon: KeyRound },
     ],
@@ -236,6 +241,13 @@ export const AdminSettingsPage = () => {
   } = useSecuritySettings();
 
   const {
+    settings: authMethodsSettings,
+    isLoading: isAuthMethodsLoading,
+    update: updateAuthMethods,
+    isUpdating: isAuthMethodsUpdating,
+  } = useAuthMethodsSettings();
+
+  const {
     settings: registrationSettings,
     isLoading: isRegistrationLoading,
     update: updateRegistration,
@@ -303,6 +315,19 @@ export const AdminSettingsPage = () => {
             settings={securitySettings}
             onSubmit={updateSecurity}
             isSubmitting={isSecurityUpdating}
+          />
+        );
+
+      case 'authMethods':
+        return isAuthMethodsLoading ? (
+          <AuthMethodsSettingsFormSkeleton />
+        ) : !authMethodsSettings ? (
+          <EmptyState message={t('admin.settings.unableToLoadConfig')} />
+        ) : (
+          <AuthMethodsSettingsForm
+            settings={authMethodsSettings}
+            onSubmit={updateAuthMethods}
+            isSubmitting={isAuthMethodsUpdating}
           />
         );
 

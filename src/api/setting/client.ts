@@ -7,6 +7,8 @@
  * Note: All API endpoints require admin authentication unless marked as public.
  *
  * Recent changes:
+ * - 2026-03-02: Added SSRF validation notes — smtpHost rejects private/reserved IPs
+ * - 2026-01-31: Added Auth Methods APIs (getAuthMethodsSettings, updateAuthMethodsSettings, getPublicAuthMethods)
  * - 2026-01-31: Removed Maintenance APIs (feature removed)
  * - 2026-01-31: Added Branding, Security, Registration, Legal APIs
  * - 2026-01-31: Added public APIs for unauthenticated access
@@ -48,6 +50,9 @@ import type {
   UpdateLegalSettingsRequest,
   PublicLegalResponse,
   PublicPasswordPolicyResponse,
+  AuthMethodsSettingsResponse,
+  UpdateAuthMethodsSettingsRequest,
+  PublicAuthMethodsResponse,
 } from './types';
 
 // ============================================================================
@@ -154,6 +159,10 @@ export async function getEmailSettings(): Promise<EmailSettingsResponse> {
  * Update email settings
  * PUT /admin/settings/email
  * @requires Admin role
+ *
+ * @validation smtpHost must be a public IP or domain — private/reserved IPs
+ * (10.x, 172.16-31.x, 192.168.x, 127.x, localhost, .local, .internal) are rejected with 400.
+ * This prevents SSRF attacks via SMTP configuration.
  */
 export async function updateEmailSettings(
   data: UpdateEmailSettingsRequest
@@ -473,6 +482,87 @@ export async function getPublicLegal(): Promise<PublicLegalResponse> {
 export async function getPublicPasswordPolicy(): Promise<PublicPasswordPolicyResponse> {
   const response = await apiClient.get<APIResponse<PublicPasswordPolicyResponse>>(
     '/password-policy'
+  );
+  return response.data.data;
+}
+
+// ============================================================================
+// Auth Methods Settings APIs (Added 2026-01-31)
+// ============================================================================
+
+/**
+ * Get authentication methods settings
+ * GET /admin/settings/auth
+ * @requires Admin role
+ *
+ * Returns auth method settings with source information (SettingWithSource format).
+ * Each field contains `{ value: boolean, source: string, isSensitive: boolean }`.
+ *
+ * @example
+ * ```typescript
+ * const settings = await getAuthMethodsSettings();
+ * // Access the actual value via .value property
+ * if (settings.passwordEnabled.value) {
+ *   console.log('Password auth is enabled');
+ * }
+ * ```
+ */
+export async function getAuthMethodsSettings(): Promise<AuthMethodsSettingsResponse> {
+  const response = await apiClient.get<APIResponse<AuthMethodsSettingsResponse>>(
+    '/admin/settings/auth'
+  );
+  return response.data.data;
+}
+
+/**
+ * Update authentication methods settings
+ * PUT /admin/settings/auth
+ * @requires Admin role
+ *
+ * **IMPORTANT: Request format differs from response format!**
+ *
+ * The GET response uses SettingWithSource format:
+ * `{ passwordEnabled: { value: true, source: "database" } }`
+ *
+ * But this PUT request expects DIRECT BOOLEAN VALUES:
+ * `{ passwordEnabled: true }`
+ *
+ * @example
+ * ```typescript
+ * // ✅ Correct: Send direct boolean values
+ * await updateAuthMethodsSettings({
+ *   passwordEnabled: false,
+ *   passkeyEnabled: true,
+ * });
+ *
+ * // ❌ Wrong: DO NOT send SettingWithSource objects
+ * await updateAuthMethodsSettings({
+ *   passwordEnabled: { value: false, source: "database" }, // WRONG!
+ * });
+ * ```
+ *
+ * Note: At least one authentication method must remain enabled.
+ * The API will reject requests that would disable all auth methods.
+ */
+export async function updateAuthMethodsSettings(
+  data: UpdateAuthMethodsSettingsRequest
+): Promise<void> {
+  await apiClient.put('/admin/settings/auth', data);
+}
+
+/**
+ * Get available authentication methods (no auth required)
+ * GET /auth/methods
+ *
+ * Returns which authentication methods are currently available.
+ * Used by frontend to show/hide login options.
+ *
+ * Note: OAuth enabled status depends on both toggle AND configuration.
+ * Passkey enabled status depends on both toggle AND WebAuthn configuration.
+ */
+export async function getPublicAuthMethods(): Promise<PublicAuthMethodsResponse> {
+  const response = await apiClient.get<APIResponse<PublicAuthMethodsResponse>>(
+    '/auth/methods'
   );
   return response.data.data;
 }

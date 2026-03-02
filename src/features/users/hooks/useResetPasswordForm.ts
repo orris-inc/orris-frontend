@@ -9,7 +9,7 @@ interface UseResetPasswordFormParams {
   open: boolean;
 }
 
-const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MIN_LENGTH = 12;
 const PASSWORD_MAX_LENGTH = 72;
 
 export function useResetPasswordForm({ open }: UseResetPasswordFormParams) {
@@ -38,8 +38,10 @@ export function useResetPasswordForm({ open }: UseResetPasswordFormParams) {
     if (!value) return t('admin.users.resetPassword.passwordRequired');
     if (value.length < PASSWORD_MIN_LENGTH) return t('admin.users.resetPassword.passwordMinLength', { min: PASSWORD_MIN_LENGTH });
     if (value.length > PASSWORD_MAX_LENGTH) return t('admin.users.resetPassword.passwordMaxLength', { max: PASSWORD_MAX_LENGTH });
-    if (!/[a-zA-Z]/.test(value)) return t('admin.users.resetPassword.passwordNeedsLetter');
+    if (!/[A-Z]/.test(value)) return t('admin.users.resetPassword.passwordNeedsUppercase');
+    if (!/[a-z]/.test(value)) return t('admin.users.resetPassword.passwordNeedsLowercase');
     if (!/\d/.test(value)) return t('admin.users.resetPassword.passwordNeedsNumber');
+    if (!/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(value)) return t('admin.users.resetPassword.passwordNeedsSpecial');
     return undefined;
   }, [t]);
 

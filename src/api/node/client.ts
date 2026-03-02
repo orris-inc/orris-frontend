@@ -7,6 +7,7 @@
  * Note: Node IDs are now Stripe-style prefixed IDs (e.g., "node_xK9mP2vL3nQ")
  *
  * Recent changes:
+ * - 2026-03-02: Install script apiUrl now validated (must be http/https, no shell metacharacters)
  * - 2026-02-04: Added getBatchInstallScript (Admin) and getUserBatchInstallScript (User) for multi-node batch install
  * - 2026-01-09: No API changes - types.ts updated with VLESS, VMess, Hysteria2, TUIC protocol fields
  * - 2026-01-02: Added subscribeNodeEvents for SSE real-time node event subscription
@@ -158,6 +159,10 @@ export async function generateNodeToken(
  * @param id - Stripe-style prefixed ID (e.g., "node_xK9mP2vL3nQ")
  * @requires Admin role
  * @returns Install script information including install/uninstall commands
+ *
+ * @validation apiUrl (query param) must be a valid http/https URL.
+ * Shell metacharacters (;, &, |, $, etc.) are rejected with 400.
+ * (Security fix 2026-03-02: prevents command injection in generated scripts)
  */
 export async function getNodeInstallScript(
   id: string,
@@ -174,10 +179,11 @@ export async function getNodeInstallScript(
  * Get batch install script command for multiple nodes
  * POST /nodes/batch-install-script
  * @param data - Request containing node IDs (1-100 nodes)
- * @param apiUrl - Optional override for API URL
+ * @param apiUrl - Optional override for API URL (must be valid http/https, no shell metacharacters)
  * @requires Admin role
  * @returns Batch install script with all nodes included
  * Added: 2026-02-04
+ * @throws {400} Validation Error - apiUrl contains invalid characters or scheme
  *
  * @example
  * ```typescript
@@ -367,6 +373,9 @@ export async function getUserNodeUsage(): Promise<UserNodeUsage> {
  * @requires Authentication, Ownership
  * @returns Install script information including install/uninstall commands
  * Added: 2025-12-20
+ *
+ * @validation apiUrl (query param) must be a valid http/https URL.
+ * Shell metacharacters are rejected with 400.
  */
 export async function getUserNodeInstallScript(
   id: string,
@@ -383,10 +392,11 @@ export async function getUserNodeInstallScript(
  * Get batch install script command for multiple user-owned nodes
  * POST /user/nodes/batch-install-script
  * @param data - Request containing node IDs (1-100 nodes)
- * @param apiUrl - Optional override for API URL
+ * @param apiUrl - Optional override for API URL (must be valid http/https, no shell metacharacters)
  * @requires Authentication
  * @returns Batch install script with all nodes included
  * Added: 2026-02-04
+ * @throws {400} Validation Error - apiUrl contains invalid characters or scheme
  *
  * @example
  * ```typescript

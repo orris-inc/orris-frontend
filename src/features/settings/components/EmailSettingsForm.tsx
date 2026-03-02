@@ -136,6 +136,7 @@ export const EmailSettingsForm = ({
         <FormField
           label={t('admin.settings.email.smtpHost')}
           description={t('admin.settings.email.smtpHostDesc')}
+          labelRight={<span className="text-xs text-warning">{t('admin.settings.email.smtpHostSsrfHint')}</span>}
         >
           <Controller
             name="smtpHost"

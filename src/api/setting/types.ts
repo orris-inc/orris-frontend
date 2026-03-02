@@ -567,6 +567,50 @@ export interface PublicLegalResponse {
 }
 
 // ============================================================================
+// Auth Methods Settings Types (Added 2026-03-02)
+// ============================================================================
+
+/**
+ * Auth methods settings response (admin)
+ * Contains authentication method toggles with source info
+ */
+export interface AuthMethodsSettingsResponse {
+  /** Whether password authentication is enabled */
+  passwordEnabled: SettingWithSource;
+  /** Whether passkey (WebAuthn) authentication is enabled */
+  passkeyEnabled: SettingWithSource;
+  /** Whether OAuth authentication is enabled */
+  oauthEnabled: SettingWithSource;
+}
+
+/**
+ * Request to update auth methods settings
+ * Note: At least one auth method must remain enabled
+ * IMPORTANT: Send direct boolean values, NOT SettingWithSource objects
+ */
+export interface UpdateAuthMethodsSettingsRequest {
+  /** Enable or disable password authentication */
+  passwordEnabled?: boolean;
+  /** Enable or disable passkey authentication */
+  passkeyEnabled?: boolean;
+  /** Enable or disable OAuth authentication */
+  oauthEnabled?: boolean;
+}
+
+/**
+ * Public auth methods response (no auth required)
+ * Used by frontend to show/hide login options
+ */
+export interface PublicAuthMethodsResponse {
+  /** Whether password authentication is available */
+  passwordEnabled: boolean;
+  /** Whether passkey authentication is available */
+  passkeyEnabled: boolean;
+  /** Whether OAuth authentication is available */
+  oauthEnabled: boolean;
+}
+
+// ============================================================================
 // Password Policy Types (Added 2026-01-31)
 // ============================================================================
 

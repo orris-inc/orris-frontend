@@ -44,7 +44,13 @@ export const ResetPasswordPage = () => {
     () =>
       z
         .object({
-          password: z.string().min(8, t('auth.validation.passwordMinLength')),
+          password: z
+            .string()
+            .min(12, t('auth.validation.passwordMinLength'))
+            .regex(/[A-Z]/, t('auth.validation.passwordUppercase'))
+            .regex(/[a-z]/, t('auth.validation.passwordLowercase'))
+            .regex(/\d/, t('auth.validation.passwordNumber'))
+            .regex(/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/, t('auth.validation.passwordSpecial')),
           confirmPassword: z.string(),
         })
         .refine((data) => data.password === data.confirmPassword, {

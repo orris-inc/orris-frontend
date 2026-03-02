@@ -752,11 +752,13 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                       error={!!errors.targetAddress}
                       disabled={isCreating}
                     />
-                    {errors.targetAddress && (
+                    {errors.targetAddress ? (
                       <p className="text-xs text-destructive flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
                         {errors.targetAddress}
                       </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{t('userForwardRules.form.targetAddressLanHint')}</p>
                     )}
                   </div>
 

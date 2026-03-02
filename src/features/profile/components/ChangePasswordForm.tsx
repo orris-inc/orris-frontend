@@ -18,10 +18,11 @@ import {
 const calculatePasswordStrength = (password: string): number => {
   let strength = 0;
 
-  if (password.length >= 8) strength += 25;
-  if (password.length >= 12) strength += 25;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
-  if (/\d/.test(password)) strength += 25;
+  if (password.length >= 12) strength += 20;
+  if (/[A-Z]/.test(password)) strength += 20;
+  if (/[a-z]/.test(password)) strength += 20;
+  if (/\d/.test(password)) strength += 20;
+  if (/[!@#$%^&*()_+\-=[\]{}|;:,.<>?]/.test(password)) strength += 20;
 
   return strength;
 };

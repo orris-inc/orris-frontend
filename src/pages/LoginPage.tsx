@@ -21,7 +21,7 @@ import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { GoogleIcon, GitHubIcon } from '@/components/common/SocialIcons';
 import { FormField, AuthAlert } from '@/components/auth';
-import { usePublicBranding } from '@/features/settings';
+import { usePublicBranding, usePublicAuthMethods } from '@/features/settings';
 import { getButtonClass } from '@/lib/ui-styles';
 
 // ============ Types ============
@@ -102,6 +102,7 @@ export const LoginPage = () => {
   const { showSuccess } = useNotificationStore();
   const { serverVersion, clientVersion } = useVersionInfo();
   const { appName, logoUrl, isLoading: isBrandingLoading } = usePublicBranding();
+  const { passwordEnabled, passkeyEnabled, oauthEnabled } = usePublicAuthMethods();
   const [userEmail, setUserEmail] = useState('');
 
   // Zod schema - only basic validation, real validation done by backend
@@ -224,49 +225,55 @@ export const LoginPage = () => {
             )}
 
             {/* Quick login options (OAuth + Passkey) */}
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                onClick={() => handleOAuthLogin('google')}
-                disabled={isLoading}
-                className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
-              >
-                <GoogleIcon className="size-5" />
-                {t('auth.login.continueWithGoogle')}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOAuthLogin('github')}
-                disabled={isLoading}
-                className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
-              >
-                <GitHubIcon className="size-5" />
-                {t('auth.login.continueWithGithub')}
-              </button>
-              {isPasskeySupported && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearPasskeyError();
-                    loginWithPasskey();
-                  }}
-                  disabled={isLoading || isPasskeyLoading}
-                  className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
-                >
-                  {isPasskeyLoading ? (
-                    <>
-                      <Loader2 className="size-5 animate-spin" />
-                      {t('auth.login.signingInWithPasskey')}
-                    </>
-                  ) : (
-                    <>
-                      <Fingerprint className="size-5" />
-                      {t('auth.login.signInWithPasskey')}
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+            {(oauthEnabled || (passkeyEnabled && isPasskeySupported)) && (
+              <div className="space-y-2.5">
+                {oauthEnabled && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleOAuthLogin('google')}
+                      disabled={isLoading}
+                      className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
+                    >
+                      <GoogleIcon className="size-5" />
+                      {t('auth.login.continueWithGoogle')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOAuthLogin('github')}
+                      disabled={isLoading}
+                      className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
+                    >
+                      <GitHubIcon className="size-5" />
+                      {t('auth.login.continueWithGithub')}
+                    </button>
+                  </>
+                )}
+                {passkeyEnabled && isPasskeySupported && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearPasskeyError();
+                      loginWithPasskey();
+                    }}
+                    disabled={isLoading || isPasskeyLoading}
+                    className={getButtonClass('outline', 'default', 'h-11 w-full gap-3')}
+                  >
+                    {isPasskeyLoading ? (
+                      <>
+                        <Loader2 className="size-5 animate-spin" />
+                        {t('auth.login.signingInWithPasskey')}
+                      </>
+                    ) : (
+                      <>
+                        <Fingerprint className="size-5" />
+                        {t('auth.login.signInWithPasskey')}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Passkey error */}
             {passkeyError && (
@@ -275,10 +282,13 @@ export const LoginPage = () => {
               </AuthAlert>
             )}
 
-            <OrDivider text={t('auth.login.orContinueWith')} />
+            {/* Divider between OAuth/Passkey and password form */}
+            {(oauthEnabled || (passkeyEnabled && isPasskeySupported)) && passwordEnabled && (
+              <OrDivider text={t('auth.login.orContinueWith')} />
+            )}
 
             {/* Login form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            {passwordEnabled && <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               <FormField
                 label={t('auth.login.email')}
                 type="email"
@@ -336,7 +346,7 @@ export const LoginPage = () => {
                   t('auth.login.signIn')
                 )}
               </button>
-            </form>
+            </form>}
 
             {/* Sign up link */}
             <p className="mt-5 text-center text-sm text-muted-foreground">

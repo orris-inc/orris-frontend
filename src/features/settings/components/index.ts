@@ -41,6 +41,10 @@ export {
   RegistrationSettingsFormSkeleton,
 } from './RegistrationSettingsForm';
 export {
+  AuthMethodsSettingsForm,
+  AuthMethodsSettingsFormSkeleton,
+} from './AuthMethodsSettingsForm';
+export {
   LegalSettingsForm,
   LegalSettingsFormSkeleton,
 } from './LegalSettingsForm';
