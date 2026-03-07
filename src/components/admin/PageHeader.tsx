@@ -130,13 +130,13 @@ export const PageHeader = ({
             {Icon && (
               <div className="shrink-0 hidden sm:block">
                 <Icon
-                  className="size-7 sm:size-8 text-muted-foreground"
+                  className="size-5 text-muted-foreground/60"
                   strokeWidth={1.5}
                   aria-hidden="true"
                 />
               </div>
             )}
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl lg:text-3xl sm:tracking-tight truncate">
+            <h1 className="text-lg font-semibold text-foreground truncate">
               {title}
             </h1>
             {badge && (
@@ -152,7 +152,7 @@ export const PageHeader = ({
           </div>
           {/* Description - placed under title */}
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground max-w-4xl">
+            <p className="mt-0.5 text-[13px] text-muted-foreground max-w-4xl">
               {description}
             </p>
           )}
@@ -168,7 +168,7 @@ export const PageHeader = ({
 
       {/* Metadata items */}
       {metadata && metadata.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-muted-foreground">
           {metadata.map((item, index) => {
             const MetaIcon = item.icon;
             return (
@@ -177,7 +177,7 @@ export const PageHeader = ({
                 className="flex items-center gap-x-1.5"
               >
                 {MetaIcon && (
-                  <MetaIcon className="size-4 shrink-0" aria-hidden="true" />
+                  <MetaIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 )}
                 <span>{item.text}</span>
               </div>
@@ -188,7 +188,7 @@ export const PageHeader = ({
 
       {/* Tabs navigation */}
       {tabs && tabs.length > 0 && (
-        <nav className="border-b border-border -mb-px mt-2">
+        <nav className="border-b border-border/60 -mb-px mt-2">
           <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <div className="flex gap-x-6 sm:gap-x-8 min-w-max">
               {tabs.map((tab) => (

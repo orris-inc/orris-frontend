@@ -172,7 +172,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       cell: ({ row }) => {
         const { onlineDeviceCount, deviceLimit } = row.original;
         return (
-          <span className="text-sm tabular-nums">
+          <span className="text-[13px] tabular-nums">
             {onlineDeviceCount} / {deviceLimit === 0 ? '∞' : deviceLimit}
           </span>
         );
@@ -186,7 +186,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
       cell: ({ row }) => {
         const { dataUsedBytes, dataLimitBytes } = row.original;
         return (
-          <span className="text-sm tabular-nums">
+          <span className="text-[13px] tabular-nums">
             {formatBytesCompact(dataUsedBytes)} / {dataLimitBytes === 0 ? '∞' : formatBytesCompact(dataLimitBytes)}
           </span>
         );

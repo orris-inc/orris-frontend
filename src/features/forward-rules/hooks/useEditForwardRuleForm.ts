@@ -16,7 +16,7 @@ import type {
   ExitAgent,
   LoadBalanceStrategy,
 } from '@/api/forward';
-import type { Node } from '@/api/node';
+import type { Node, RouteConfig } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -40,6 +40,7 @@ export interface EditForwardRuleFormData extends UpdateForwardRuleRequest {
   serverAddress?: string;
   externalSource?: string;
   externalRuleId?: string;
+  route?: RouteConfig;
 }
 
 export interface UseEditForwardRuleFormOptions {
@@ -103,6 +104,7 @@ export function useEditForwardRuleForm({
         serverAddress: rule.serverAddress,
         externalSource: rule.externalSource,
         externalRuleId: rule.externalRuleId,
+        route: rule.route,
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setExitMode(rule.exitAgents && rule.exitAgents.length > 0 ? 'multi' : 'single');
@@ -202,6 +204,11 @@ export function useEditForwardRuleForm({
   // Handle load balance strategy change
   const handleLoadBalanceStrategyChange = useCallback((strategy: LoadBalanceStrategy) => {
     setFormData((prev) => ({ ...prev, loadBalanceStrategy: strategy }));
+  }, []);
+
+  // Handle route config change
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, route }));
   }, []);
 
   // Handle chain selection change with port config cleanup
@@ -563,6 +570,16 @@ export function useEditForwardRuleForm({
       updates.groupSids = currentGroups;
     }
 
+    // Route config
+    const hasRouteChange = JSON.stringify(formData.route) !== JSON.stringify(rule.route);
+    if (hasRouteChange) {
+      if (formData.route) {
+        updates.route = formData.route;
+      } else if (rule.route) {
+        updates.clearRoute = true;
+      }
+    }
+
     return updates;
   }, [formData, rule, targetType, exitMode]);
 
@@ -604,6 +621,7 @@ export function useEditForwardRuleForm({
         serverAddress: rule.serverAddress,
         externalSource: rule.externalSource,
         externalRuleId: rule.externalRuleId,
+        route: rule.route,
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setExitMode(rule.exitAgents && rule.exitAgents.length > 0 ? 'multi' : 'single');
@@ -630,6 +648,7 @@ export function useEditForwardRuleForm({
     handleExitAgentsChange,
     handleLoadBalanceStrategyChange,
     handleChainSelectionChange,
+    handleRouteChange,
 
     // Computed values
     availableAgents,

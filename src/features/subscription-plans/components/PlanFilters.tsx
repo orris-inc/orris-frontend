@@ -8,7 +8,7 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, LayoutGrid, Table2, Zap, ArrowLeftRight, Layers } from 'lucide-react';
+import { X, Zap, ArrowLeftRight, Layers } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/common/Select';
 import { Button } from '@/components/common/Button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
 import type { PlanStatus, PlanType } from '@/api/subscription/types';
 import type { SubscriptionPlanFilters } from '../types';
@@ -26,15 +25,11 @@ import type { SubscriptionPlanFilters } from '../types';
 // Types
 // ============================================================================
 
-export type PlanViewMode = 'grid' | 'table';
-
 export interface PlanFiltersProps {
   filters: SubscriptionPlanFilters;
   onFiltersChange: (filters: Partial<SubscriptionPlanFilters>) => void;
   hasFilters: boolean;
   onClearFilters: () => void;
-  viewMode: PlanViewMode;
-  onViewModeChange: (mode: PlanViewMode) => void;
   className?: string;
 }
 
@@ -55,8 +50,6 @@ export const PlanFilters = ({
   onFiltersChange,
   hasFilters,
   onClearFilters,
-  viewMode,
-  onViewModeChange,
   className,
 }: PlanFiltersProps) => {
   const { t } = useTranslation();
@@ -154,46 +147,6 @@ export const PlanFilters = ({
         </Button>
       )}
 
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* View mode toggle */}
-      <div className="flex items-center rounded-lg bg-muted/50 ring-1 ring-border/60 p-0.5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onViewModeChange('grid')}
-              className={cn(
-                'size-8 rounded-lg flex items-center justify-center transition-all',
-                viewMode === 'grid'
-                  ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <LayoutGrid className="size-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{t('admin.plans.catalog.gridView')}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={() => onViewModeChange('table')}
-              className={cn(
-                'size-8 rounded-lg flex items-center justify-center transition-all',
-                viewMode === 'table'
-                  ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Table2 className="size-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>{t('admin.plans.catalog.tableView')}</TooltipContent>
-        </Tooltip>
-      </div>
     </div>
   );
 };

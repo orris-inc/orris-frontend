@@ -34,6 +34,7 @@ import { FormSection, FormField } from './form-primitives';
 import { ExitAgentConfigFields } from './ExitAgentConfigFields';
 import { TargetConfigFields } from './TargetConfigFields';
 import { AdvancedOptionsFields } from './AdvancedOptionsFields';
+import { RouteConfigEditor } from '@/features/nodes/components/RouteConfigEditor';
 import { useCreateForwardRuleForm } from '../hooks/useCreateForwardRuleForm';
 import type {
   CreateForwardRuleRequest,
@@ -103,7 +104,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="@container sm:max-w-2xl flex flex-col max-h-[90vh] p-0">
-        <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-border sm:px-6">
+        <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-4 border-b border-border/60 sm:px-6">
           <DialogTitle className="text-lg font-semibold">
             {initialData
               ? t("admin.forwardRules.form.copyRule")
@@ -513,6 +514,20 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
               </div>
             </FormSection>
 
+            {/* Section: Route Config (non-external types) */}
+            {form.formData.ruleType !== 'external' && (
+              <FormSection title={t('admin.nodes.route.title')}>
+                <div className="col-span-6">
+                  <RouteConfigEditor
+                    value={form.formData.route}
+                    onChange={form.handleRouteChange}
+                    idPrefix="create-rule-route"
+                    nodes={nodes?.map((n) => ({ id: n.id, name: n.name })) || []}
+                  />
+                </div>
+              </FormSection>
+            )}
+
             {/* Section 4: Advanced Options (Collapsible) */}
             <AdvancedOptionsFields
               open={advancedOpen}
@@ -536,7 +551,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 px-5 py-4 border-t border-border bg-muted/30 sm:px-6">
+        <DialogFooter className="flex-shrink-0 px-5 py-4 border-t border-border/60 bg-muted/30 sm:px-6">
           <div className="flex gap-3 justify-end w-full">
             <Button onClick={handleSubmit} disabled={!form.isFormValid}>
               {t("common.actions.create")}

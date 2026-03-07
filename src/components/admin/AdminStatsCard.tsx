@@ -83,13 +83,13 @@ export const AdminStatsCard = ({
       <div
         className={cn(
           cardStyles,
-          'overflow-hidden rounded-lg px-4 py-5 shadow-sm sm:p-6',
+          'overflow-hidden rounded-lg px-3.5 py-4',
           className
         )}
       >
         <div className="animate-pulse">
           <div className="h-4 w-24 bg-muted rounded" />
-          <div className="mt-2 h-8 w-16 bg-muted rounded" />
+          <div className="mt-2 h-7 w-16 bg-muted rounded" />
         </div>
       </div>
     );
@@ -131,17 +131,17 @@ export const AdminStatsCard = ({
     <div
       className={cn(
         cardStyles,
-        'overflow-hidden rounded-lg px-4 py-5 shadow-sm sm:p-6',
+        'overflow-hidden rounded-lg px-3.5 py-4',
         className
       )}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <dt className="truncate text-sm font-medium text-muted-foreground">
+          <dt className="truncate text-xs font-medium text-muted-foreground">
             {title}
           </dt>
           <dd className="mt-1 flex items-baseline justify-between gap-x-2">
-            <span className="text-2xl font-semibold tracking-tight text-foreground tabular-nums sm:text-3xl">
+            <span className="text-xl font-semibold tracking-tight text-foreground tabular-nums lg:text-2xl">
               {value}
             </span>
             {changeData && (

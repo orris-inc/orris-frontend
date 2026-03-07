@@ -61,7 +61,7 @@ function HealthCard({
     <div className="p-3.5 lg:p-4">
       {/* Header: icon + label + chevron */}
       <div className="flex items-center gap-2 mb-2.5">
-        <div className={cn('p-1.5 rounded-lg ring-1 ring-inset ring-border/50', iconBg)}>
+        <div className={cn('p-1.5 rounded-md ring-1 ring-inset ring-border/40', iconBg)}>
           <Icon className={cn('size-3.5', iconColor)} strokeWidth={1.5} />
         </div>
         <span className="text-xs font-medium text-muted-foreground flex-1 truncate">
@@ -331,7 +331,7 @@ export function DashboardOverviewStrip({
             {t('common.time.today')}
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-px bg-border">
+        <div className="grid grid-cols-3 gap-px bg-border/60">
           {todayTrafficItems.map((item) => (
             <TrafficMetricCell key={item.key} item={item} />
           ))}

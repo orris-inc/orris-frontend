@@ -211,7 +211,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
                 {t(typeConfig.labelKey)}
               </span>
             </div>
-            <div className="text-sm text-muted-foreground mt-0.5 truncate">
+            <div className="text-[13px] text-muted-foreground mt-0.5 truncate">
               {plan.slug}
             </div>
           </div>

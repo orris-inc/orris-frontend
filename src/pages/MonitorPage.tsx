@@ -245,7 +245,7 @@ export const MonitorPage = () => {
                       <div
                         key={entity.id}
                         onClick={() => handleEntityClick(entity)}
-                        className={entity.id === selectedEntity?.id ? 'ring-2 ring-primary rounded-xl' : ''}
+                        className={entity.id === selectedEntity?.id ? 'ring-1 ring-primary rounded-lg' : ''}
                       >
                         <EntityDetailCard entity={entity} compact={viewMode === 'compact'} />
                       </div>

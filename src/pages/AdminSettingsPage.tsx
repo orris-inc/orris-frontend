@@ -7,7 +7,6 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
 import { usePageTitle } from '@/shared/hooks';
 import {
   Settings,
@@ -147,9 +146,9 @@ const CATEGORIES: SettingsCategory[] = [
  * Empty state when settings cannot be loaded
  */
 const EmptyState = ({ message }: { message: string }) => (
-  <div className="bg-card rounded-xl ring-1 ring-border p-6 md:p-8 text-center text-muted-foreground">
-    <Wrench className="size-8 mx-auto mb-2 opacity-50" />
-    <p className="text-sm md:text-base">{message}</p>
+  <div className="bg-card rounded-lg ring-1 ring-border/60 p-6 text-center text-muted-foreground">
+    <Wrench className="size-6 mx-auto mb-2 opacity-50" />
+    <p className="text-[13px]">{message}</p>
   </div>
 );
 
@@ -422,16 +421,18 @@ export const AdminSettingsPage = () => {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col min-h-0 space-y-4 md:space-y-6">
-        {/* Page Header */}
-        <PageHeader
-          title={t('admin.settings.title')}
-          description={t('admin.settings.description')}
-          icon={Settings}
-        />
+      <div className="flex flex-col min-h-0 space-y-4">
+        {/* Page Header — inline layout */}
+        <div>
+          <div className="flex items-center gap-2.5">
+            <Settings className="size-5 text-muted-foreground/60" strokeWidth={1.5} />
+            <h1 className="text-lg font-semibold text-foreground">{t('admin.settings.title')}</h1>
+          </div>
+          <p className="mt-0.5 text-[13px] text-muted-foreground ml-[30px]">{t('admin.settings.description')}</p>
+        </div>
 
         {/* Level 1: Category Cards */}
-        <div className="grid grid-cols-4 gap-2 md:gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {CATEGORIES.map((category) => {
             const Icon = category.icon;
             const isActive = category.id === activeCategoryId;
@@ -441,29 +442,29 @@ export const AdminSettingsPage = () => {
                 type="button"
                 onClick={() => handleCategoryChange(category.id)}
                 className={cn(
-                  'group flex flex-col items-center gap-1.5 p-3',
-                  'md:flex-row md:items-start md:gap-3 md:p-4',
-                  'rounded-xl transition-all',
+                  'group flex flex-col items-center gap-1.5 p-2.5',
+                  'md:flex-row md:items-start md:gap-2.5 md:p-3',
+                  'rounded-lg transition-all',
                   'touch-target',
                   isActive
-                    ? 'bg-primary/5 ring-2 ring-primary text-foreground'
-                    : 'bg-card ring-1 ring-border text-muted-foreground hover:ring-primary/30 hover:text-foreground',
+                    ? 'bg-primary/10 ring-1 ring-primary/30 text-foreground'
+                    : 'bg-card ring-1 ring-border/60 text-muted-foreground hover:ring-border hover:text-foreground',
                 )}
               >
                 <span
                   className={cn(
-                    'flex size-9 md:size-10 items-center justify-center rounded-lg shrink-0',
+                    'flex size-8 items-center justify-center rounded-lg shrink-0',
                     isActive
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted/50 text-muted-foreground group-hover:text-foreground',
                   )}
                 >
-                  <Icon className="size-4 md:size-5" />
+                  <Icon className="size-4" />
                 </span>
                 <div className="text-center md:text-left min-w-0">
                   <div
                     className={cn(
-                      'text-xs md:text-sm font-medium',
+                      'text-xs font-medium',
                       isActive && 'text-foreground',
                     )}
                   >
@@ -481,7 +482,7 @@ export const AdminSettingsPage = () => {
         {/* Level 2: Sub-navigation + Content */}
         <div>
           {/* Desktop: Underline sub-tabs */}
-          <div className="hidden md:block border-b border-border mb-6">
+          <div className="hidden md:block border-b border-border/60 mb-6">
             <nav className="flex gap-1" aria-label="Settings sub-navigation">
               {activeCategory.items.map((item) => {
                 const Icon = item.icon;
@@ -492,7 +493,7 @@ export const AdminSettingsPage = () => {
                     type="button"
                     onClick={() => setActiveItemId(item.id)}
                     className={cn(
-                      'relative flex items-center gap-2 px-4 h-10 text-sm font-medium',
+                      'relative flex items-center gap-1.5 px-3 h-9 text-[13px] font-medium',
                       'transition-colors',
                       'after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:transition-colors',
                       isActive
@@ -500,7 +501,7 @@ export const AdminSettingsPage = () => {
                         : 'text-muted-foreground hover:text-foreground after:bg-transparent',
                     )}
                   >
-                    <Icon className="size-4" />
+                    <Icon className="size-3.5" />
                     {t(item.labelKey)}
                   </button>
                 );

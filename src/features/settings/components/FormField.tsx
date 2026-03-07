@@ -35,27 +35,27 @@ export const FormSection = ({
     className={cn(
       'rounded-lg overflow-hidden',
       variant === 'card'
-        ? 'bg-card ring-1 ring-border'
+        ? 'bg-card ring-1 ring-border/60'
         : 'glass-elevated rounded-2xl',
       className
     )}
   >
     {/* Section Header */}
     {(title || description || headerRight) && (
-      <div className="flex items-center justify-between gap-4 p-5 pb-4 border-b border-border/50">
+      <div className="flex items-center justify-between gap-4 p-4 pb-3 border-b border-border/60">
         <div className="min-w-0">
           {title && (
-            <h3 className="font-semibold text-foreground">{title}</h3>
+            <h3 className="text-[13px] font-semibold text-foreground">{title}</h3>
           )}
           {description && (
-            <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
           )}
         </div>
         {headerRight && <div className="shrink-0">{headerRight}</div>}
       </div>
     )}
     {/* Section Content */}
-    <div className="divide-y divide-border/50">{children}</div>
+    <div className="divide-y divide-border/60">{children}</div>
   </div>
 );
 
@@ -83,7 +83,7 @@ export const FormField = ({
 }: FormFieldProps) => (
   <div
     className={cn(
-      'grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-5',
+      'grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-4',
       disabled && 'opacity-60',
       className
     )}
@@ -117,7 +117,7 @@ interface FormActionsProps {
 export const FormActions = ({ children, className }: FormActionsProps) => (
   <div
     className={cn(
-      'flex items-center justify-end gap-3 p-5 bg-muted/30',
+      'flex items-center justify-end gap-3 p-4 bg-muted/30',
       className
     )}
   >
@@ -137,10 +137,10 @@ export const FormFieldSkeleton = ({
   hasDescription = true,
   inputWidth = 'full',
 }: FormFieldSkeletonProps) => (
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-5">
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 p-4">
     {/* Label column */}
     <div className="sm:pt-2 space-y-1.5">
-      <Skeleton className="h-4 w-24" />
+      <Skeleton className="h-3.5 w-24" />
       {hasDescription && <Skeleton className="h-3 w-40" />}
     </div>
     {/* Input column */}
@@ -175,12 +175,12 @@ export const FormSectionSkeleton = ({
   <div
     className={cn(
       'rounded-lg overflow-hidden',
-      variant === 'card' ? 'bg-card ring-1 ring-border' : 'glass-elevated rounded-2xl'
+      variant === 'card' ? 'bg-card ring-1 ring-border/60' : 'glass-elevated rounded-2xl'
     )}
   >
     {/* Header skeleton */}
     {hasHeader && (
-      <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
+      <div className="flex items-center justify-between p-4 pb-3 border-b border-border/60">
         <div className="space-y-1.5">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-3.5 w-48" />
@@ -188,7 +188,7 @@ export const FormSectionSkeleton = ({
       </div>
     )}
     {/* Fields skeleton */}
-    <div className="divide-y divide-border/50">
+    <div className="divide-y divide-border/60">
       {Array.from({ length: fieldCount }).map((_, i) => (
         <FormFieldSkeleton key={i} />
       ))}

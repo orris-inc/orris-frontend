@@ -17,7 +17,7 @@ import type {
   ExitAgent,
   LoadBalanceStrategy,
 } from '@/api/forward';
-import type { Node } from '@/api/node';
+import type { Node, RouteConfig } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -53,6 +53,7 @@ export interface CreateForwardRuleFormData {
   serverAddress: string;
   externalSource: string;
   externalRuleId: string;
+  route: RouteConfig | undefined;
 }
 
 export interface UseCreateForwardRuleFormOptions {
@@ -95,6 +96,7 @@ const DEFAULT_FORM_DATA: CreateForwardRuleFormData = {
   serverAddress: '',
   externalSource: '',
   externalRuleId: '',
+  route: undefined,
 };
 
 // Rule type keys for translation lookup
@@ -158,6 +160,7 @@ export function useCreateForwardRuleForm({
             (initialData as Record<string, unknown>).externalSource as string || '',
           externalRuleId:
             (initialData as Record<string, unknown>).externalRuleId as string || '',
+          route: initialData.route,
         });
         setTargetType(
           initialData.targetType || (initialData.targetNodeId ? 'node' : 'manual'),
@@ -263,6 +266,11 @@ export function useCreateForwardRuleForm({
   // Handle load balance strategy change
   const handleLoadBalanceStrategyChange = useCallback((strategy: LoadBalanceStrategy) => {
     setFormData((prev) => ({ ...prev, loadBalanceStrategy: strategy }));
+  }, []);
+
+  // Handle route config change
+  const handleRouteChange = useCallback((route: RouteConfig | undefined) => {
+    setFormData((prev) => ({ ...prev, route }));
   }, []);
 
   // Handle chain selection change with port config cleanup
@@ -644,6 +652,9 @@ export function useCreateForwardRuleForm({
     if (formData.groupSids && formData.groupSids.length > 0) {
       submitData.groupSids = formData.groupSids;
     }
+    if (formData.route) {
+      submitData.route = formData.route;
+    }
 
     return submitData;
   }, [formData, targetType, exitMode]);
@@ -675,6 +686,7 @@ export function useCreateForwardRuleForm({
     handleExitAgentsChange,
     handleLoadBalanceStrategyChange,
     handleChainSelectionChange,
+    handleRouteChange,
 
     // Computed values
     availableAgentsForSelect,

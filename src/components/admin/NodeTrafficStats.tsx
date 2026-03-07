@@ -53,7 +53,7 @@ export const getStatusColors = (status: string) => {
   return {
     bg: 'bg-muted/50',
     text: 'text-muted-foreground',
-    border: 'border-border',
+    border: 'border-border/60',
     dot: 'bg-muted-foreground/50',
   };
 };
@@ -65,11 +65,11 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
   const colors = getStatusColors(item.status);
 
   return (
-    <div className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3">
+    <div className="flex items-center gap-2 @md:gap-3 py-2 @md:py-2.5">
       {/* Node Icon with Status */}
       <div
         className={cn(
-          'relative flex items-center justify-center min-w-7 h-7 @md:min-w-8 @md:h-8 rounded-md @md:rounded-lg border transition-all',
+          'relative flex items-center justify-center size-7 @md:size-8 rounded-md border',
           colors.bg,
           colors.text,
           colors.border
@@ -79,7 +79,7 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
         {/* Status dot */}
         <div
           className={cn(
-            'absolute -top-0.5 -right-0.5 size-2 @md:size-2.5 rounded-full border-2 border-card',
+            'absolute -top-0.5 -right-0.5 size-2 rounded-full border-2 border-card',
             colors.dot
           )}
         />
@@ -87,36 +87,36 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs @md:text-sm font-semibold text-foreground truncate">
+        <p className="text-[13px] font-medium text-foreground truncate">
           {item.nodeName}
         </p>
-        <p className="text-[11px] @md:text-xs text-muted-foreground truncate">
+        <p className="text-[11px] text-muted-foreground/60 truncate">
           {item.nodeId}
         </p>
       </div>
 
       {/* Traffic Stats */}
-      <div className="flex items-center gap-2 @md:gap-4 text-[11px] @md:text-xs">
+      <div className="flex items-center gap-2 @md:gap-3 text-[11px] @md:text-xs">
         {/* Upload - hidden on mobile */}
-        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
-          <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
-          <span className="font-medium text-foreground">
+        <div className="hidden @md:flex items-center gap-1 whitespace-nowrap">
+          <ArrowUp className="size-3 text-chart-upload" strokeWidth={2} />
+          <span className="font-medium text-foreground tabular-nums">
             {formatTrafficBytes(item.upload)}
           </span>
         </div>
 
         {/* Download - hidden on mobile */}
-        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
-          <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
-          <span className="font-medium text-foreground">
+        <div className="hidden @md:flex items-center gap-1 whitespace-nowrap">
+          <ArrowDown className="size-3 text-chart-download" strokeWidth={2} />
+          <span className="font-medium text-foreground tabular-nums">
             {formatTrafficBytes(item.download)}
           </span>
         </div>
 
         {/* Total - always visible */}
-        <div className="flex items-center gap-1 @md:gap-1.5 whitespace-nowrap">
-          <Activity className="size-3 @md:size-3.5 text-primary" strokeWidth={2} />
-          <span className="font-bold text-foreground">
+        <div className="flex items-center gap-1 whitespace-nowrap">
+          <Activity className="size-3 text-muted-foreground/60" strokeWidth={2} />
+          <span className="font-semibold text-foreground tabular-nums">
             {formatTrafficBytes(item.total)}
           </span>
         </div>
@@ -130,14 +130,14 @@ const NodeItem = ({ item }: { item: NodeTrafficStatsItem }) => {
  */
 const NodeListSkeleton = () => {
   return (
-    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border">
+    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border/60">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3"
+          className="flex items-center gap-2 @md:gap-3 py-2 @md:py-2.5"
         >
           {/* Icon Skeleton */}
-          <div className="min-w-7 h-7 @md:min-w-8 @md:h-8 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="min-w-7 h-7 @md:min-w-8 @md:h-8 bg-muted rounded-md animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
           <div className="flex-1 space-y-2">
@@ -146,10 +146,10 @@ const NodeListSkeleton = () => {
           </div>
 
           {/* Stats Skeleton */}
-          <div className="flex items-center gap-2 @md:gap-4">
-            <div className="hidden @md:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="hidden @md:block h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="h-3 w-12 @md:w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+          <div className="flex items-center gap-2 @md:gap-3">
+            <div className="hidden @md:block h-3 w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="hidden @md:block h-3 w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-10 @md:w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       ))}
@@ -163,8 +163,8 @@ const NodeListSkeleton = () => {
 const EmptyState = ({ message }: { message: string }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Server className="size-12 text-muted-foreground/50 mb-3" strokeWidth={1.5} />
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <Server className="size-8 text-muted-foreground/40 mb-2" strokeWidth={1.5} />
+      <p className="text-[13px] text-muted-foreground">{message}</p>
     </div>
   );
 };
@@ -189,25 +189,25 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-4 border-t border-border">
-      <span className="text-xs @md:text-sm text-muted-foreground">
+    <div className="flex items-center justify-between px-4 @md:px-6 py-2.5 @md:py-3 border-t border-border/60">
+      <span className="text-xs text-muted-foreground/60">
         {t('admin.traffic.totalNodes', { count: total })}
       </span>
       <div className="flex items-center gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
+          className="px-3 py-1.5 @md:px-2.5 @md:py-1 text-xs rounded-md border border-border/60 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/60 transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
           {t('common.actions.previous')}
         </button>
-        <span className="text-xs @md:text-sm text-muted-foreground px-1">
+        <span className="text-xs text-muted-foreground/60 tabular-nums px-1">
           {page} / {totalPages}
         </span>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-4 py-2.5 @md:px-3 @md:py-1.5 text-sm rounded-lg border border-border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors touch-target min-h-[44px] @md:min-h-0"
+          className="px-3 py-1.5 @md:px-2.5 @md:py-1 text-xs rounded-md border border-border/60 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted/60 transition-colors touch-target min-h-[44px] @md:min-h-0"
         >
           {t('common.actions.next')}
         </button>
@@ -227,21 +227,21 @@ export const NodeTrafficStats = ({
   return (
     <AdminCard variant="bordered" noPadding className="@container">
       {/* Header - height matches TrafficRankingList */}
-      <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-3.5 border-b border-border">
-        <h3 className="text-base @md:text-lg font-semibold text-foreground">
+      <div className="flex items-center justify-between px-4 @md:px-6 py-2.5 @md:py-3 border-b border-border/60">
+        <h3 className="text-[13px] font-semibold text-foreground">
           {t('admin.traffic.nodeStats')}
         </h3>
       </div>
 
       {/* Content */}
-      <div className="px-4 @md:px-6 pb-4 @md:pb-6 pt-3 @md:pt-4">
+      <div className="px-4 @md:px-6 pb-3 @md:pb-4 pt-2 @md:pt-3">
         {loading ? (
           <NodeListSkeleton />
         ) : items.length === 0 ? (
           <EmptyState message={t('admin.traffic.noNodeData')} />
         ) : (
           <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-            <div className="divide-y divide-border pr-4">
+            <div className="divide-y divide-border/60 pr-4">
               {items.map((item) => (
                 <NodeItem key={item.nodeId} item={item} />
               ))}

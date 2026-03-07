@@ -90,31 +90,31 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
     <div className={cn(
       'bg-card',
       'backdrop-blur-xl',
-      'border border-border',
-      'rounded-xl shadow-lg',
+      'border border-border/60',
+      'rounded-lg shadow-sm',
       'p-3 min-w-[170px]'
     )}>
       {/* Time label */}
-      <div className="flex items-center gap-2 mb-2.5 pb-2.5 border-b border-border">
-        <div className="p-1 rounded-lg bg-muted">
-          <Activity className="size-3 text-muted-foreground" />
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/60">
+        <div className="p-1 rounded-md bg-muted">
+          <Activity className="size-3 text-muted-foreground/60" />
         </div>
-        <span className="text-xs font-semibold text-foreground">
+        <span className="text-xs font-medium text-foreground">
           {label}
         </span>
       </div>
 
       {/* Traffic data */}
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {/* Upload */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="size-2.5 rounded-full bg-chart-upload ring-2 ring-chart-upload/20" />
-            <span className="text-xs font-medium text-muted-foreground">{t('common.actions.upload')}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2 rounded-full bg-chart-upload" />
+            <span className="text-xs text-muted-foreground">{t('common.actions.upload')}</span>
           </div>
           <div className="flex items-center gap-1">
             <ArrowUp className="size-3 text-chart-upload" strokeWidth={2} />
-            <span className="text-xs font-bold text-foreground tabular-nums">
+            <span className="text-xs font-semibold text-foreground tabular-nums">
               {formatTrafficBytes(upload)}
             </span>
           </div>
@@ -122,22 +122,22 @@ const CustomTooltip = ({ active, payload, label, t }: TooltipProps<number, strin
 
         {/* Download */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="size-2.5 rounded-full bg-chart-download ring-2 ring-chart-download/20" />
-            <span className="text-xs font-medium text-muted-foreground">{t('common.actions.download')}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="size-2 rounded-full bg-chart-download" />
+            <span className="text-xs text-muted-foreground">{t('common.actions.download')}</span>
           </div>
           <div className="flex items-center gap-1">
             <ArrowDown className="size-3 text-chart-download" strokeWidth={2} />
-            <span className="text-xs font-bold text-foreground tabular-nums">
+            <span className="text-xs font-semibold text-foreground tabular-nums">
               {formatTrafficBytes(download)}
             </span>
           </div>
         </div>
 
         {/* Total */}
-        <div className="flex items-center justify-between gap-3 pt-2.5 mt-0.5 border-t border-border">
-          <span className="text-xs font-semibold text-foreground">{t('admin.traffic.total')}</span>
-          <span className="text-sm font-bold text-foreground tabular-nums">
+        <div className="flex items-center justify-between gap-3 pt-2 mt-0.5 border-t border-border/60">
+          <span className="text-xs font-medium text-foreground">{t('admin.traffic.total')}</span>
+          <span className="text-[13px] font-semibold text-foreground tabular-nums">
             {formatTrafficBytes(total)}
           </span>
         </div>
@@ -170,7 +170,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, tr
             <Skeleton className="h-6 w-32" />
             {headerAction}
           </div>
-          <Skeleton className="w-full h-[200px] @sm:h-[280px] rounded-xl" />
+          <Skeleton className="w-full h-[200px] @sm:h-[280px] rounded-lg" />
         </div>
       </AdminCard>
     );
@@ -181,7 +181,7 @@ export const TrafficTrendChart = ({ data, granularity, loading, headerAction, tr
       <div className="@container p-4 @sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-4">
-          <h3 className="text-base font-semibold text-foreground">
+          <h3 className="text-[13px] font-semibold text-foreground">
             {t('admin.traffic.trend')}
           </h3>
           {headerAction && <div className="shrink-0">{headerAction}</div>}

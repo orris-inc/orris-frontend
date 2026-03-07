@@ -30,6 +30,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
 import { Label } from '@/components/common/Label';
 import { SortableChainAgentList } from './SortableChainAgentList';
 import { ExitAgentList } from './ExitAgentList';
+import { RouteConfigEditor } from '@/features/nodes/components/RouteConfigEditor';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
 import { formatDateTime } from '@/shared/utils/date-utils';
@@ -493,6 +494,16 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
                 </>
               )}
             </>
+          )}
+
+          {/* Route Config (non-external types) */}
+          {!isExternal && (
+            <RouteConfigEditor
+              value={form.formData.route}
+              onChange={form.handleRouteChange}
+              idPrefix="edit-sheet-route"
+              nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
+            />
           )}
 
           {/* Advanced Options Toggle */}

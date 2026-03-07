@@ -18,7 +18,6 @@ import {
   detectGranularity,
 } from '@/features/admin-traffic';
 import {
-  PageHeader,
   DateRangeFilter,
   toDateRange,
   getInitialDateRange,
@@ -106,11 +105,12 @@ export function NewAdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="flex flex-col gap-4 lg:gap-5 pb-safe">
-        <PageHeader
-          title={t('admin.dashboard.title')}
-          action={<DateRangeFilter value={dateRangeValue} onChange={setDateRangeValue} />}
-        />
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header — inline layout */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-semibold text-foreground">{t('admin.dashboard.title')}</h1>
+          <DateRangeFilter value={dateRangeValue} onChange={setDateRangeValue} />
+        </div>
 
         <DashboardOverviewStrip
           dashboard={dashboard}
@@ -125,7 +125,7 @@ export function NewAdminDashboardPage() {
           trafficLoading={isTrafficLoading}
         />
 
-        <div className="grid grid-cols-1 gap-4 lg:gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <TrafficRankingList
             userRanking={userRanking}
             subscriptionRanking={subscriptionRanking}

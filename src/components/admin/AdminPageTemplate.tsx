@@ -110,7 +110,7 @@ export const AdminPageTemplate = ({
   // ========================================
   if (error) {
     return (
-      <div className={cn('space-y-6', className)}>
+      <div className={cn('space-y-4', className)}>
         <PageHeader
           title={title}
           description={description}
@@ -133,7 +133,7 @@ export const AdminPageTemplate = ({
   // ========================================
   if (loading) {
     return (
-      <div className={cn('space-y-6', className)}>
+      <div className={cn('space-y-4', className)}>
         <PageSkeleton
           showHeader
           showToolbar={!!toolbar}
@@ -149,7 +149,7 @@ export const AdminPageTemplate = ({
   // ========================================
   if (empty && emptyProps) {
     return (
-      <div className={cn('space-y-6', className)}>
+      <div className={cn('space-y-4', className)}>
         <PageHeader
           title={title}
           description={description}
@@ -168,7 +168,7 @@ export const AdminPageTemplate = ({
   // Normal State
   // ========================================
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn('space-y-4', className)}>
       <PageHeader
         title={title}
         description={description}

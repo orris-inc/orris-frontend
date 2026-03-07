@@ -25,8 +25,8 @@ interface AdminTableProps {
 
 export const AdminTable = ({ children, className }: AdminTableProps) => {
   return (
-    <div className="@container overflow-x-auto rounded-lg border border-border">
-      <table className={cn('w-full text-sm border-separate border-spacing-0', className)}>
+    <div className="@container overflow-x-auto rounded-lg border border-border/60">
+      <table className={cn('w-full text-[13px] border-separate border-spacing-0', className)}>
         {children}
       </table>
     </div>
@@ -36,7 +36,7 @@ export const AdminTable = ({ children, className }: AdminTableProps) => {
 export const AdminTableHeader = ({ children, className }: AdminTableProps) => {
   return (
     <thead className={cn(
-      'bg-muted',
+      'bg-muted/40',
       className
     )}>
       {children}
@@ -64,7 +64,7 @@ export const AdminTableRow = ({ children, className, onClick, selected }: AdminT
     <tr
       onClick={onClick}
       className={cn(
-        'group transition-colors duration-200',
+        'group transition-colors',
         'hover:bg-muted/50',
         onClick && 'cursor-pointer',
         selected && 'bg-primary/5',
@@ -88,8 +88,8 @@ export const AdminTableHead = ({ children, className, align = 'left', width }: A
     <th
       style={{ width }}
       className={cn(
-        'px-4 py-3.5 font-medium',
-        'text-sm text-muted-foreground',
+        'px-3 py-2.5 font-medium',
+        'text-xs text-muted-foreground/70',
         'whitespace-nowrap',
         'first:rounded-tl-lg last:rounded-tr-lg',
         align === 'center' && 'text-center',
@@ -106,9 +106,8 @@ export const AdminTableCell = ({ children, className, align = 'left' }: AdminTab
   return (
     <td
       className={cn(
-        'px-4 py-3.5 text-foreground',
+        'px-3 py-2.5 text-foreground',
         'align-middle',
-        'transition-colors duration-200',
         align === 'center' && 'text-center',
         align === 'right' && 'text-right',
         className
@@ -131,16 +130,14 @@ export const AdminTableEmpty = ({ message, colSpan = 1 }: TableEmptyProps) => {
   const displayMessage = message ?? t('common.messages.noData');
   return (
     <tr>
-      <td colSpan={colSpan} className="py-20 text-center">
+      <td colSpan={colSpan} className="py-16 text-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="relative">
-            <div className="size-14 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
-              <svg className="size-7 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-            </div>
+          <div className="size-12 rounded-full bg-muted/80 flex items-center justify-center">
+            <svg className="size-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
           </div>
-          <p className="text-muted-foreground text-sm">{displayMessage}</p>
+          <p className="text-muted-foreground text-[13px]">{displayMessage}</p>
         </div>
       </td>
     </tr>
@@ -155,13 +152,10 @@ export const AdminTableLoading = ({ colSpan = 1 }: TableLoadingProps) => {
   const { t } = useTranslation();
   return (
     <tr>
-      <td colSpan={colSpan} className="py-20 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <Loader2 className="size-9 animate-spin text-primary" strokeWidth={2.5} />
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse motion-reduce:animate-none" />
-          </div>
-          <p className="text-muted-foreground text-sm">{t('common.loading.loading')}</p>
+      <td colSpan={colSpan} className="py-16 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="size-5 animate-spin text-muted-foreground" strokeWidth={2} />
+          <p className="text-muted-foreground text-[13px]">{t('common.loading.loading')}</p>
         </div>
       </td>
     </tr>
@@ -355,7 +349,7 @@ export const AdminBadge = ({
       onClick={onClick}
       className={cn(
         'inline-flex items-center font-medium rounded-full',
-        size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3 py-1.5 text-sm',
+        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs',
         badgeVariants[variant],
         onClick && 'cursor-pointer hover:opacity-80 transition-opacity duration-200',
         className

@@ -128,7 +128,7 @@ const ProviderSection = ({
   const { t } = useTranslation();
 
   return (
-    <div className="border-b border-border/50 last:border-b-0">
+    <div className="border-b border-border/60 last:border-b-0">
       {/* Header */}
       <button
         type="button"
@@ -163,7 +163,7 @@ const ProviderSection = ({
 
       {/* Content */}
       {isExpanded && (
-        <div className="border-t border-border/50 divide-y divide-border/50">
+        <div className="border-t border-border/60 divide-y divide-border/60">
           {/* Client ID */}
           <FormField
             label={t('admin.settings.oauth.clientId')}
@@ -385,14 +385,14 @@ export const OAuthSettingsForm = ({
 export const OAuthSettingsFormSkeleton = () => (
   <div className="glass-elevated rounded-2xl overflow-hidden">
     {/* Header skeleton */}
-    <div className="flex items-center justify-between p-5 pb-4 border-b border-border/50">
+    <div className="flex items-center justify-between p-4 pb-3 border-b border-border/60">
       <div className="space-y-1.5">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-3.5 w-48" />
       </div>
     </div>
     {/* Provider skeletons */}
-    <div className="divide-y divide-border/50">
+    <div className="divide-y divide-border/60">
       {[1, 2].map((i) => (
         <div key={i} className="flex items-center justify-between p-5">
           <div className="flex items-center gap-3">

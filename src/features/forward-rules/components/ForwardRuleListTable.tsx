@@ -229,7 +229,7 @@ const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress,
               <span className={`text-[10px] px-1 py-0.5 rounded ${nodeConfig.bgColor} ${nodeConfig.color} font-medium`}>
                 {t(nodeConfig.labelKey)}
               </span>
-              <span className="text-sm font-medium">{name}</span>
+              <span className="text-[13px] font-medium">{name}</span>
             </div>
             {address && address !== '-' && (
               <CopyableAddressRow label={t('admin.forwardRules.addressType.public')} address={address} />
@@ -257,7 +257,7 @@ const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress,
           <span className={`text-[10px] px-1 py-0.5 rounded ${nodeConfig.bgColor} ${nodeConfig.color} font-medium`}>
             {t(nodeConfig.labelKey)}
           </span>
-          <span className="text-sm font-medium">{name}</span>
+          <span className="text-[13px] font-medium">{name}</span>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -287,7 +287,7 @@ interface RelayItemProps {
 
 const RelayItem: React.FC<RelayItemProps> = ({ agent, index, t }) => {
   return (
-    <div className="flex items-start gap-2 text-sm py-1.5">
+    <div className="flex items-start gap-2 text-[13px] py-1.5">
       <span className="flex-shrink-0 w-5 h-5 rounded-full bg-relay/10 text-[10px] font-bold text-relay flex items-center justify-center mt-0.5">
         {index + 1}
       </span>
@@ -345,7 +345,7 @@ interface LoadBalancedExitNodesProps {
 
 const LoadBalancedExitItem: React.FC<{ agent: RelayAgentInfo; t: (key: string) => string }> = ({ agent, t }) => {
   return (
-    <div className="flex items-start gap-2 text-sm py-1.5">
+    <div className="flex items-start gap-2 text-[13px] py-1.5">
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">

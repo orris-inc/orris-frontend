@@ -157,7 +157,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         const plan = plansMap[row.original.planId];
         return plan ? (
           <div className="space-y-0.5">
-            <div className="text-sm text-foreground">
+            <div className="text-[13px] text-foreground">
               {plan.name}
             </div>
             <div className="text-xs text-muted-foreground dark:text-muted-foreground font-mono">
@@ -165,7 +165,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
             </div>
           </div>
         ) : (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-[13px] text-muted-foreground">
             {t('resourceGroups.planPlaceholder', { id: row.original.planId })}
           </span>
         );

@@ -42,7 +42,7 @@ interface SystemSettingsFormProps {
 const ReadOnlyBadge = () => {
   const { t } = useTranslation();
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground ring-1 ring-border">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground ring-1 ring-border/60">
       <Lock className="size-3" />
       {t('admin.settings.readOnly')}
     </span>

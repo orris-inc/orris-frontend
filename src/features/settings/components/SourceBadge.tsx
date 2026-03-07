@@ -24,7 +24,7 @@ const sourceConfig = {
   },
   default: {
     icon: Settings2,
-    bg: 'bg-muted text-muted-foreground ring-border',
+    bg: 'bg-muted text-muted-foreground ring-border/60',
   },
 };
 
@@ -37,7 +37,7 @@ export const SourceBadge = ({ source, className }: SourceBadgeProps) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ring-1',
+        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ring-1',
         bg,
         className
       )}

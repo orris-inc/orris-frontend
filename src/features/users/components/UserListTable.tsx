@@ -96,7 +96,7 @@ function UserIdentityCell({ user }: { user: UserResponse }) {
 
         {/* Name + email */}
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-foreground truncate text-sm">
+          <div className="font-medium text-foreground truncate text-[13px]">
             {user.name || user.email.split('@')[0]}
           </div>
           <div className="text-xs text-muted-foreground font-mono truncate">
@@ -214,7 +214,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
         return (
           <div className="flex items-center gap-2">
             <span className={cn('size-2 rounded-full shrink-0', dotColor)} />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
+            <span className="text-[13px] text-muted-foreground whitespace-nowrap">
               {t(statusConfig.labelKey)}
             </span>
           </div>
@@ -228,11 +228,11 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const value = row.original.createdAt;
-        if (!value) return <span className="text-muted-foreground/50 text-sm">-</span>;
+        if (!value) return <span className="text-muted-foreground/50 text-[13px]">-</span>;
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+              <span className="text-[13px] text-muted-foreground whitespace-nowrap cursor-default">
                 {formatRelativeTime(value)}
               </span>
             </TooltipTrigger>

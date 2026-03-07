@@ -57,11 +57,11 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
   const isTopThree = item.rank <= 3;
 
   return (
-    <div className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3">
+    <div className="flex items-center gap-2 @md:gap-3 py-2 @md:py-2.5">
       {/* Rank Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-7 h-7 @md:min-w-8 @md:h-8 rounded-md @md:rounded-lg border transition-all',
+          'flex items-center justify-center size-7 @md:size-8 rounded-md border',
           colors.bg,
           colors.text,
           colors.border,
@@ -69,44 +69,44 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
         )}
       >
         {isTopThree ? (
-          <Trophy className="size-4 @md:size-5" strokeWidth={2} />
+          <Trophy className="size-3.5 @md:size-4" strokeWidth={2} />
         ) : (
-          <span className="font-semibold text-xs @md:text-sm">#{item.rank}</span>
+          <span className="font-semibold text-xs">#{item.rank}</span>
         )}
       </div>
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs @md:text-sm font-semibold text-foreground truncate">
+        <p className="text-[13px] font-medium text-foreground truncate">
           {item.name}
         </p>
-        <p className="text-[11px] @md:text-xs text-muted-foreground truncate">
+        <p className="text-[11px] text-muted-foreground/60 truncate">
           {item.id}
         </p>
       </div>
 
       {/* Traffic Stats */}
-      <div className="flex items-center gap-2 @md:gap-4 text-[11px] @md:text-xs">
+      <div className="flex items-center gap-2 @md:gap-3 text-[11px] @md:text-xs">
         {/* Upload - hidden on small container */}
-        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
-          <ArrowUp className="size-3.5 text-chart-upload" strokeWidth={2} />
-          <span className="font-medium text-foreground">
+        <div className="hidden @md:flex items-center gap-1 whitespace-nowrap">
+          <ArrowUp className="size-3 text-chart-upload" strokeWidth={2} />
+          <span className="font-medium text-foreground tabular-nums">
             {formatTrafficBytes(item.upload)}
           </span>
         </div>
 
         {/* Download - hidden on small container */}
-        <div className="hidden @md:flex items-center gap-1.5 whitespace-nowrap">
-          <ArrowDown className="size-3.5 text-chart-download" strokeWidth={2} />
-          <span className="font-medium text-foreground">
+        <div className="hidden @md:flex items-center gap-1 whitespace-nowrap">
+          <ArrowDown className="size-3 text-chart-download" strokeWidth={2} />
+          <span className="font-medium text-foreground tabular-nums">
             {formatTrafficBytes(item.download)}
           </span>
         </div>
 
         {/* Total - always visible */}
-        <div className="flex items-center gap-1 @md:gap-1.5 whitespace-nowrap">
-          <Activity className="size-3 @md:size-3.5 text-primary" strokeWidth={2} />
-          <span className="font-bold text-foreground">
+        <div className="flex items-center gap-1 whitespace-nowrap">
+          <Activity className="size-3 text-muted-foreground/60" strokeWidth={2} />
+          <span className="font-semibold text-foreground tabular-nums">
             {formatTrafficBytes(item.total)}
           </span>
         </div>
@@ -120,26 +120,26 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
  */
 const RankingListSkeleton = () => {
   return (
-    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border">
+    <div className="h-[280px] @md:h-[360px] @lg:h-[480px] divide-y divide-border/60">
       {[...Array(7)].map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 @md:gap-4 py-2.5 @md:py-3"
+          className="flex items-center gap-2 @md:gap-3 py-2 @md:py-2.5"
         >
           {/* Rank Badge Skeleton */}
-          <div className="min-w-7 h-7 @md:min-w-8 @md:h-8 bg-muted rounded-md @md:rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="size-7 @md:size-8 bg-muted rounded-md animate-pulse motion-reduce:animate-none" />
 
           {/* Name Skeleton */}
-          <div className="flex-1 space-y-2">
-            <div className="h-4 bg-muted rounded w-1/3 animate-pulse motion-reduce:animate-none" />
-            <div className="h-3 bg-muted rounded w-1/2 animate-pulse motion-reduce:animate-none" />
+          <div className="flex-1 space-y-1.5">
+            <div className="h-3.5 bg-muted rounded w-1/3 animate-pulse motion-reduce:animate-none" />
+            <div className="h-2.5 bg-muted rounded w-1/2 animate-pulse motion-reduce:animate-none" />
           </div>
 
           {/* Stats Skeleton */}
-          <div className="flex items-center gap-4">
-            <div className="h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
-            <div className="h-3 w-16 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+          <div className="flex items-center gap-3">
+            <div className="h-3 w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
+            <div className="h-3 w-14 bg-muted rounded animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
       ))}
@@ -153,8 +153,8 @@ const RankingListSkeleton = () => {
 const EmptyState = ({ message }: { message: string }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Trophy className="size-12 text-muted-foreground/50 mb-3" strokeWidth={1.5} />
-      <p className="text-sm text-muted-foreground">{message}</p>
+      <Trophy className="size-8 text-muted-foreground/40 mb-2" strokeWidth={1.5} />
+      <p className="text-[13px] text-muted-foreground">{message}</p>
     </div>
   );
 };
@@ -173,25 +173,25 @@ export const TrafficRankingList = ({
     <AdminCard variant="bordered" noPadding>
       <Tabs defaultValue="user" className="@container w-full">
         {/* Header with Title and Tabs */}
-        <div className="flex items-center justify-between px-4 @md:px-6 py-3 @md:py-3.5 border-b border-border">
-          <h3 className="text-base @md:text-lg font-semibold text-foreground">
+        <div className="flex items-center justify-between px-4 @md:px-6 py-2.5 @md:py-3 border-b border-border/60">
+          <h3 className="text-[13px] font-semibold text-foreground">
             {t('admin.traffic.ranking')}
           </h3>
-          <TabsList className="h-8 @md:h-9">
-            <TabsTrigger value="user" className="text-xs @md:text-sm px-2.5 @md:px-3">{t('admin.traffic.userRanking')}</TabsTrigger>
-            <TabsTrigger value="subscription" className="text-xs @md:text-sm px-2.5 @md:px-3">{t('admin.traffic.subscriptionRanking')}</TabsTrigger>
+          <TabsList className="h-7 @md:h-8">
+            <TabsTrigger value="user" className="text-xs px-2 @md:px-2.5">{t('admin.traffic.userRanking')}</TabsTrigger>
+            <TabsTrigger value="subscription" className="text-xs px-2 @md:px-2.5">{t('admin.traffic.subscriptionRanking')}</TabsTrigger>
           </TabsList>
         </div>
 
         {/* User Ranking Tab */}
-        <TabsContent value="user" className="px-4 @md:px-6 pb-4 @md:pb-6 pt-3 @md:pt-4">
+        <TabsContent value="user" className="px-4 @md:px-6 pb-3 @md:pb-4 pt-2 @md:pt-3">
           {loading ? (
             <RankingListSkeleton />
           ) : userRanking.length === 0 ? (
             <EmptyState message={t('admin.traffic.noUserData')} />
           ) : (
             <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-              <div className="divide-y divide-border pr-4">
+              <div className="divide-y divide-border/60 pr-4">
                 {userRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}
@@ -201,14 +201,14 @@ export const TrafficRankingList = ({
         </TabsContent>
 
         {/* Subscription Ranking Tab */}
-        <TabsContent value="subscription" className="px-4 @md:px-6 pb-4 @md:pb-6 pt-3 @md:pt-4">
+        <TabsContent value="subscription" className="px-4 @md:px-6 pb-3 @md:pb-4 pt-2 @md:pt-3">
           {loading ? (
             <RankingListSkeleton />
           ) : subscriptionRanking.length === 0 ? (
             <EmptyState message={t('admin.traffic.noSubscriptionData')} />
           ) : (
             <ScrollArea className="max-h-[280px] @md:max-h-[360px] @lg:max-h-[480px]">
-              <div className="divide-y divide-border pr-4">
+              <div className="divide-y divide-border/60 pr-4">
                 {subscriptionRanking.map((item) => (
                   <RankingItem key={item.id} item={item} />
                 ))}

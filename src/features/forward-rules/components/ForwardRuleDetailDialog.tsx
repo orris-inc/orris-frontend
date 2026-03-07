@@ -40,6 +40,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { SYNC_STATUS_COLORS, RUN_STATUS_COLORS } from '@/shared/utils/status-colors';
+import { RouteConfigDisplay } from '@/features/nodes/components/RouteConfigDisplay';
 import { useRuleOverallStatus } from '../hooks/useForwardRules';
 import type { ForwardRule, ForwardAgent, RuleSyncStatus, RuleRunStatus, AgentRuleSyncStatus } from '@/api/forward';
 import type { Node } from '@/api/node';
@@ -570,6 +571,19 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                 </div>
                 <div className="p-3 rounded-xl bg-muted border border-border/50">
                   <FlowPath nodes={flowNodes} exitAgents={exitAgentsInfo} loadBalanceStrategy={rule.loadBalanceStrategy} />
+                </div>
+              </section>
+            )}
+
+            {/* Route Config Display */}
+            {rule.ruleType !== 'external' && rule.route && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <Settings2 className="size-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold">{t('admin.nodes.route.title')}</h3>
+                </div>
+                <div className="p-4 rounded-xl bg-muted border border-border/50">
+                  <RouteConfigDisplay config={rule.route} nodes={nodes.map((n) => ({ id: n.id, name: n.name }))} />
                 </div>
               </section>
             )}

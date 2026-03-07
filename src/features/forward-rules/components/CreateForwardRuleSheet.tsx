@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/common/RadioGroup';
 import { Label } from '@/components/common/Label';
 import { SortableChainAgentList } from './SortableChainAgentList';
 import { ExitAgentList } from './ExitAgentList';
+import { RouteConfigEditor } from '@/features/nodes/components/RouteConfigEditor';
 import { cn } from '@/lib/utils';
 import { useCreateForwardRuleForm } from '../hooks/useCreateForwardRuleForm';
 import type {
@@ -613,6 +614,19 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                   />
                 </FormField>
               )}
+            </>
+          )}
+
+          {/* ===== Route Config (non-external types) ===== */}
+          {!isExternal && (
+            <>
+              <SectionDivider label={t('admin.nodes.route.title')} />
+              <RouteConfigEditor
+                value={form.formData.route}
+                onChange={form.handleRouteChange}
+                idPrefix="create-sheet-route"
+                nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
+              />
             </>
           )}
 

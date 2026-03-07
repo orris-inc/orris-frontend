@@ -9,11 +9,11 @@ import { cn } from '@/lib/utils';
  * Button 样式变体
  */
 export const buttonVariants = {
-    default: 'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
-    destructive: 'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]',
-    outline: 'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ring-1 ring-border bg-background hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
-    secondary: 'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98]',
-    ghost: 'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
+    default: 'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
+    destructive: 'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-destructive text-destructive-foreground hover:bg-destructive/90 active:scale-[0.98]',
+    outline: 'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ring-1 ring-border bg-background hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
+    secondary: 'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-[0.98]',
+    ghost: 'inline-flex items-center justify-center rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
     link: 'inline-flex items-center justify-center text-sm font-medium underline-offset-4 hover:underline text-primary',
 };
 
@@ -31,24 +31,24 @@ export const buttonSizes = {
  * - focus-visible: only show focus ring on keyboard navigation
  * - ring-inset: prevents ring from being clipped by overflow containers
  */
-export const inputStyles = 'flex h-11 w-full rounded-xl ring-1 ring-border bg-background px-3 py-2 text-base file:border-0 file:bg-transparent file:text-base file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
+export const inputStyles = 'flex h-11 w-full rounded-lg ring-1 ring-border/60 bg-background px-3 py-2 text-base file:border-0 file:bg-transparent file:text-base file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
 
 /**
  * Select Trigger 样式
  * - ring-inset: prevents ring from being clipped by overflow containers
  * - data-[state=open]: visual feedback when dropdown is open
  */
-export const selectTriggerStyles = 'flex h-11 w-full items-center justify-between rounded-xl ring-1 ring-border bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:ring-inset disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1';
+export const selectTriggerStyles = 'flex h-11 w-full items-center justify-between rounded-lg ring-1 ring-border/60 bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[state=open]:ring-2 data-[state=open]:ring-ring data-[state=open]:ring-inset disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1';
 
 /**
  * Label 样式
  */
-export const labelStyles = 'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70';
+export const labelStyles = 'text-[13px] font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70';
 
 /**
  * Card 样式
  */
-export const cardStyles = 'rounded-xl ring-1 ring-border bg-card text-card-foreground';
+export const cardStyles = 'rounded-lg ring-1 ring-border/60 bg-card text-card-foreground';
 export const cardHeaderStyles = 'flex flex-col space-y-1.5 p-6';
 export const cardTitleStyles = 'text-2xl font-semibold leading-none tracking-tight';
 export const cardDescriptionStyles = 'text-sm text-muted-foreground';
@@ -71,7 +71,7 @@ export const badgeVariants = {
 /**
  * Alert 样式
  */
-export const alertStyles = 'relative w-full rounded-xl ring-1 ring-border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground';
+export const alertStyles = 'relative w-full rounded-lg ring-1 ring-border/60 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground';
 export const alertVariants = {
     default: '',
     destructive: 'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
@@ -85,7 +85,7 @@ export const alertDescriptionStyles = 'text-sm [&_p]:leading-relaxed';
  * - focus-visible: only show focus ring on keyboard navigation
  * - ring-inset: prevents ring from being clipped by overflow containers
  */
-export const textareaStyles = 'flex min-h-[80px] w-full rounded-xl ring-1 ring-border bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
+export const textareaStyles = 'flex min-h-[80px] w-full rounded-lg ring-1 ring-border/60 bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50';
 
 /**
  * Table 样式
@@ -153,10 +153,10 @@ export const mobileListItemStyles = cn(
  * Tailwind Application UI 风格的列表容器
  */
 export const mobileListContainerStyles = cn(
-    'rounded-xl border border-border',
+    'rounded-lg border border-border/60',
     'bg-card',
     'overflow-hidden',
-    'divide-y divide-border'
+    'divide-y divide-border/60'
 );
 
 /**

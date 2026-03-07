@@ -426,7 +426,7 @@ export function DataTable<TData>({
                 className="size-5 animate-spin text-muted-foreground"
                 strokeWidth={2}
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-[13px]">
                 {t('common.table.loading')}
               </p>
             </div>
@@ -463,7 +463,7 @@ export function DataTable<TData>({
                   </svg>
                 )}
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-[13px]">
                 {displayMessage}
               </p>
               {emptyState?.actionLabel && emptyState?.onAction && (

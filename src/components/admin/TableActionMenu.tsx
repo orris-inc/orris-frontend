@@ -50,11 +50,11 @@ export interface TableActionMenuProps {
 // ============================================================================
 
 const actionButtonClass = cn(
-  'inline-flex items-center justify-center rounded-lg',
-  'text-muted-foreground hover:text-foreground',
-  'hover:bg-accent/50 active:scale-95',
-  'transition-all duration-150',
-  'focus:outline-none focus:ring-2 focus:ring-primary/50'
+  'inline-flex items-center justify-center rounded-md',
+  'text-muted-foreground/70 hover:text-foreground',
+  'hover:bg-muted/60',
+  'transition-colors',
+  'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
 );
 
 const sizeClasses = {

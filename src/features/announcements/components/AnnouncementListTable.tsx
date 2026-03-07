@@ -144,7 +144,7 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
         size: 80,
         meta: { priority: 3, numeric: true } as ResponsiveColumnMeta,
         cell: ({ row }) => (
-          <span className="text-sm text-muted-foreground">{row.original.priority}</span>
+          <span className="text-[13px] text-muted-foreground">{row.original.priority}</span>
         ),
       },
       {
@@ -153,7 +153,7 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
         size: 80,
         meta: { priority: 3, numeric: true } as ResponsiveColumnMeta,
         cell: ({ row }) => (
-          <span className="text-sm tabular-nums">{row.original.viewCount}</span>
+          <span className="text-[13px] tabular-nums">{row.original.viewCount}</span>
         ),
       },
       {

@@ -150,7 +150,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
       )}
       {...attributes}
     >
-      <td className="w-10 px-2 py-3.5 align-middle">
+      <td className="w-10 px-2 py-2.5 align-middle">
         <button
           type="button"
           className="flex items-center justify-center size-8 rounded-md text-muted-foreground group-data-[dragging=false]:hover:text-foreground group-data-[dragging=false]:hover:bg-muted/50 cursor-grab active:cursor-grabbing touch-none"
@@ -171,7 +171,7 @@ const SortableRowInner = memo(function SortableRowInner<TData>({
           <td
             key={cell.id}
             className={cn(
-              'px-3 py-3 text-foreground align-middle',
+              'px-3 py-2.5 text-[13px] text-foreground align-middle',
               // Sticky cell styles
               (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
               isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
@@ -239,7 +239,7 @@ const StaticRow = memo(function StaticRow<TData>({
           <td
             key={cell.id}
             className={cn(
-              'px-3 py-3 text-foreground align-middle',
+              'px-3 py-2.5 text-[13px] text-foreground align-middle',
               // Sticky cell styles
               (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
               isLeftSticky && stickyConfig?.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
@@ -465,13 +465,13 @@ export function DraggableDataTable<TData>({
 
   const tableContent = (
     <div className="relative">
-      <div ref={tableContainerRef} className="overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full text-sm border-separate border-spacing-0">
+      <div ref={tableContainerRef} className="overflow-x-auto rounded-lg border border-border/60">
+        <table className="min-w-full text-[13px] border-separate border-spacing-0">
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-muted">
+              <tr key={headerGroup.id} className="bg-muted/40">
                 {enableDragSort && (
-                  <th className="w-10 px-2 py-3.5 font-medium text-sm text-muted-foreground whitespace-nowrap text-left">
+                  <th className="w-10 px-2 py-2.5 font-medium text-xs text-muted-foreground/70 whitespace-nowrap text-left">
                     <span className="sr-only">{t('common.table.sort')}</span>
                   </th>
                 )}
@@ -494,11 +494,11 @@ export function DraggableDataTable<TData>({
                         ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
                       }}
                       className={cn(
-                        'px-3 py-3 font-medium text-sm text-muted-foreground',
+                        'px-3 py-2.5 font-medium text-xs text-muted-foreground/70',
                         'whitespace-nowrap text-left',
                         canSort && 'cursor-pointer select-none hover:text-foreground hover:bg-muted/80',
                         // Sticky header styles
-                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted',
+                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted/40',
                         isLeftSticky && scrollState.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.15)]',
                         isRightSticky && scrollState.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.15)]'
                       )}
@@ -523,7 +523,7 @@ export function DraggableDataTable<TData>({
                           </HoverCard>
                         )}
                         {canSort && (
-                          <span className={sorted ? 'text-primary' : 'text-muted-foreground/40'}>
+                          <span className={sorted ? 'text-foreground' : 'text-muted-foreground/40'}>
                             {sorted === 'asc' ? (
                               <ChevronUp className="size-4" />
                             ) : sorted === 'desc' ? (
@@ -541,22 +541,22 @@ export function DraggableDataTable<TData>({
             ))}
           </thead>
           <tbody
-            className="divide-y divide-border/60 group"
+            className="divide-y divide-border/40 group"
             data-dragging={activeId !== null}
           >
             {loading && data.length === 0 ? (
               <tr>
-                <td colSpan={colCount} className="py-20 text-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="size-8 animate-spin text-primary" strokeWidth={2} />
-                    <p className="text-muted-foreground text-sm">{t('common.table.loading')}</p>
+                <td colSpan={colCount} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="size-5 animate-spin text-muted-foreground" strokeWidth={2} />
+                    <p className="text-muted-foreground text-[13px]">{t('common.table.loading')}</p>
                   </div>
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={colCount} className="py-20 text-center">
-                  <p className="text-muted-foreground text-sm">{emptyMessage}</p>
+                <td colSpan={colCount} className="py-16 text-center">
+                  <p className="text-muted-foreground text-[13px]">{emptyMessage}</p>
                 </td>
               </tr>
             ) : enableDragSort ? (

@@ -30,20 +30,18 @@ export const AdminPageLayout = ({
   return (
     <div className="@container flex flex-col min-h-0">
       {/* Header Area */}
-      <header className="shrink-0 py-4 @sm:py-6">
+      <header className="shrink-0 py-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             {Icon && (
-              <div className="p-2 @sm:p-2.5 rounded-xl bg-primary/10 ring-1 ring-primary/20 shrink-0">
-                <Icon className="size-5 @sm:size-6 text-primary" strokeWidth={1.5} />
-              </div>
+              <Icon className="size-5 text-muted-foreground/60 shrink-0" strokeWidth={1.5} />
             )}
             <div className="min-w-0">
-              <h1 className="text-xl @sm:text-2xl @md:text-3xl font-bold text-foreground tracking-tight truncate">
+              <h1 className="text-lg font-semibold text-foreground truncate">
                 {title}
               </h1>
               {description && (
-                <p className="text-xs @sm:text-sm text-muted-foreground mt-0.5 line-clamp-1 @sm:line-clamp-2">
+                <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-2">
                   {description}
                 </p>
               )}
@@ -55,9 +53,9 @@ export const AdminPageLayout = ({
 
       {/* Info Alert (Optional) */}
       {info && (
-        <div className="relative overflow-hidden rounded-lg @sm:rounded-xl border border-info/20 bg-info/5 p-3 @sm:p-4 flex items-start gap-2 @sm:gap-3 mb-4">
+        <div className="relative overflow-hidden rounded-lg border border-info/20 bg-info/5 p-3 flex items-start gap-2 mb-4">
           <div className="size-1.5 rounded-full bg-info mt-1.5 shrink-0" />
-          <p className="text-xs @sm:text-sm text-info flex-1">
+          <p className="text-xs text-info flex-1">
             {info}
           </p>
         </div>

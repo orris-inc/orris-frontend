@@ -49,6 +49,7 @@ import {
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { AdminBadge } from '@/components/admin';
+import { RouteConfigDisplay } from '@/features/nodes/components/RouteConfigDisplay';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
@@ -586,6 +587,15 @@ export const ForwardRuleDetailSheet = ({
             {!isExternal && (
               <Section title={t('admin.forwardRules.detail.forwardPathTitle')}>
                 <ForwardPath rule={rule} agentsMap={agentsMap} nodes={nodes} isRunning={isRunning} />
+              </Section>
+            )}
+
+            {/* Route Config */}
+            {!isExternal && rule.route && (
+              <Section title={t('admin.nodes.route.title')}>
+                <div className="px-3 py-3">
+                  <RouteConfigDisplay config={rule.route} nodes={nodes.map((n) => ({ id: n.id, name: n.name }))} />
+                </div>
               </Section>
             )}
 

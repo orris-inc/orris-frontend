@@ -17,8 +17,7 @@ import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { PlanListTable } from '@/features/subscription-plans/components/PlanListTable';
-import { PlanCatalogGrid } from '@/features/subscription-plans/components/PlanCatalogGrid';
-import { PlanFilters, type PlanViewMode } from '@/features/subscription-plans/components/PlanFilters';
+import { PlanFilters } from '@/features/subscription-plans/components/PlanFilters';
 import { MobilePlanManagement } from '@/features/subscription-plans/components/MobilePlanManagement';
 import { CreatePlanDialog } from '@/features/subscription-plans/components/CreatePlanDialog';
 import { EditPlanDialog } from '@/features/subscription-plans/components/EditPlanDialog';
@@ -71,9 +70,6 @@ export function SubscriptionPlansManagementPage() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [duplicatePlan, setDuplicatePlan] = useState<SubscriptionPlan | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // View mode state (grid default)
-  const [viewMode, setViewMode] = useState<PlanViewMode>('grid');
 
   // Calculate statistics from current page data
   const stats = useMemo(() => {
@@ -278,47 +274,29 @@ export function SubscriptionPlansManagementPage() {
           </div>
         </div>
 
-        {/* Filters + View Toggle */}
+        {/* Filters */}
         <PlanFilters
           filters={filters}
           onFiltersChange={handleFiltersChange}
           hasFilters={hasFilters}
           onClearFilters={clearFilters}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
         />
 
-        {/* Plan Content: Grid or Table */}
-        {viewMode === 'grid' ? (
-          <PlanCatalogGrid
-            plans={plans}
-            loading={isLoading || isFetching}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onToggleStatus={handleToggleStatus}
-            onViewSubscriptions={handleViewSubscriptions}
-            onDelete={handleDeleteClick}
-          />
-        ) : (
-          <PlanListTable
-            plans={plans}
-            loading={isLoading || isFetching}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            total={pagination.total}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onToggleStatus={handleToggleStatus}
-            onViewSubscriptions={handleViewSubscriptions}
-            onDelete={handleDeleteClick}
-          />
-        )}
+        {/* Plan Table */}
+        <PlanListTable
+          plans={plans}
+          loading={isLoading || isFetching}
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onEdit={handleEdit}
+          onDuplicate={handleDuplicate}
+          onToggleStatus={handleToggleStatus}
+          onViewSubscriptions={handleViewSubscriptions}
+          onDelete={handleDeleteClick}
+        />
       </div>
 
       {/* Desktop Dialogs */}
