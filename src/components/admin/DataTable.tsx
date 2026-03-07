@@ -369,7 +369,7 @@ export function DataTable<TData>({
               key={cell.id}
               role="gridcell"
               className={cn(
-                'px-3 py-3 text-sm',
+                'px-3 py-2.5 text-[13px]',
                 meta?.numeric && 'text-right tabular-nums',
                 meta?.align === 'right' && 'text-right',
                 meta?.align === 'center' && 'text-center',
@@ -423,7 +423,7 @@ export function DataTable<TData>({
           <td colSpan={colCount} className="px-4 py-16 text-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2
-                className="size-8 animate-spin text-primary"
+                className="size-5 animate-spin text-muted-foreground"
                 strokeWidth={2}
               />
               <p className="text-muted-foreground text-sm">
@@ -541,19 +541,19 @@ export function DataTable<TData>({
         <div
           ref={tableContainerRef}
           className={cn(
-            'overflow-x-auto border border-border rounded-lg',
+            'overflow-x-auto border border-border/60 rounded-lg',
             shouldVirtualize && 'overflow-y-auto'
           )}
           style={shouldVirtualize ? { maxHeight } : undefined}
         >
           <table
-          className="min-w-full divide-y divide-border"
+          className="min-w-full divide-y divide-border/60"
           role="grid"
           aria-label={ariaLabel}
           aria-busy={loading}
           aria-rowcount={data.length}
         >
-          <thead className="bg-muted">
+          <thead className="bg-muted/40">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -584,11 +584,11 @@ export function DataTable<TData>({
                         ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
                       }}
                       className={cn(
-                        'py-3 px-3 text-sm font-normal text-left rtl:text-right text-muted-foreground whitespace-nowrap',
+                        'py-2.5 px-3 text-xs font-medium text-left rtl:text-right text-muted-foreground/70 whitespace-nowrap',
                         meta?.align === 'right' && 'text-right',
                         meta?.align === 'center' && 'text-center',
                         // Sticky header styles
-                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted',
+                        (isLeftSticky || isRightSticky) && 'sticky z-20 bg-muted/40',
                         isLeftSticky && scrollState.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.15)]',
                         isRightSticky && scrollState.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.15)]'
                       )}
@@ -650,7 +650,7 @@ export function DataTable<TData>({
               </tr>
             ))}
           </thead>
-          <tbody className="bg-card divide-y divide-border">{renderTableBody()}</tbody>
+          <tbody className="bg-card divide-y divide-border/40">{renderTableBody()}</tbody>
         </table>
         </div>
 

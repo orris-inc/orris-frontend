@@ -250,7 +250,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors">
+            <button className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors">
               <MoreHorizontal className="size-4" />
             </button>
           </DropdownMenuTrigger>

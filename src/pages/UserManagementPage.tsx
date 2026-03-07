@@ -2,17 +2,16 @@
  * User Management Page (Admin)
  *
  * Redesigned layout:
- * - Simplified PageHeader (title + total badge only)
+ * - Inline page header (title + count)
  * - Search-first filter bar with action buttons
  * - Identity-first table with avatars, status dots, relative time
  * - Mobile-first responsive design
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -78,15 +77,6 @@ export function UserManagementPage() {
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${pagination.total} ${t('admin.users.usersLabel')}`,
-      variant: 'default',
-    }),
-    [pagination.total, t]
-  );
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, user?: UserResponse) => {
@@ -186,14 +176,14 @@ export function UserManagementPage() {
   // Filter bar action buttons
   const filterActions = (
     <>
-      <Button onClick={() => openDialog('create')} size="sm">
-        <Plus className="mr-1.5 size-4" />
+      <Button onClick={() => openDialog('create')} size="sm" className="h-8 text-[13px]">
+        <Plus className="mr-1 size-3.5" />
         {t('admin.users.createUser')}
       </Button>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
-            <RefreshCw key={refreshKey} className="size-4" />
+          <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+            <RefreshCw key={refreshKey} className="size-3.5" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
@@ -265,13 +255,14 @@ export function UserManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Simplified Page Header */}
-        <PageHeader
-          title={t('admin.users.title')}
-          icon={Users}
-          badge={headerBadge}
-        />
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header */}
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold">{t('admin.users.title')}</h1>
+          <span className="text-xs text-muted-foreground/70 tabular-nums">
+            {pagination.total} {t('admin.users.usersLabel')}
+          </span>
+        </div>
 
         {/* Search-first Filter Bar with Actions */}
         <UserFilters

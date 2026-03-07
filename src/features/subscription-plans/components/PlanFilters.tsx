@@ -89,9 +89,9 @@ export const PlanFilters = ({
   }, [filters.isPublic]);
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2.5', className)}>
       {/* Plan type segmented tabs */}
-      <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+      <div className="flex items-center rounded-lg bg-muted/50 ring-1 ring-border/60 p-0.5">
         {TYPE_TABS.map((tab) => {
           const isActive = currentType === tab.value;
           const Icon = tab.icon;
@@ -119,7 +119,7 @@ export const PlanFilters = ({
         value={filters.status ?? 'all'}
         onValueChange={handleStatusChange}
       >
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -131,7 +131,7 @@ export const PlanFilters = ({
 
       {/* Visibility filter */}
       <Select value={visibilityValue} onValueChange={handleVisibilityChange}>
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder={t('filter.visibility')} />
         </SelectTrigger>
         <SelectContent>
@@ -147,9 +147,9 @@ export const PlanFilters = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground h-9"
+          className="text-muted-foreground h-8 text-xs"
         >
-          <X className="size-4 mr-1" />
+          <X className="size-3.5 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
       )}
@@ -158,7 +158,7 @@ export const PlanFilters = ({
       <div className="flex-1" />
 
       {/* View mode toggle */}
-      <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+      <div className="flex items-center rounded-lg bg-muted/50 ring-1 ring-border/60 p-0.5">
         <Tooltip>
           <TooltipTrigger asChild>
             <button

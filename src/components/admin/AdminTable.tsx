@@ -200,18 +200,18 @@ export const AdminTablePagination = ({
 
   return (
     <div className={cn(
-      'flex items-center justify-between px-5 py-4',
-      'border-t border-border'
+      'flex items-center justify-between px-4 py-3',
+      'border-t border-border/40'
     )}>
       {/* Left: Page size selector */}
-      <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground/60">
         <span>Show</span>
         {onPageSizeChange ? (
           <Select
             value={pageSize.toString()}
             onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
           >
-            <SelectTrigger className="h-9 w-[72px] text-xs shadow-sm hover:shadow transition-shadow">
+            <SelectTrigger className="h-7 w-[64px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -230,7 +230,7 @@ export const AdminTablePagination = ({
 
       {/* Right: Pagination controls */}
       <div className="flex items-center gap-5">
-        <span className="text-sm text-muted-foreground">
+        <span className="text-[13px] text-muted-foreground/60">
           <span className="text-foreground">{startIndex}-{endIndex}</span>
           <span className="mx-1.5 text-muted-foreground/60">/</span>
           <span>{total} total</span>
@@ -243,14 +243,14 @@ export const AdminTablePagination = ({
             onFocus={() => onPrefetchPage?.(page - 1)}
             disabled={page === 1 || loading}
             className={cn(
-              'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
+              'flex items-center justify-center size-9 @sm:size-8 rounded-md',
               'text-muted-foreground',
-              'hover:bg-muted',
+              'hover:bg-muted/60',
               'disabled:opacity-40 disabled:cursor-not-allowed',
               'transition-colors duration-200'
             )}
           >
-            <ChevronLeft className="size-5 @sm:size-4.5" strokeWidth={2} />
+            <ChevronLeft className="size-4 @sm:size-4" strokeWidth={2} />
           </button>
 
           {/* Page number display */}
@@ -271,11 +271,11 @@ export const AdminTablePagination = ({
                   onFocus={() => onPrefetchPage?.(pageNum as number)}
                   disabled={loading}
                   className={cn(
-                    'flex items-center justify-center min-w-[44px] @sm:min-w-[36px] h-11 @sm:h-9 px-3 @sm:px-2.5 rounded-lg text-sm touch-target',
+                    'flex items-center justify-center min-w-[36px] @sm:min-w-[32px] h-9 @sm:h-8 px-2.5 @sm:px-2 rounded-md text-[13px]',
                     'transition-colors duration-200',
                     pageNum === page
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
+                      ? 'bg-foreground text-background'
+                      : 'text-muted-foreground/60 hover:bg-muted/60'
                   )}
                 >
                   {pageNum}
@@ -290,14 +290,14 @@ export const AdminTablePagination = ({
             onFocus={() => onPrefetchPage?.(page + 1)}
             disabled={page >= totalPages || loading}
             className={cn(
-              'flex items-center justify-center size-11 @sm:size-9 rounded-lg touch-target',
+              'flex items-center justify-center size-9 @sm:size-8 rounded-md',
               'text-muted-foreground',
-              'hover:bg-muted',
+              'hover:bg-muted/60',
               'disabled:opacity-40 disabled:cursor-not-allowed',
               'transition-colors duration-200'
             )}
           >
-            <ChevronRight className="size-5 @sm:size-4.5" strokeWidth={2} />
+            <ChevronRight className="size-4 @sm:size-4" strokeWidth={2} />
           </button>
         </div>
       </div>

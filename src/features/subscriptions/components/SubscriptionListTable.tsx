@@ -258,29 +258,29 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             {canActivate && onActivate && (
               <Button
                 variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-success hover:text-success hover:bg-success/10"
+                size="icon"
+                className="size-7 rounded-md text-muted-foreground/70 hover:bg-muted/60 hover:text-foreground text-success hover:text-success"
                 onClick={() => onActivate(subscription)}
+                title={t('common.actions.enable')}
               >
-                <Play className="size-4" />
-                <span className="ml-1">{t('common.actions.enable')}</span>
+                <Play className="size-3.5" />
               </Button>
             )}
             {canUnsuspend && onUnsuspend && (
               <Button
                 variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-success hover:text-success hover:bg-success/10"
+                size="icon"
+                className="size-7 rounded-md text-muted-foreground/70 hover:bg-muted/60 hover:text-foreground text-success hover:text-success"
                 onClick={() => onUnsuspend(subscription)}
+                title={t('subscription.unsuspend')}
               >
-                <PlayCircle className="size-4" />
-                <span className="ml-1">{t('subscription.unsuspend')}</span>
+                <PlayCircle className="size-3.5" />
               </Button>
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="size-4" />
+                <Button variant="ghost" size="icon" className="size-7 rounded-md text-muted-foreground/70 hover:bg-muted/60 hover:text-foreground">
+                  <MoreHorizontal className="size-3.5" />
                   <span className="sr-only">{t('aria.openMenu')}</span>
                 </Button>
               </DropdownMenuTrigger>

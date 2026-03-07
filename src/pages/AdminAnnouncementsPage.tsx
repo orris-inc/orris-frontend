@@ -9,11 +9,10 @@
  * - Mobile-first responsive design
  */
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Megaphone, RefreshCw, FileText, Send, Archive, Plus } from 'lucide-react';
+import { RefreshCw, Plus } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -62,15 +61,6 @@ export const AdminAnnouncementsPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // Calculate announcement statistics
-  const stats = useMemo(() => {
-    const total = pagination.total;
-    const draft = announcements.filter((a) => a.status === 'draft').length;
-    const published = announcements.filter((a) => a.status === 'published').length;
-    const archived = announcements.filter((a) => a.status === 'archived').length;
-    return { total, draft, published, archived };
-  }, [announcements, pagination.total]);
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -212,46 +202,43 @@ export const AdminAnnouncementsPage: React.FC = () => {
     );
   }
 
-  // Desktop view - Tailwind UI Application UI style
+  // Desktop view - Linear/Vercel style
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge and stats metadata */}
-        <PageHeader
-          title={t('announcements.pageTitle')}
-          description={t('announcements.pageDescription')}
-          icon={Megaphone}
-          badge={{ label: `${stats.total} ${t('announcements.label')}`, variant: 'default' }}
-          metadata={[
-            { icon: FileText, text: `${stats.draft} ${t('announcements.status.draft')}` },
-            { icon: Send, text: `${stats.published} ${t('announcements.status.published')}` },
-            stats.archived > 0 && {
-              icon: Archive,
-              text: `${stats.archived} ${t('announcements.status.archived')}`,
-            },
-          ].filter(Boolean) as { icon: typeof Megaphone; text: string }[]}
-          action={
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw
-                      key={refreshKey}
-                      className="size-4 animate-spin-once"
-                      strokeWidth={1.5}
-                    />
-                    <span className="sr-only">{t('common.actions.refresh')}</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-              </Tooltip>
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="size-4 mr-1" />
-                {t('announcements.create.button')}
-              </Button>
-            </div>
-          }
-        />
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header - inline layout */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold">{t('announcements.pageTitle')}</h1>
+            <span className="text-xs text-muted-foreground/70 tabular-nums">
+              {pagination.total}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground/60 hover:text-foreground"
+                  onClick={handleRefresh}
+                >
+                  <RefreshCw
+                    key={refreshKey}
+                    className="size-3.5 animate-spin-once"
+                    strokeWidth={1.5}
+                  />
+                  <span className="sr-only">{t('common.actions.refresh')}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+            </Tooltip>
+            <Button className="h-8 text-[13px]" onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="size-3.5 mr-1" />
+              {t('announcements.create.button')}
+            </Button>
+          </div>
+        </div>
 
         {/* Unified Filters */}
         <AnnouncementFilters filters={filters} onFiltersChange={handleFiltersChange} />

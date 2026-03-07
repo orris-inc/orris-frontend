@@ -128,7 +128,7 @@ export const AgentBatchUpdateSheet = ({
                 <div className={cn(cardStyles, 'overflow-hidden')}>
                   <div className="px-3 py-2 border-b border-border bg-muted/30">
                     <p className="text-xs font-medium text-muted-foreground">
-                      {t('admin.forwardAgents.batchUpdateDialog.willUpdateAgents')}
+                      {t('admin.forwardAgents.batchUpdateDialog.willUpdateNodes')}
                     </p>
                   </div>
                   <div className="max-h-[200px] overflow-y-auto divide-y divide-border">
@@ -276,7 +276,7 @@ export const AgentBatchUpdateSheet = ({
                 ) : (
                   <>
                     <Download className="size-4" />
-                    {t('admin.forwardAgents.batchUpdateDialog.updateButton', { count: updateCount })}
+                    {t('admin.forwardAgents.batchUpdateDialog.updateCount', { count: updateCount })}
                   </>
                 )}
               </button>

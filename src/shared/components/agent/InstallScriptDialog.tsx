@@ -236,7 +236,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="text-sm font-medium">
-                        {t(`${i18nNamespace}.apiUrl`, { defaultValue: t(`${i18nNamespace}.serverUrl`, { defaultValue: 'API URL' }) })}
+                        {t(`${i18nNamespace}.apiUrl`, { defaultValue: 'API URL' })}
                       </h5>
                       <CopyButton
                         copied={apiUrlCopy.copied}

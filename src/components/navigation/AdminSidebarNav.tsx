@@ -1,21 +1,15 @@
 /**
  * Admin Sidebar Navigation Component
  *
- * Professional sidebar navigation following Tailwind UI Vertical Navigation style.
- * Features:
- * - Clean grouped navigation with uppercase group titles + divider lines
- * - Minimal styling without glass card effects
- * - Smooth width transition on collapse with text fade animation
+ * Clean sidebar navigation inspired by Linear / Vercel style.
+ * - Minimal grouped navigation with subtle group labels
+ * - Active state with primary color tint
+ * - Lightweight hover effects
  * - Tooltip hints when collapsed
- * - Active state with muted background and left indicator
- * - Hover state with subtle arrow indicator
- * - Touch-friendly targets (min 44px)
- * - Respects reduced-motion preferences
  */
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight } from 'lucide-react';
 import {
   Tooltip,
   TooltipTrigger,
@@ -44,51 +38,35 @@ export const AdminSidebarNav = ({
   return (
     <nav
       className={cn(
-        'space-y-4',
+        'space-y-5',
         'transition-[padding] duration-200 motion-reduce:transition-none',
-        collapsed ? 'px-1.5' : 'px-3'
+        collapsed ? 'px-1.5' : 'px-2'
       )}
       role="navigation"
       aria-label="Admin navigation"
     >
-      {Array.from(groupedItems.entries()).map(([group, groupItems], groupIndex) => (
-        <div key={group.id} className="space-y-1">
-          {/* Group header with label + divider line */}
-          <div
-            className={cn(
-              'flex items-center gap-2 mb-2',
-              'transition-opacity duration-200 motion-reduce:transition-none',
-              collapsed ? 'justify-center px-1' : 'px-3'
-            )}
-          >
-            {!collapsed ? (
-              <>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                  {t(group.labelKey)}
-                </span>
-                <div className="flex-1 h-px bg-border" aria-hidden="true" />
-              </>
-            ) : (
-              // Show thin divider when collapsed (except first group)
-              groupIndex > 0 && (
-                <div className="w-6 h-px bg-border" aria-hidden="true" />
-              )
-            )}
-          </div>
+      {Array.from(groupedItems.entries()).map(([group, groupItems]) => (
+        <div key={group.id} className="space-y-0.5">
+          {/* Group label */}
+          {!collapsed && (
+            <div className="px-2 pb-1">
+              <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+                {t(group.labelKey)}
+              </span>
+            </div>
+          )}
 
           {/* Navigation items */}
-          <div className="space-y-0.5">
-            {groupItems.map((item) => (
-              <NavItem
-                key={item.id}
-                item={item}
-                collapsed={collapsed}
-                isActive={location.pathname === item.path}
-                onItemClick={onItemClick}
-                t={t}
-              />
-            ))}
-          </div>
+          {groupItems.map((item) => (
+            <NavItem
+              key={item.id}
+              item={item}
+              collapsed={collapsed}
+              isActive={location.pathname === item.path}
+              onItemClick={onItemClick}
+              t={t}
+            />
+          ))}
         </div>
       ))}
     </nav>
@@ -112,69 +90,33 @@ const NavItem = ({ item, collapsed, isActive, onItemClick, t }: NavItemProps) =>
       onClick={onItemClick}
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        // Base styles - Tailwind UI Vertical Navigation style
-        'group relative flex items-center rounded-md',
-        'text-sm font-medium',
-        // Touch target - 44px minimum
-        'min-h-[44px]',
-        // Transition
-        'transition-colors duration-150',
+        'group flex items-center rounded-lg',
+        'text-[13px] font-medium',
+        'min-h-[36px]',
+        'transition-colors duration-100',
         'motion-reduce:transition-none',
-        // Layout based on collapsed state
-        collapsed ? 'justify-center p-2' : 'gap-x-3 px-3 py-2.5',
-        // Active state with muted background
+        collapsed ? 'justify-center p-2' : 'gap-x-3 px-2 py-1.5',
         isActive
-          ? 'bg-muted text-foreground'
-          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+          ? 'bg-primary/10 text-primary'
+          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
       )}
     >
-      {/* Left vertical line indicator for active state */}
-      {!collapsed && (
-        <span
-          className={cn(
-            'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full',
-            'transition-all duration-150',
-            'motion-reduce:transition-none',
-            isActive ? 'h-5 bg-primary' : 'h-0 bg-transparent'
-          )}
-          aria-hidden="true"
-        />
-      )}
       {Icon && (
         <Icon
           className={cn(
-            'size-5 shrink-0',
-            'transition-colors duration-150',
+            'size-[18px] shrink-0',
+            'transition-colors duration-100',
             'motion-reduce:transition-none',
-            isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+            isActive ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground'
           )}
+          strokeWidth={isActive ? 2 : 1.75}
           aria-hidden="true"
         />
       )}
       {!collapsed && (
-        <>
-          <span
-            className={cn(
-              'flex-1 truncate',
-              'transition-opacity duration-200',
-              'motion-reduce:transition-none'
-            )}
-          >
-            {t(item.labelKey)}
-          </span>
-          {/* Hover arrow indicator */}
-          <ChevronRight
-            className={cn(
-              'size-4 shrink-0',
-              'transition-all duration-150',
-              'motion-reduce:transition-none',
-              'opacity-0 -translate-x-1',
-              'group-hover:opacity-50 group-hover:translate-x-0',
-              isActive && 'opacity-0'
-            )}
-            aria-hidden="true"
-          />
-        </>
+        <span className="flex-1 truncate">
+          {t(item.labelKey)}
+        </span>
       )}
     </RouterLink>
   );
@@ -204,17 +146,11 @@ export const AdminSidebarFooter = ({
   children,
   tooltipLabel,
 }: AdminSidebarFooterProps) => {
-  const content = (
-    <div className={cn('rounded-md', collapsed ? 'p-1' : 'px-2 py-1')}>
-      {children}
-    </div>
-  );
-
   if (collapsed && tooltipLabel) {
     return (
-      <div className={cn('py-3', collapsed ? 'px-1.5' : 'px-3')}>
+      <div className="px-1.5 pb-2">
         <Tooltip>
-          <TooltipTrigger asChild>{content}</TooltipTrigger>
+          <TooltipTrigger asChild>{children}</TooltipTrigger>
           <TooltipContent side="right" sideOffset={8}>
             {tooltipLabel}
           </TooltipContent>
@@ -223,5 +159,5 @@ export const AdminSidebarFooter = ({
     );
   }
 
-  return <div className={cn('py-3', collapsed ? 'px-1.5' : 'px-3')}>{content}</div>;
+  return <div className={cn('pb-2', collapsed ? 'px-1.5' : 'px-2')}>{children}</div>;
 };

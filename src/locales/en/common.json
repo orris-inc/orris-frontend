@@ -1789,15 +1789,15 @@
         "taskSubmitted": "Update task has been submitted",
         "updatableCount": "Updatable Agents",
         "allUpToDate": "All agents are already up to date",
-        "willUpdateAgents": "Following agents will be updated:",
+        "willUpdateNodes": "Following agents will be updated:",
         "succeeded": "Succeeded",
         "failed": "Failed",
         "skipped": "Skipped",
-        "truncatedNotice": "Some results are truncated due to large number of agents",
+        "truncatedHint": "Some results are truncated due to large number of agents",
         "updateTriggered": "Update triggered for:",
         "updateFailed": "Failed to update:",
         "updateSkipped": "Skipped:",
-        "updateButton": "Update {{count}} Agents",
+        "updateCount": "Update {{count}} Agents",
         "updating": "Updating..."
       },
       "filters": {
@@ -2031,7 +2031,7 @@
         "viewDetails": "View Details",
         "clickToExpand": "Click to expand",
         "clickToCollapse": "Click to collapse",
-        "serverUrl": "Server URL",
+        "apiUrl": "Server URL",
         "recommended": "Recommended"
       },
       "emptyState": "No forward agent data"

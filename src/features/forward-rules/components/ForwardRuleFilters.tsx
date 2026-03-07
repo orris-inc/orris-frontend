@@ -105,9 +105,9 @@ export const ForwardRuleFilters = ({
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2.5', className)}>
       {/* Protocol segmented tabs */}
-      <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+      <div className="flex items-center rounded-lg bg-muted/50 ring-1 ring-border/60 p-0.5">
         {PROTOCOL_TABS.map((tab) => {
           const isActive = currentProtocol === tab.value;
           // Only translate "all", protocol labels are literal
@@ -135,7 +135,7 @@ export const ForwardRuleFilters = ({
         value={filters.status ?? 'all'}
         onValueChange={handleStatusChange}
       >
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[110px] h-8 text-xs">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -147,7 +147,7 @@ export const ForwardRuleFilters = ({
 
       {/* Sort filter */}
       <Select value={getSortValue()} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-[140px] h-9">
+        <SelectTrigger className="w-[130px] h-8 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -160,13 +160,13 @@ export const ForwardRuleFilters = ({
       </Select>
 
       {/* Vertical divider */}
-      <div className="h-6 w-px bg-border" />
+      <div className="h-5 w-px bg-border/60" />
 
       {/* User rules toggle */}
       {onIncludeUserRulesChange && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 text-[13px] cursor-pointer">
               <Switch
                 checked={includeUserRules}
                 onCheckedChange={onIncludeUserRulesChange}
@@ -174,7 +174,7 @@ export const ForwardRuleFilters = ({
                 <SwitchThumb />
               </Switch>
               <span className="text-muted-foreground flex items-center gap-1.5">
-                <Users className="size-4" />
+                <Users className="size-3.5" />
                 {t('admin.forwardRules.userRules')}
               </span>
             </label>
@@ -187,7 +187,7 @@ export const ForwardRuleFilters = ({
       {onDragSortChange && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <label className="flex items-center gap-2 text-[13px] cursor-pointer">
               <Switch
                 checked={dragSortEnabled}
                 onCheckedChange={onDragSortChange}
@@ -196,7 +196,7 @@ export const ForwardRuleFilters = ({
                 <SwitchThumb />
               </Switch>
               <span className="text-muted-foreground flex items-center gap-1.5">
-                <GripVertical className={dragSortEnabled ? 'size-4 text-primary' : 'size-4'} />
+                <GripVertical className={dragSortEnabled ? 'size-3.5 text-primary' : 'size-3.5'} />
                 {t('admin.forwardRules.dragSort')}
               </span>
             </label>
@@ -213,9 +213,9 @@ export const ForwardRuleFilters = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground h-9"
+          className="text-muted-foreground h-8 text-xs"
         >
-          <X className="size-4 mr-1" />
+          <X className="size-3.5 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
       )}

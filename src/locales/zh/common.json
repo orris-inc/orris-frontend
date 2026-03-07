@@ -1789,15 +1789,15 @@
         "taskSubmitted": "更新任务已提交",
         "updatableCount": "可更新的Agent",
         "allUpToDate": "所有Agent均已是最新版本",
-        "willUpdateAgents": "以下Agent将被更新：",
+        "willUpdateNodes": "以下Agent将被更新：",
         "succeeded": "成功",
         "failed": "失败",
         "skipped": "跳过",
-        "truncatedNotice": "部分结果已截断",
+        "truncatedHint": "部分结果已截断",
         "updateTriggered": "已触发更新：",
         "updateFailed": "更新失败：",
         "updateSkipped": "已跳过：",
-        "updateButton": "更新 {{count}} 个Agent",
+        "updateCount": "更新 {{count}} 个Agent",
         "updating": "更新中..."
       },
       "filters": {
@@ -2031,7 +2031,7 @@
         "viewDetails": "查看详情",
         "clickToExpand": "点击展开",
         "clickToCollapse": "点击收起",
-        "serverUrl": "服务器地址",
+        "apiUrl": "服务器地址",
         "recommended": "推荐"
       },
       "emptyState": "暂无转发Agent数据"

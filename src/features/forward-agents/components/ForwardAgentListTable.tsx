@@ -277,7 +277,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
         const healthStatus = getHealthStatus(agent);
         const config = HEALTH_STATUS_CONFIG[healthStatus];
         const StatusIcon = config.icon;
-        const muteButtonClass = 'p-0.5 rounded hover:bg-accent/50 transition-colors cursor-pointer';
+        const muteButtonClass = 'p-0.5 rounded hover:bg-muted/60 transition-colors cursor-pointer';
 
         // Build tooltip content
         const getTooltipContent = () => {
@@ -449,11 +449,11 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const value = row.original.createdAt;
-        if (!value) return <span className="text-muted-foreground/50 text-sm">-</span>;
+        if (!value) return <span className="text-muted-foreground/50 text-xs">-</span>;
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+              <span className="text-xs text-muted-foreground whitespace-nowrap cursor-default">
                 {formatRelativeTime(value)}
               </span>
             </TooltipTrigger>
@@ -470,7 +470,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta,
       cell: ({ row }) => {
         const agent = row.original;
-        const actionButtonClass = 'inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 active:scale-95 transition-all duration-150 cursor-pointer';
+        const actionButtonClass = 'inline-flex items-center justify-center size-7 rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 active:scale-95 transition-all duration-150 cursor-pointer';
         return (
           <div className="flex items-center gap-0.5">
             <Tooltip>
@@ -500,7 +500,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             {agent.systemStatus && onBroadcastURL && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button onClick={() => onBroadcastURL(agent)} className={`${actionButtonClass} text-info hover:text-info hover:bg-info/10`}>
+                  <button onClick={() => onBroadcastURL(agent)} className={`${actionButtonClass} text-info/70 hover:text-info hover:bg-info/10`}>
                     <Radio className="size-4" strokeWidth={1.5} />
                   </button>
                 </TooltipTrigger>

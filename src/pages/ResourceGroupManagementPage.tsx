@@ -4,23 +4,16 @@
  */
 
 import { useState, useMemo } from 'react';
-import { formatDate } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import {
-  Boxes,
   Plus,
   RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Link2,
-  Clock,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { Tabs, TabsList, TabsTrigger } from '@/components/common/Tabs';
+import { cn } from '@/lib/utils';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { queryKeys } from '@/shared/lib/query-client';
@@ -84,34 +77,8 @@ export const ResourceGroupManagementPage = () => {
     const total = pagination.total;
     const active = resourceGroups.filter((g) => g.status === 'active').length;
     const inactive = resourceGroups.filter((g) => g.status === 'inactive').length;
-    const withPlans = resourceGroups.filter((g) => g.planId).length;
-
-    // Find the most recently updated resource group
-    const lastUpdated = resourceGroups.length > 0
-      ? resourceGroups.reduce((latest, group) => {
-          const groupDate = new Date(group.updatedAt);
-          return groupDate > latest ? groupDate : latest;
-        }, new Date(resourceGroups[0].updatedAt))
-      : null;
-
-    return { total, active, inactive, withPlans, lastUpdated };
+    return { total, active, inactive };
   }, [resourceGroups, pagination.total]);
-
-  // Format relative time
-  const formatRelativeTime = (date: Date | null): string => {
-    if (!date) return '-';
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return t('common.time.now');
-    if (diffMins < 60) return t('common.time.minutesAgo', { count: diffMins });
-    if (diffHours < 24) return t('common.time.hoursAgo', { count: diffHours });
-    if (diffDays < 7) return t('common.time.daysAgo', { count: diffDays });
-    return formatDate(date);
-  };
 
   // Status filter
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -238,50 +205,70 @@ export const ResourceGroupManagementPage = () => {
   // Desktop view - Tailwind UI Application UI style layout
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Page Header with badge and metadata */}
-        <PageHeader
-          title={t('admin.resourceGroups.title')}
-          icon={Boxes}
-          badge={{ label: `${stats.total} ${t('admin.resourceGroups.groupsUnit')}`, variant: 'default' }}
-          metadata={[
-            { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
-            { icon: Link2, text: `${stats.withPlans} ${t('admin.resourceGroups.withPlans')}` },
-            ...(stats.lastUpdated ? [{ icon: Clock, text: formatRelativeTime(stats.lastUpdated) }] : []),
-          ]}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="size-4 mr-2" />
-                {t('common.actions.create')}
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.common.refreshList')}</TooltipContent>
-              </Tooltip>
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header — inline layout */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('admin.resourceGroups.title')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {stats.total} {t('admin.resourceGroups.groupsUnit')}
+              </span>
             </div>
-          }
-        />
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-success" />
+                {stats.active} {t('common.status.enabled')}
+              </span>
+              {stats.inactive > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  {stats.inactive} {t('common.status.disabled')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={() => setCreateDialogOpen(true)} size="sm" className="h-8 text-[13px]">
+              <Plus className="mr-1 size-3.5" />
+              {t('common.actions.create')}
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.common.refreshList')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
-        {/* Status filter tabs */}
-        <div className="flex items-center gap-4">
-          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <TabsList>
-              <TabsTrigger value="all">{t('filter.all')}</TabsTrigger>
-              <TabsTrigger value="active" className="gap-1.5">
-                <CheckCircle2 className="size-3.5" />
-                {stats.active}
-              </TabsTrigger>
-              <TabsTrigger value="inactive" className="gap-1.5">
-                <XCircle className="size-3.5" />
-                {stats.inactive}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+        {/* Status filter chips */}
+        <div className="flex items-center gap-1">
+          {(['all', 'active', 'inactive'] as const).map((value) => {
+            const isActive = statusFilter === value;
+            const label = value === 'all'
+              ? t('filter.all')
+              : value === 'active'
+                ? `${t('common.status.enabled')} ${stats.active}`
+                : `${t('common.status.disabled')} ${stats.inactive}`;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setStatusFilter(value)}
+                className={cn(
+                  'px-2 h-[26px] rounded-lg text-xs font-medium transition-all cursor-pointer',
+                  isActive
+                    ? 'bg-foreground/10 text-foreground ring-1 ring-foreground/15'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Resource Group List - table has its own border/rounded styling */}

@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { queryKeys } from '@/shared/lib/query-client';
 import { useNodeEvents } from './useNodeEvents';
@@ -303,6 +303,53 @@ export const useNodes = (options: UseNodesOptions = {}) => {
     },
   });
 
+  // Stable function references — prevent SSE-driven re-renders from
+  // cascading through useCallback / useMemo chains that depend on these.
+  // TanStack Query's mutate/mutateAsync are referentially stable.
+  const stableCreateNode = useCallback(
+    (data: CreateNodeRequest) => createMutation.mutateAsync(data),
+    [createMutation.mutateAsync],
+  );
+  const stableUpdateNode = useCallback(
+    (id: string, data: UpdateNodeRequest) => updateMutation.mutateAsync({ id, data }),
+    [updateMutation.mutateAsync],
+  );
+  const stableDeleteNode = useCallback(
+    (id: string) => deleteMutation.mutateAsync(id),
+    [deleteMutation.mutateAsync],
+  );
+  const stableUpdateNodeStatus = useCallback(
+    (id: string, status: 'active' | 'inactive' | 'maintenance') =>
+      statusMutation.mutateAsync({ id, status }),
+    [statusMutation.mutateAsync],
+  );
+  const stableGenerateToken = useCallback(
+    (id: string) => tokenMutation.mutateAsync(id),
+    [tokenMutation.mutateAsync],
+  );
+  const stableGetInstallScript = useCallback(
+    (id: string, params?: GetNodeInstallScriptParams) =>
+      installScriptMutation.mutateAsync({ id, params }),
+    [installScriptMutation.mutateAsync],
+  );
+  const stableGetBatchInstallScript = useCallback(
+    (data: BatchInstallScriptRequest) => batchInstallScriptMutation.mutateAsync(data),
+    [batchInstallScriptMutation.mutateAsync],
+  );
+  const stableBatchUpdateNodes = useCallback(
+    (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
+    [batchUpdateMutation.mutateAsync],
+  );
+  const stableReorderNodes = useCallback(
+    (updates: { id: string; sortOrder: number }[]) => reorderMutation.mutateAsync(updates),
+    [reorderMutation.mutateAsync],
+  );
+  const stableToggleMuteNotification = useCallback(
+    (id: string, muteNotification: boolean) =>
+      toggleMuteMutation.mutate({ id, muteNotification }),
+    [toggleMuteMutation.mutate],
+  );
+
   return {
     // Data
     nodes: data?.items ?? [],
@@ -320,22 +367,16 @@ export const useNodes = (options: UseNodesOptions = {}) => {
 
     // Operations
     refetch,
-    createNode: (data: CreateNodeRequest) => createMutation.mutateAsync(data),
-    updateNode: (id: string, data: UpdateNodeRequest) =>
-      updateMutation.mutateAsync({ id, data }),
-    deleteNode: (id: string) => deleteMutation.mutateAsync(id),
-    updateNodeStatus: (id: string, status: 'active' | 'inactive' | 'maintenance') =>
-      statusMutation.mutateAsync({ id, status }),
-    generateToken: (id: string) => tokenMutation.mutateAsync(id),
-    getInstallScript: (id: string, params?: GetNodeInstallScriptParams) =>
-      installScriptMutation.mutateAsync({ id, params }),
-    getBatchInstallScript: (data: BatchInstallScriptRequest) =>
-      batchInstallScriptMutation.mutateAsync(data),
-    batchUpdateNodes: (data: BatchUpdateRequest) => batchUpdateMutation.mutateAsync(data),
-    reorderNodes: (updates: { id: string; sortOrder: number }[]) =>
-      reorderMutation.mutateAsync(updates),
-    toggleMuteNotification: (id: string, muteNotification: boolean) =>
-      toggleMuteMutation.mutate({ id, muteNotification }),
+    createNode: stableCreateNode,
+    updateNode: stableUpdateNode,
+    deleteNode: stableDeleteNode,
+    updateNodeStatus: stableUpdateNodeStatus,
+    generateToken: stableGenerateToken,
+    getInstallScript: stableGetInstallScript,
+    getBatchInstallScript: stableGetBatchInstallScript,
+    batchUpdateNodes: stableBatchUpdateNodes,
+    reorderNodes: stableReorderNodes,
+    toggleMuteNotification: stableToggleMuteNotification,
 
     // Mutation status
     isCreating: createMutation.isPending,
@@ -391,7 +432,7 @@ export const useNodesPage = () => {
   );
 
   // Apply local filtering for extended filters
-  const filteredNodes = nodesQuery.nodes.filter((node) => {
+  const filteredNodes = useMemo(() => nodesQuery.nodes.filter((node) => {
     // Text search (name, address, region, tags)
     if (extendedFilters.search) {
       const q = extendedFilters.search.toLowerCase();
@@ -411,7 +452,7 @@ export const useNodesPage = () => {
       return false;
     }
     return true;
-  });
+  }), [nodesQuery.nodes, extendedFilters]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -435,23 +476,23 @@ export const useNodesPage = () => {
     setExtendedFilters({});
   };
 
-  const handleGenerateToken = async (id: string) => {
+  const handleGenerateToken = useCallback(async (id: string) => {
     const token = await nodesQuery.generateToken(id);
     setGeneratedToken(token);
     return token;
-  };
+  }, [nodesQuery.generateToken]);
 
-  const handleGetInstallScript = async (id: string, params?: GetNodeInstallScriptParams) => {
+  const handleGetInstallScript = useCallback(async (id: string, params?: GetNodeInstallScriptParams) => {
     const data = await nodesQuery.getInstallScript(id, params);
     setInstallScriptData(data);
     return data;
-  };
+  }, [nodesQuery.getInstallScript]);
 
-  const handleGetBatchInstallScript = async (nodeIds: string[]) => {
+  const handleGetBatchInstallScript = useCallback(async (nodeIds: string[]) => {
     const data = await nodesQuery.getBatchInstallScript({ nodeIds });
     setBatchInstallScriptData(data);
     return data;
-  };
+  }, [nodesQuery.getBatchInstallScript]);
 
   const handleIncludeUserNodesChange = (include: boolean) => {
     setIncludeUserNodes(include);
@@ -464,15 +505,15 @@ export const useNodesPage = () => {
     setPage(1);
   };
 
-  const handleBatchUpdate = async (data: BatchUpdateRequest) => {
+  const handleBatchUpdate = useCallback(async (data: BatchUpdateRequest) => {
     const result = await nodesQuery.batchUpdateNodes(data);
     setBatchUpdateResult(result);
     return result;
-  };
+  }, [nodesQuery.batchUpdateNodes]);
 
-  const handleReorder = async (updates: { id: string; sortOrder: number }[]) => {
+  const handleReorder = useCallback(async (updates: { id: string; sortOrder: number }[]) => {
     await nodesQuery.reorderNodes(updates);
-  };
+  }, [nodesQuery.reorderNodes]);
 
   return {
     ...nodesQuery,

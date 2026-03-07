@@ -119,10 +119,10 @@ export const AnnouncementFilters = ({
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2.5', className)}>
       {/* Status filter */}
       <Select value={filters.status ?? 'all'} onValueChange={handleStatusChange}>
-        <SelectTrigger className="w-[130px] h-9">
+        <SelectTrigger className="w-[130px] h-8 text-xs">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -137,7 +137,7 @@ export const AnnouncementFilters = ({
 
       {/* Type filter */}
       <Select value={filters.type ?? 'all'} onValueChange={handleTypeChange}>
-        <SelectTrigger className="w-[140px] h-9">
+        <SelectTrigger className="w-[140px] h-8 text-xs">
           <SelectValue placeholder={t('announcements.type.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -153,7 +153,7 @@ export const AnnouncementFilters = ({
       {/* Sort */}
       <div className="flex items-center gap-1">
         <Select value={filters.sortBy ?? 'none'} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[140px] h-9">
+          <SelectTrigger className="w-[140px] h-8 text-xs">
             <SelectValue placeholder={t('filter.sortBy')} />
           </SelectTrigger>
           <SelectContent>
@@ -169,14 +169,14 @@ export const AnnouncementFilters = ({
           <Button
             variant="ghost"
             size="icon"
-            className="size-9 shrink-0"
+            className="size-8 shrink-0 text-muted-foreground/60 hover:text-foreground"
             onClick={toggleSortOrder}
             title={t(
               filters.sortOrder === 'asc' ? 'filter.sortAscending' : 'filter.sortDescending'
             )}
           >
             <ArrowUpDown
-              className={cn('size-4', filters.sortOrder === 'asc' && 'rotate-180')}
+              className={cn('size-3.5', filters.sortOrder === 'asc' && 'rotate-180')}
             />
           </Button>
         )}
@@ -188,9 +188,9 @@ export const AnnouncementFilters = ({
           variant="ghost"
           size="sm"
           onClick={clearFilters}
-          className="text-muted-foreground h-9"
+          className="text-muted-foreground h-8 text-xs"
         >
-          <X className="size-4 mr-1" />
+          <X className="size-3.5 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
       )}

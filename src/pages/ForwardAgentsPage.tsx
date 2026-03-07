@@ -7,16 +7,14 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Cpu,
   Plus,
   RefreshCw,
   ArrowUpCircle,
   Radio,
   Search,
-  FilterX,
+  X,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
@@ -145,14 +143,11 @@ export function ForwardAgentsPage() {
     return { total: pagination.total, online, updatable };
   }, [forwardAgents, pagination.total]);
 
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.forwardAgents.agentsUnit')}`,
-      variant: 'default',
-    }),
-    [stats.total, t]
-  );
+  // Calculate online/offline stats for inline header
+  const detailedStats = useMemo(() => {
+    const offline = forwardAgents.filter((a) => a.status === 'enabled' && !a.systemStatus).length;
+    return { ...stats, offline };
+  }, [forwardAgents, stats]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, agent?: ForwardAgent) => {
@@ -522,30 +517,73 @@ export function ForwardAgentsPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Simplified Page Header */}
-        <PageHeader
-          title={t('admin.forwardAgents.title')}
-          icon={Cpu}
-          badge={headerBadge}
-        />
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header — inline layout */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('admin.forwardAgents.title')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {detailedStats.total} {t('admin.forwardAgents.agentsUnit')}
+              </span>
+            </div>
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-success" />
+                {detailedStats.online} {t('common.status.online')}
+              </span>
+              {detailedStats.offline > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  {detailedStats.offline} {t('common.status.offline')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
+              <Plus className="mr-1 size-3.5" />
+              {t('common.actions.create')}
+            </Button>
+            {detailedStats.online > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')} className="h-8 text-[13px] border-border/60">
+                <Radio className="mr-1 size-3.5" />
+                {t('admin.forwardAgents.actions.broadcast')}
+              </Button>
+            )}
+            {detailedStats.updatable > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')} className="h-8 text-[13px] border-border/60">
+                <ArrowUpCircle className="mr-1 size-3.5" />
+                {t('admin.forwardAgents.actions.update')}
+              </Button>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
-        {/* Search-first Filter Bar with Actions */}
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Filter Bar */}
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Search input */}
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/60" />
             <input
               type="text"
               value={filters.name || ''}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder={t('admin.forwardAgents.filters.searchAgent')}
-              className="h-9 w-[220px] rounded-lg ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
             />
           </div>
 
           <Select value={filters.status || '_all_'} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[120px] h-9">
+            <SelectTrigger className="w-[110px] h-8 text-xs">
               <SelectValue placeholder={t('common.status.label')} />
             </SelectTrigger>
             <SelectContent>
@@ -556,7 +594,7 @@ export function ForwardAgentsPage() {
           </Select>
 
           <Select value={getSortValue()} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-[140px] h-9">
+            <SelectTrigger className="w-[130px] h-8 text-xs">
               <SelectValue placeholder={t('common.table.sort')} />
             </SelectTrigger>
             <SelectContent>
@@ -567,9 +605,9 @@ export function ForwardAgentsPage() {
             </SelectContent>
           </Select>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="h-5 w-px bg-border/60" />
 
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label className="flex items-center gap-2 text-[13px] cursor-pointer">
             <Switch checked={dragSortEnabled} onCheckedChange={setDragSortEnabled} disabled={isReordering}>
               <SwitchThumb />
             </Switch>
@@ -577,39 +615,11 @@ export function ForwardAgentsPage() {
           </label>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={handleResetFilters} className="text-muted-foreground h-9">
-              <FilterX className="size-4 mr-1" />
+            <Button variant="ghost" size="sm" onClick={handleResetFilters} className="text-muted-foreground h-8 text-xs">
+              <X className="size-3.5 mr-1" />
               {t('admin.forwardAgents.filters.resetFilters')}
             </Button>
           )}
-
-          {/* Right-aligned action buttons */}
-          <div className="ml-auto flex items-center gap-2">
-            <Button onClick={handleCreate} size="sm">
-              <Plus className="mr-1.5 size-4" />
-              {t('common.actions.create')}
-            </Button>
-            {stats.online > 0 && (
-              <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
-                <Radio className="mr-1.5 size-4" />
-                {t('admin.forwardAgents.actions.broadcast')}
-              </Button>
-            )}
-            {stats.updatable > 0 && (
-              <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
-                <ArrowUpCircle className="mr-1.5 size-4" />
-                {t('admin.forwardAgents.actions.update')}
-              </Button>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
-                  <RefreshCw key={refreshKey} className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-            </Tooltip>
-          </div>
         </div>
 
         {/* Agent Table */}

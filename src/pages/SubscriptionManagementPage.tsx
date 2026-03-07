@@ -4,11 +4,10 @@
  * Mobile-first responsive design
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Receipt, RefreshCw, CheckCircle2, Pause, Clock, XCircle } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -98,38 +97,6 @@ export function SubscriptionManagementPage() {
   // Global subscription stats from dashboard API
   const { dashboard } = useDashboardStats();
   const subs = dashboard?.subscriptions;
-
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${pagination.total} ${t('admin.subscriptions.label')}`,
-      variant: 'default',
-    }),
-    [pagination.total, t]
-  );
-
-  // Page header metadata — global stats from /admin/dashboard
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    if (!subs) return [];
-
-    const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${subs.active} ${t('common.status.enabled')}` },
-    ];
-
-    if (subs.suspended > 0) {
-      items.push({ icon: Pause, text: `${subs.suspended} ${t('common.status.suspended')}` });
-    }
-
-    if (subs.expired > 0) {
-      items.push({ icon: XCircle, text: `${subs.expired} ${t('common.status.expired')}` });
-    }
-
-    if (subs.expiringIn7Days > 0) {
-      items.push({ icon: Clock, text: `${subs.expiringIn7Days} ${t('admin.subscriptions.expiringSoon')}` });
-    }
-
-    return items;
-  }, [subs, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, subscription?: Subscription) => {
@@ -429,25 +396,54 @@ export function SubscriptionManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
         {/* Page Header */}
-        <PageHeader
-          title={t('admin.subscriptions.pageTitle')}
-          icon={Receipt}
-          badge={headerBadge}
-          metadata={headerMetadata}
-          action={
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('admin.subscriptions.pageTitle')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {pagination.total} {t('admin.subscriptions.label')}
+              </span>
+            </div>
+            {subs && (
+              <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-success" />
+                  {subs.active} {t('common.status.enabled')}
+                </span>
+                {subs.suspended > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-warning" />
+                    {subs.suspended} {t('common.status.suspended')}
+                  </span>
+                )}
+                {subs.expired > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-muted-foreground" />
+                    {subs.expired} {t('common.status.expired')}
+                  </span>
+                )}
+                {subs.expiringIn7Days > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-destructive" />
+                    {subs.expiringIn7Days} {t('admin.subscriptions.expiringSoon')}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                  <RefreshCw key={refreshKey} className="size-4" strokeWidth={1.5} />
-                  <span className="sr-only">{t('common.actions.refresh')}</span>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{t('admin.subscriptions.refreshList')}</TooltipContent>
             </Tooltip>
-          }
-        />
+          </div>
+        </div>
 
         {/* Filters */}
         <SubscriptionFilters filters={filters} onFiltersChange={handleFiltersChange} />

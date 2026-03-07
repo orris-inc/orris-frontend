@@ -6,8 +6,6 @@
 import { useMemo } from 'react';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home as HomeIcon, ChevronRight as NavigateNextIcon } from 'lucide-react';
-
 import { getNavigationItemBySegment } from '../../config/navigation';
 import { usePermissions } from '../../features/auth/hooks/usePermissions';
 import type { BreadcrumbItem } from '../../types/navigation.types';
@@ -127,35 +125,32 @@ export const EnhancedBreadcrumbs = () => {
 
   return (
     <nav aria-label="breadcrumb">
-      <ol className="flex flex-wrap items-center gap-1.5 sm:gap-2 break-words text-xs sm:text-sm text-muted-foreground">
+      <ol className="flex items-center gap-1.5 text-[13px]">
         {breadcrumbs.map((item, index) => {
           const isHome = index === 0;
           const isLast = index === breadcrumbs.length - 1;
-          // Admin shows all items, user mobile only shows home and current page
           const shouldShowOnMobile = shouldShowFullPath || isHome || isLast;
 
           if (!shouldShowOnMobile) return null;
 
           return (
-            <li key={item.path} className="inline-flex items-center gap-1.5 sm:gap-2">
+            <li key={item.path} className="inline-flex items-center gap-1.5">
               {index > 0 && (
-                <NavigateNextIcon className="size-3 sm:size-4" />
+                <span className="text-muted-foreground/30 select-none">/</span>
               )}
 
               {item.isActive ? (
                 <span
-                  className="font-normal text-foreground flex items-center gap-1"
+                  className="font-medium text-foreground"
                   aria-current="page"
                 >
-                  {isHome && <HomeIcon className="size-3 sm:size-4" />}
                   {item.label}
                 </span>
               ) : (
                 <RouterLink
                   to={item.path}
-                  className="transition-colors hover:text-foreground flex items-center gap-1"
+                  className="text-muted-foreground/60 transition-colors hover:text-foreground"
                 >
-                  {isHome && <HomeIcon className="size-3 sm:size-4" />}
                   {item.label}
                 </RouterLink>
               )}

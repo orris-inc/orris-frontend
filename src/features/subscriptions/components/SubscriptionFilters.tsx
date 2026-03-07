@@ -175,7 +175,7 @@ export const SubscriptionFilters = ({
     <div className={cn('space-y-3', className)}>
       {/* Row 1: Status segmented tabs */}
       <div className="flex items-center overflow-x-auto scrollbar-none">
-        <div className="flex items-center rounded-xl bg-muted/50 ring-1 ring-border p-0.5">
+        <div className="flex items-center rounded-lg bg-muted/50 ring-1 ring-border/60 p-0.5">
           {STATUS_TABS.map((tab) => {
             const isActive = currentStatus === tab.value;
             return (

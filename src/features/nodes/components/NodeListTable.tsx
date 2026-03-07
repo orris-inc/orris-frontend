@@ -20,7 +20,6 @@ import {
   Terminal,
   Copy,
   User,
-  Shield,
   ArrowUpCircle,
   Radio,
   Bell,
@@ -82,31 +81,26 @@ type HealthStatus = 'running' | 'offline' | 'stopped' | 'maintenance';
 const HEALTH_STATUS_CONFIG: Record<HealthStatus, {
   labelKey: string;
   colorClass: string;
-  bgClass: string;
   icon: React.ElementType;
 }> = {
   running: {
     labelKey: 'common.status.running',
     colorClass: 'text-success',
-    bgClass: 'bg-success/10',
     icon: Circle,
   },
   offline: {
     labelKey: 'common.status.offline',
     colorClass: 'text-warning',
-    bgClass: 'bg-warning/10',
     icon: AlertTriangle,
   },
   stopped: {
     labelKey: 'common.status.stopped',
     colorClass: 'text-muted-foreground',
-    bgClass: 'bg-muted',
     icon: Circle,
   },
   maintenance: {
     labelKey: 'common.status.maintenance',
     colorClass: 'text-warning',
-    bgClass: 'bg-warning/10',
     icon: Wrench,
   },
 };
@@ -132,6 +126,80 @@ const PROTOCOL_CONFIG: Record<string, { label: string; color: string }> = {
 
 
 import { formatDateTime, formatRelativeTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
+
+// Extracted action cell component — local state prevents SSE updates from closing dropdown
+interface NodeActionsCellProps {
+  node: Node;
+  onViewDetail: (node: Node) => void;
+  onEdit: (node: Node) => void;
+  onGetInstallScript: (node: Node) => void;
+  onNotifyURL?: (node: Node) => void;
+  renderDropdownMenuActions: (node: Node) => React.ReactNode;
+}
+
+const ACTION_BUTTON_CLASS = 'inline-flex items-center justify-center size-7 rounded-md text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer';
+
+const NodeActionsCell: React.FC<NodeActionsCellProps> = ({
+  node,
+  onViewDetail,
+  onEdit,
+  onGetInstallScript,
+  onNotifyURL,
+  renderDropdownMenuActions,
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button onClick={() => onViewDetail(node)} className={ACTION_BUTTON_CLASS}>
+            <Eye className="size-3.5" strokeWidth={1.5} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>{t('admin.nodes.actions.viewDetail')}</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button onClick={() => onEdit(node)} className={ACTION_BUTTON_CLASS}>
+            <Edit className="size-3.5" strokeWidth={1.5} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>{t('common.actions.edit')}</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button onClick={() => onGetInstallScript(node)} className={ACTION_BUTTON_CLASS}>
+            <Terminal className="size-3.5" strokeWidth={1.5} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>{t('admin.nodes.actions.installScript')}</TooltipContent>
+      </Tooltip>
+      {node.isOnline && onNotifyURL && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button onClick={() => onNotifyURL(node)} className={`${ACTION_BUTTON_CLASS} text-info/70 hover:text-info`}>
+              <Radio className="size-3.5" strokeWidth={1.5} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{t('admin.nodes.actions.broadcastUrl')}</TooltipContent>
+        </Tooltip>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className={ACTION_BUTTON_CLASS}>
+            <MoreHorizontal className="size-3.5" strokeWidth={1.5} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent align="end" collisionPadding={16}>
+            {renderDropdownMenuActions(node)}
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenu>
+    </div>
+  );
+};
 
 export const NodeListTable: React.FC<NodeListTableProps> = ({
   nodes,
@@ -298,19 +366,19 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             )}
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <span className="font-semibold text-foreground truncate whitespace-nowrap">
+              <span className="font-medium text-foreground truncate whitespace-nowrap">
                 {node.name}
               </span>
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground whitespace-nowrap">
-                <span className={`font-semibold ${protocolConfig.color}`}>{protocolConfig.label}</span>
-                <span className="text-border">·</span>
+              <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60 whitespace-nowrap">
+                <span className={`font-medium ${protocolConfig.color}`}>{protocolConfig.label}</span>
+                <span className="text-muted-foreground/30">·</span>
                 <span className="font-mono">
                   {node.serverAddress}:{node.agentPort}
                   {hasSubscriptionPort && <span className="text-primary">/{node.subscriptionPort}</span>}
                 </span>
                 {node.region && (
                   <>
-                    <span className="text-border">·</span>
+                    <span className="text-muted-foreground/30">·</span>
                     <span>{node.region}</span>
                   </>
                 )}
@@ -329,7 +397,6 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         const node = row.original;
         const healthStatus = getHealthStatus(node);
         const config = HEALTH_STATUS_CONFIG[healthStatus];
-        const StatusIcon = config.icon;
 
         // Build tooltip content
         const getTooltipContent = () => {
@@ -367,9 +434,9 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
               <TooltipTrigger asChild>
                 <button
                   onClick={() => node.status === 'active' ? onDeactivate(node) : onActivate(node)}
-                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium cursor-pointer active:scale-95 transition-all ${config.bgClass} ${config.colorClass}`}
+                  className={`inline-flex items-center gap-1.5 py-0.5 text-[13px] font-medium cursor-pointer transition-colors hover:opacity-80 ${config.colorClass}`}
                 >
-                  <StatusIcon className={`size-3 ${healthStatus === 'stopped' ? 'fill-current opacity-40' : healthStatus === 'running' ? 'fill-current' : ''}`} strokeWidth={healthStatus === 'stopped' ? 1.5 : 2} />
+                  <span className={`size-2 rounded-full ${healthStatus === 'stopped' ? 'bg-muted-foreground/40' : healthStatus === 'running' ? 'bg-success' : healthStatus === 'maintenance' ? 'bg-warning' : 'bg-muted-foreground'}`} />
                   {t(config.labelKey)}
                 </button>
               </TooltipTrigger>
@@ -432,11 +499,11 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1 whitespace-nowrap cursor-default">
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium truncate max-w-[60px]">
+                <span className="text-[11px] text-muted-foreground truncate max-w-[60px]">
                   {firstTag}
-                </Badge>
+                </span>
                 {moreCount > 0 && (
-                  <span className="text-[10px] text-muted-foreground">+{moreCount}</span>
+                  <span className="text-[11px] text-muted-foreground/50">+{moreCount}</span>
                 )}
               </div>
             </TooltipTrigger>
@@ -514,13 +581,13 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             contentClassName="w-64"
           >
             <div className="flex items-center gap-1 cursor-default">
-              <Badge variant="outline" className="text-[10px] truncate max-w-[80px]">
+              <span className="text-[11px] text-muted-foreground truncate max-w-[80px]">
                 {firstGroup?.name || groupSids[0]}
-              </Badge>
+              </span>
               {remainingCount > 0 && (
-                <Badge variant="secondary" className="text-[10px] px-1.5">
+                <span className="text-[11px] text-muted-foreground/50">
                   +{remainingCount}
-                </Badge>
+                </span>
               )}
             </div>
           </TableHoverCardList>
@@ -551,10 +618,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           );
         }
         return (
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-info-muted border border-info/20">
-            <Shield className="size-3 text-info" strokeWidth={1.5} />
-            <span className="text-[10px] font-medium text-info">{t('common.role.admin')}</span>
-          </div>
+          <span className="text-[11px] text-muted-foreground/60">{t('common.role.admin')}</span>
         );
       },
     },
@@ -565,11 +629,11 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       meta: { priority: 4 } as ResponsiveColumnMeta, // Optional column >= 1280px
       cell: ({ row }) => {
         const value = row.original.createdAt;
-        if (!value) return <span className="text-muted-foreground/50 text-sm">-</span>;
+        if (!value) return <span className="text-muted-foreground/40 text-[13px]">-</span>;
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-sm text-muted-foreground whitespace-nowrap cursor-default">
+              <span className="text-[13px] text-muted-foreground/60 whitespace-nowrap cursor-default">
                 {formatRelativeTime(value)}
               </span>
             </TooltipTrigger>
@@ -584,62 +648,16 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
       size: 160,
       meta: { priority: 1, sticky: 'right' } as ResponsiveColumnMeta, // Core column, always visible, sticky right
       enableSorting: false,
-      cell: ({ row }) => {
-        const node = row.original;
-        const actionButtonClass = 'inline-flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 active:scale-95 transition-all duration-150 cursor-pointer';
-        return (
-          <div className="flex items-center gap-0.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button onClick={() => onViewDetail(node)} className={actionButtonClass}>
-                  <Eye className="size-4" strokeWidth={1.5} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t('admin.nodes.actions.viewDetail')}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button onClick={() => onEdit(node)} className={actionButtonClass}>
-                  <Edit className="size-4" strokeWidth={1.5} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t('common.actions.edit')}</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button onClick={() => onGetInstallScript(node)} className={actionButtonClass}>
-                  <Terminal className="size-4" strokeWidth={1.5} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>{t('admin.nodes.actions.installScript')}</TooltipContent>
-            </Tooltip>
-            {node.isOnline && onNotifyURL && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button onClick={() => onNotifyURL(node)} className={`${actionButtonClass} text-info hover:text-info hover:bg-info/10`}>
-                    <Radio className="size-4" strokeWidth={1.5} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.nodes.actions.broadcastUrl')}</TooltipContent>
-              </Tooltip>
-            )}
-            {/* Uncontrolled DropdownMenu - Radix manages open/close state internally,
-                avoids re-creating column definitions on every dropdown toggle */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className={actionButtonClass}>
-                  <MoreHorizontal className="size-4" strokeWidth={1.5} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuContent align="end" collisionPadding={16}>
-                  {renderDropdownMenuActions(node)}
-                </DropdownMenuContent>
-              </DropdownMenuPortal>
-            </DropdownMenu>
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <NodeActionsCell
+          node={row.original}
+          onViewDetail={onViewDetail}
+          onEdit={onEdit}
+          onGetInstallScript={onGetInstallScript}
+          onNotifyURL={onNotifyURL}
+          renderDropdownMenuActions={renderDropdownMenuActions}
+        />
+      ),
     },
   ], [t, onEdit, onActivate, onDeactivate, onGetInstallScript, onViewDetail, onNotifyURL, onToggleMute, renderDropdownMenuActions, resourceGroupsMap]);
 

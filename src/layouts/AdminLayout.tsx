@@ -97,22 +97,17 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
       to="/dashboard"
       onBeforeNavigate={() => setMobileDrawerOpen(false)}
       className={cn(
-        'group flex items-center rounded-xl text-primary',
-        'transition-colors duration-200 ease-out',
-        'active:bg-primary/10',
+        'group flex items-center rounded-lg text-muted-foreground',
+        'transition-colors duration-100',
+        'hover:bg-muted/60 hover:text-foreground',
+        'active:bg-muted',
         'motion-reduce:transition-none',
-        collapsed ? 'justify-center p-2.5 min-h-[44px]' : 'gap-3 px-3 py-3 min-h-[48px]'
+        collapsed ? 'justify-center p-2 min-h-[36px]' : 'gap-3 px-2 py-1.5 min-h-[36px]'
       )}
     >
-      {collapsed ? (
-        <ArrowLeftRight className="h-5 w-5 flex-shrink-0" />
-      ) : (
-        <>
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <ArrowLeftRight className="h-5 w-5 text-primary" aria-hidden="true" />
-          </span>
-          <span className="text-sm font-medium whitespace-nowrap">{t('nav.switchToUser')}</span>
-        </>
+      <ArrowLeftRight className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
+      {!collapsed && (
+        <span className="text-[13px] font-medium whitespace-nowrap">{t('nav.switchToUser')}</span>
       )}
     </ViewTransitionLink>
   );
@@ -144,17 +139,16 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           className={cn(
             'fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden md:flex',
             'bg-background',
-            'border-r border-border',
+            'border-r border-border/60',
             'transition-all duration-200 motion-reduce:transition-none',
-            collapsed ? 'w-16' : 'w-64'
+            collapsed ? 'w-16' : 'w-60'
           )}
         >
           {/* Sidebar header */}
           <div
             className={cn(
               'flex h-14 shrink-0 items-center',
-              'border-b border-border',
-              collapsed ? 'justify-center px-1.5' : 'justify-between px-4'
+              collapsed ? 'justify-center px-1.5' : 'justify-between px-3'
             )}
           >
             {!collapsed && (
@@ -165,10 +159,11 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <button
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
-                'flex items-center justify-center rounded-lg',
-                'size-9 min-h-[36px]',
+                'flex items-center justify-center rounded-md',
+                'size-8',
+                'text-muted-foreground/60',
                 'transition-colors motion-reduce:transition-none',
-                'hover:bg-foreground/5 active:bg-foreground/10'
+                'hover:bg-muted hover:text-foreground'
               )}
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
@@ -181,7 +176,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
 
           {/* Navigation menu */}
-          <div className="flex-1 overflow-y-auto py-3">
+          <div className="flex-1 overflow-y-auto py-1">
             <AdminSidebarNav items={adminNavItems} collapsed={collapsed} />
           </div>
 
@@ -194,9 +189,9 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           {(serverVersion || clientVersion) && (
             <div
               className={cn(
-                'shrink-0 border-t border-border',
-                'py-2.5 text-[10px] text-muted-foreground/50',
-                collapsed ? 'px-2 text-center' : 'px-4'
+                'shrink-0',
+                'py-2.5 text-[10px] text-muted-foreground/40',
+                collapsed ? 'px-2 text-center' : 'px-3'
               )}
             >
               {collapsed ? (
@@ -205,16 +200,16 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   <div>{clientVersion}</div>
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {serverVersion && (
                     <div className="flex items-center justify-between">
                       <span>{t('app.serverVersion')}</span>
-                      <span className="font-mono text-muted-foreground/70">{serverVersion}</span>
+                      <span className="font-mono text-muted-foreground/50">{serverVersion}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
                     <span>{t('app.clientVersion')}</span>
-                    <span className="font-mono text-muted-foreground/70">{clientVersion}</span>
+                    <span className="font-mono text-muted-foreground/50">{clientVersion}</span>
                   </div>
                 </div>
               )}
@@ -226,7 +221,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div
           className={cn(
             'flex min-h-viewport flex-col transition-all duration-200 motion-reduce:transition-none',
-            collapsed ? 'md:pl-16' : 'md:pl-64'
+            collapsed ? 'md:pl-16' : 'md:pl-60'
           )}
         >
           {/* Navigation Bar - CSS-first responsive */}
@@ -237,16 +232,16 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <button
                   className={cn(
                     'flex items-center justify-center',
-                    'size-11', // 44px touch target
+                    'size-11',
                     'rounded-full',
-                    'text-primary',
+                    'text-foreground',
                     'active:bg-foreground/10',
                     'transition-colors motion-reduce:transition-none'
                   )}
                   onClick={() => setMobileDrawerOpen(true)}
                   aria-label="Open menu"
                 >
-                  <Menu className="size-[22px]" strokeWidth={2} />
+                  <Menu className="size-5" strokeWidth={1.75} />
                 </button>
               </div>
 
@@ -272,10 +267,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               {/* Right section */}
               <div
                 className={cn(
-                  // Mobile: fixed width for symmetry
                   'w-11 flex-shrink-0 flex justify-end',
-                  // Desktop: expand to fit content
-                  'md:w-auto md:items-center md:gap-2'
+                  'md:w-auto md:items-center md:gap-1'
                 )}
               >
                 {/* Desktop: Search button with ⌘K hint */}
@@ -284,17 +277,16 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   onClick={() => setCommandPaletteOpen(true)}
                   className={cn(
                     'hidden md:flex items-center gap-2',
-                    'h-9 px-3 rounded-md',
-                    'bg-muted/50 hover:bg-muted',
-                    'text-sm text-muted-foreground',
+                    'h-8 px-2.5 rounded-md',
+                    'text-[13px] text-muted-foreground/60',
+                    'hover:text-muted-foreground',
                     'transition-colors motion-reduce:transition-none',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
                   )}
                   aria-label={t('commandPalette.trigger')}
                 >
-                  <Search className="size-4" />
-                  <span className="hidden lg:inline">{t('common.actions.search')}</span>
-                  <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-background rounded border border-border">
+                  <Search className="size-3.5" />
+                  <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/40 bg-muted/50 rounded border border-border/50">
                     ⌘K
                   </kbd>
                 </button>
@@ -309,7 +301,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 </div>
 
                 {/* Desktop: Language switcher and theme toggle */}
-                <div className="hidden md:flex md:items-center md:gap-2">
+                <div className="hidden md:flex md:items-center md:gap-0.5">
                   <LanguageSwitcher />
                   <ThemeToggle />
                 </div>

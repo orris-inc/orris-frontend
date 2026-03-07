@@ -175,26 +175,26 @@ export const mobileFixedHeaderStyles = {
      * - 桌面端: sticky 定位 + 普通背景
      */
     header: cn(
-        'z-30 border-b border-border',
-        // Mobile: fixed positioning for reliable header pinning
-        'fixed top-0 left-0 right-0 md:sticky md:left-auto md:right-auto',
-        // Mobile: glass effect with safe area
+        'z-30',
+        // Mobile: fixed positioning + border + glass effect
+        'fixed top-0 left-0 right-0 border-b border-border',
         'bg-background/95 backdrop-blur-sm pt-[env(safe-area-inset-top)]',
-        // Desktop: solid background without blur
-        'md:bg-background md:pt-0 md:backdrop-blur-none'
+        // Desktop: sticky + lighter border
+        'md:sticky md:left-auto md:right-auto',
+        'md:bg-background md:pt-0 md:backdrop-blur-none md:border-border/60'
     ),
 
     /**
-     * Header 内部容器样式
-     * - 移动端: 44px 高度 (iOS 标准)
-     * - 桌面端: 56px 高度
+     * Header inner container
+     * - Mobile: 44px height (iOS standard)
+     * - Desktop: 48px height
      */
     headerInner: cn(
         'flex items-center',
         // Mobile: iOS standard nav bar height 44px
         'h-11 px-2',
-        // Desktop: 56px height with more padding
-        'md:h-14 md:px-4 md:gap-4 lg:px-6'
+        // Desktop: 48px height
+        'md:h-12 md:px-4 md:gap-3 lg:px-5'
     ),
 
     /**

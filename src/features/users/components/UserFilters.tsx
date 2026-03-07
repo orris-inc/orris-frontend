@@ -62,16 +62,16 @@ export const UserFilters = ({
   };
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2.5', className)}>
       {/* Search input */}
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/60" />
         <input
           type="text"
           value={filters.search ?? ''}
           onChange={handleSearchChange}
           placeholder={t('admin.users.searchPlaceholder')}
-          className="h-9 w-[220px] rounded-lg ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
         />
       </div>
 
@@ -80,7 +80,7 @@ export const UserFilters = ({
         value={filters.status ?? 'all'}
         onValueChange={handleStatusChange}
       >
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -97,7 +97,7 @@ export const UserFilters = ({
         value={filters.role ?? 'all'}
         onValueChange={handleRoleChange}
       >
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder={t('filter.role')} />
         </SelectTrigger>
         <SelectContent>
@@ -113,16 +113,16 @@ export const UserFilters = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground h-9"
+          className="text-muted-foreground h-8 text-xs"
         >
-          <X className="size-4 mr-1" />
+          <X className="size-3.5 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
       )}
 
       {/* Right-aligned action slot */}
       {action && (
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5">
           {action}
         </div>
       )}

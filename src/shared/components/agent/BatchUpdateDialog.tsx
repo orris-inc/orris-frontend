@@ -155,10 +155,8 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
                 <Separator />
                 <div className="space-y-2">
                   <p className="text-sm font-medium">
-                    {t(`${i18nNamespace}.willUpdateAgents`, {
-                      defaultValue: t(`${i18nNamespace}.willUpdateNodes`, {
-                        defaultValue: 'Will update:',
-                      }),
+                    {t(`${i18nNamespace}.willUpdateNodes`, {
+                      defaultValue: 'Will update:',
                     })}
                   </p>
                   <div className="max-h-[200px] overflow-y-auto space-y-1">
@@ -215,10 +213,8 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
               <div className="flex items-center gap-2 p-3 bg-info/10 rounded-lg">
                 <Info className="size-4 text-info flex-shrink-0" />
                 <span className="text-sm text-info">
-                  {t(`${i18nNamespace}.truncatedNotice`, {
-                    defaultValue: t(`${i18nNamespace}.truncatedHint`, {
-                      defaultValue: 'Results truncated',
-                    }),
+                  {t(`${i18nNamespace}.truncatedHint`, {
+                    defaultValue: 'Results truncated',
                   })}
                 </span>
               </div>
@@ -310,12 +306,9 @@ export function BatchUpdateDialog<T extends BatchUpdateEntity>({
                 ) : (
                   <>
                     <ArrowUpCircle className="size-4 mr-2" />
-                    {t(`${i18nNamespace}.updateButton`, {
+                    {t(`${i18nNamespace}.updateCount`, {
                       count: updateCount,
-                      defaultValue: t(`${i18nNamespace}.updateCount`, {
-                        count: updateCount,
-                        defaultValue: `Update ${updateCount}`,
-                      }),
+                      defaultValue: `Update ${updateCount}`,
                     })}
                   </>
                 )}

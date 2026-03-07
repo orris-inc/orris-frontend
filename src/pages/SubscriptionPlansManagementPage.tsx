@@ -8,17 +8,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  CreditCard,
-  Plus,
-  RefreshCw,
-  CheckCircle2,
-  XCircle,
-  Globe,
-  Lock,
-} from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -92,23 +83,6 @@ export function SubscriptionPlansManagementPage() {
     const privatePlans = plans.filter((p) => !p.isPublic).length;
     return { total: pagination.total, active, inactive, publicPlans, privatePlans };
   }, [plans, pagination.total]);
-
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.plans.plans')}`,
-      variant: 'default',
-    }),
-    [stats.total, t]
-  );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => [
-    { icon: CheckCircle2, text: `${stats.active} ${t('common.status.enabled')}` },
-    { icon: XCircle, text: `${stats.inactive} ${t('common.status.disabled')}` },
-    { icon: Globe, text: `${stats.publicPlans} ${t('admin.plans.public')}` },
-    { icon: Lock, text: `${stats.privatePlans} ${t('admin.plans.private')}` },
-  ], [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, plan?: SubscriptionPlan) => {
@@ -255,30 +229,54 @@ export function SubscriptionPlansManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
         {/* Page Header */}
-        <PageHeader
-          title={t('admin.plans.pageTitle')}
-          icon={CreditCard}
-          badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 size-4" />
-                {t('admin.plans.createPlan')}
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
-              </Tooltip>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('admin.plans.pageTitle')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {stats.total} {t('admin.plans.plans')}
+              </span>
             </div>
-          }
-        />
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-success" />
+                {stats.active} {t('common.status.enabled')}
+              </span>
+              {stats.inactive > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  {stats.inactive} {t('common.status.disabled')}
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-info" />
+                {stats.publicPlans} {t('admin.plans.public')}
+              </span>
+              {stats.privatePlans > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-warning" />
+                  {stats.privatePlans} {t('admin.plans.private')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
+              <Plus className="mr-1 size-3.5" />
+              {t('admin.plans.createPlan')}
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
         {/* Filters + View Toggle */}
         <PlanFilters

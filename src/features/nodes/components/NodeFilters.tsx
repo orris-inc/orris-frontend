@@ -102,16 +102,16 @@ export const NodeFilters = ({
   const currentProtocol = filters.protocol ?? 'all';
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-2.5', className)}>
       {/* Search input */}
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/60" />
         <input
           type="text"
           value={filters.search ?? ''}
           onChange={handleSearchChange}
           placeholder={t('admin.nodes.searchPlaceholder')}
-          className="h-9 w-[220px] rounded-xl ring-1 ring-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
         />
       </div>
 
@@ -121,10 +121,10 @@ export const NodeFilters = ({
           type="button"
           onClick={() => handleProtocolChange('all')}
           className={cn(
-            'px-2.5 h-7 rounded-lg text-xs font-medium transition-all cursor-pointer',
+            'px-2 h-[26px] rounded-lg text-xs font-medium transition-all cursor-pointer',
             currentProtocol === 'all'
               ? 'bg-foreground/10 text-foreground ring-1 ring-foreground/15'
-              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
           )}
         >
           {t('filter.all')}
@@ -137,10 +137,10 @@ export const NodeFilters = ({
               type="button"
               onClick={() => handleProtocolChange(chip.value)}
               className={cn(
-                'px-2.5 h-7 rounded-lg text-xs font-medium transition-all cursor-pointer',
+                'px-2 h-[26px] rounded-lg text-xs font-medium transition-all cursor-pointer',
                 isActive
                   ? `ring-1 ${chip.activeColor}`
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
               )}
             >
               {chip.label}
@@ -151,7 +151,7 @@ export const NodeFilters = ({
 
       {/* Status filter */}
       <Select value={filters.status ?? 'all'} onValueChange={handleStatusChange}>
-        <SelectTrigger className="w-[120px] h-9">
+        <SelectTrigger className="w-[110px] h-8 text-xs">
           <SelectValue placeholder={t('common.status.label')} />
         </SelectTrigger>
         <SelectContent>
@@ -163,7 +163,7 @@ export const NodeFilters = ({
 
       {/* Online status filter */}
       <Select value={onlineStatusValue} onValueChange={handleOnlineStatusChange}>
-        <SelectTrigger className="w-[130px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue placeholder={t('filter.onlineStatus')} />
         </SelectTrigger>
         <SelectContent>
@@ -174,10 +174,10 @@ export const NodeFilters = ({
       </Select>
 
       {/* Divider */}
-      <div className="h-6 w-px bg-border" />
+      <div className="h-5 w-px bg-border/60" />
 
       {/* Include user nodes toggle */}
-      <label className="flex items-center gap-2 text-sm cursor-pointer">
+      <label className="flex items-center gap-2 text-[13px] cursor-pointer">
         <Switch checked={includeUserNodes} onCheckedChange={onIncludeUserNodesChange}>
           <SwitchThumb />
         </Switch>
@@ -185,7 +185,7 @@ export const NodeFilters = ({
       </label>
 
       {/* Drag sort toggle */}
-      <label className="flex items-center gap-2 text-sm cursor-pointer">
+      <label className="flex items-center gap-2 text-[13px] cursor-pointer">
         <Switch
           checked={dragSortEnabled}
           onCheckedChange={onDragSortEnabledChange}
@@ -202,9 +202,9 @@ export const NodeFilters = ({
           variant="ghost"
           size="sm"
           onClick={onClearFilters}
-          className="text-muted-foreground h-9"
+          className="text-muted-foreground h-8 text-xs"
         >
-          <X className="size-4 mr-1" />
+          <X className="size-3.5 mr-1" />
           {t('filter.clearAdvanced')}
         </Button>
       )}

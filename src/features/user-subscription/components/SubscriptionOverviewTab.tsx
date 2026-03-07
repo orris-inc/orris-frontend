@@ -241,12 +241,11 @@ export const SubscriptionOverviewTab: React.FC<
     totalDays !== null && daysRemaining !== null ? totalDays - daysRemaining : 0;
   const periodProgress =
     totalDays !== null && totalDays > 0 ? (daysUsed / totalDays) * 100 : 0;
-  const limits = subscription.plan?.limits as
-    | { trafficLimit?: number }
-    | undefined;
-  const trafficLimit = limits?.trafficLimit ?? 0;
+  // Use subscription-level authoritative traffic data
+  const trafficLimit = subscription.dataLimitBytes ?? 0;
+  const trafficUsedBytes = subscription.dataUsedBytes ?? 0;
 
-  // Query traffic stats for current billing period
+  // Query traffic stats for current billing period (upload/download breakdown)
   const { data: trafficStats } = useQuery({
     queryKey: [
       "subscriptionTraffic",
@@ -261,21 +260,20 @@ export const SubscriptionOverviewTab: React.FC<
     enabled: !!subscription.id && !!subscription.currentPeriodStart,
   });
 
-  // Calculate traffic usage from traffic stats
-  const trafficUsage = useMemo(() => {
+  // Traffic breakdown from stats API (for upload/download display)
+  const trafficBreakdown = useMemo(() => {
     if (!trafficStats?.summary) {
-      return { upload: 0, download: 0, total: 0 };
+      return { upload: 0, download: 0 };
     }
     return {
       upload: trafficStats.summary.totalUpload,
       download: trafficStats.summary.totalDownload,
-      total: trafficStats.summary.total,
     };
   }, [trafficStats?.summary]);
 
-  // Calculate traffic usage percentage
+  // Calculate traffic usage percentage using authoritative data
   const trafficPercentage =
-    trafficLimit > 0 ? (trafficUsage.total / trafficLimit) * 100 : 0;
+    trafficLimit > 0 ? (trafficUsedBytes / trafficLimit) * 100 : 0;
 
   // Format traffic for progress bar label
   const formatTrafficLabel = (used: number, limit: number) => {
@@ -331,7 +329,7 @@ export const SubscriptionOverviewTab: React.FC<
             <span className="text-[10px] text-muted-foreground">%</span>
           </div>
           <p className="text-[10px] text-muted-foreground truncate">
-            {formatTraffic(trafficUsage.total).value}{formatTraffic(trafficUsage.total).unit}
+            {formatTraffic(trafficUsedBytes).value}{formatTraffic(trafficUsedBytes).unit}
           </p>
         </div>
 
@@ -518,9 +516,9 @@ export const SubscriptionOverviewTab: React.FC<
             <div className="flex items-center justify-between text-[10px] @sm:text-xs">
               <span className="text-muted-foreground">{t("userSubscription.used")}</span>
               <span className="font-medium tabular-nums">
-                {formatTraffic(trafficUsage.total).value}{" "}
+                {formatTraffic(trafficUsedBytes).value}{" "}
                 <span className="text-muted-foreground font-normal">
-                  {formatTraffic(trafficUsage.total).unit}
+                  {formatTraffic(trafficUsedBytes).unit}
                 </span>
               </span>
             </div>
@@ -557,9 +555,9 @@ export const SubscriptionOverviewTab: React.FC<
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("common.actions.upload")}</span>
             </div>
             <p className="text-sm @sm:text-base font-semibold tabular-nums">
-              {formatTraffic(trafficUsage.upload).value}
+              {formatTraffic(trafficBreakdown.upload).value}
               <span className="text-[10px] @sm:text-xs font-normal text-muted-foreground ml-0.5">
-                {formatTraffic(trafficUsage.upload).unit}
+                {formatTraffic(trafficBreakdown.upload).unit}
               </span>
             </p>
           </div>
@@ -571,9 +569,9 @@ export const SubscriptionOverviewTab: React.FC<
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("common.actions.download")}</span>
             </div>
             <p className="text-sm @sm:text-base font-semibold tabular-nums">
-              {formatTraffic(trafficUsage.download).value}
+              {formatTraffic(trafficBreakdown.download).value}
               <span className="text-[10px] @sm:text-xs font-normal text-muted-foreground ml-0.5">
-                {formatTraffic(trafficUsage.download).unit}
+                {formatTraffic(trafficBreakdown.download).unit}
               </span>
             </p>
           </div>
@@ -585,9 +583,9 @@ export const SubscriptionOverviewTab: React.FC<
               <span className="text-[10px] @sm:text-xs text-muted-foreground">{t("userSubscription.total")}</span>
             </div>
             <p className="text-sm @sm:text-base font-semibold tabular-nums">
-              {formatTraffic(trafficUsage.total).value}
+              {formatTraffic(trafficUsedBytes).value}
               <span className="text-[10px] @sm:text-xs font-normal text-muted-foreground ml-0.5">
-                {formatTraffic(trafficUsage.total).unit}
+                {formatTraffic(trafficUsedBytes).unit}
               </span>
             </p>
           </div>
@@ -596,7 +594,7 @@ export const SubscriptionOverviewTab: React.FC<
         {/* Traffic Quota Progress */}
         {trafficLimit > 0 && (
           <ProgressBar
-            value={trafficUsage.total}
+            value={trafficUsedBytes}
             max={trafficLimit}
             barClassName="bg-gradient-to-r from-chart-upload to-chart-download"
             labelFormat={formatTrafficLabel}

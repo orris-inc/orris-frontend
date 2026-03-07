@@ -9,20 +9,15 @@ import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-client';
 import {
-  Server,
   Plus,
   RefreshCw,
   ArrowUpCircle,
   Radio,
   Terminal,
   Users,
-  Wifi,
-  WifiOff,
-  Wrench,
   X,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderBadge, type PageHeaderMeta } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -181,32 +176,6 @@ export function NodeManagementPage() {
     const onlineSubscriptions = nodes.reduce((sum, n) => sum + (n.onlineSubscriptionCount || 0), 0);
     return { total: pagination.total, online, offline, maintenance, updatable, onlineSubscriptions };
   }, [nodes, pagination.total]);
-
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.nodes.nodesUnit')}`,
-      variant: 'default',
-    }),
-    [stats.total, t]
-  );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    const items: PageHeaderMeta[] = [
-      { icon: Wifi, text: `${stats.online} ${t('common.status.online')}` },
-    ];
-    if (stats.offline > 0) {
-      items.push({ icon: WifiOff, text: `${stats.offline} ${t('common.status.offline')}` });
-    }
-    if (stats.maintenance > 0) {
-      items.push({ icon: Wrench, text: `${stats.maintenance} ${t('common.status.maintenance')}` });
-    }
-    if (stats.onlineSubscriptions > 0) {
-      items.push({ icon: Users, text: `${stats.onlineSubscriptions} ${t('admin.nodes.detail.onlineSubscriptions')}` });
-    }
-    return items;
-  }, [stats, t]);
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, node?: Node) => {
@@ -446,42 +415,68 @@ export function NodeManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Page Header with metadata + actions */}
-        <PageHeader
-          title={t('nav.nodeAgent')}
-          icon={Server}
-          badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCreate} size="sm">
-                <Plus className="mr-1.5 size-4" />
-                {t('admin.nodes.addNode')}
-              </Button>
-              {stats.online > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')}>
-                  <Radio className="mr-1.5 size-4" />
-                  {t('admin.nodes.broadcast.label')}
-                </Button>
-              )}
-              {stats.updatable > 0 && (
-                <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')}>
-                  <ArrowUpCircle className="mr-1.5 size-4" />
-                  {t('admin.nodes.update')}
-                </Button>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-9" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
-              </Tooltip>
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('nav.nodeAgent')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {stats.total} {t('admin.nodes.nodesUnit')}
+              </span>
             </div>
-          }
-        />
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-success" />
+                {stats.online} {t('common.status.online')}
+              </span>
+              {stats.offline > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  {stats.offline} {t('common.status.offline')}
+                </span>
+              )}
+              {stats.maintenance > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-warning" />
+                  {stats.maintenance} {t('common.status.maintenance')}
+                </span>
+              )}
+              {stats.onlineSubscriptions > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Users className="size-3" />
+                  {stats.onlineSubscriptions} {t('admin.nodes.detail.onlineSubscriptions')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
+              <Plus className="mr-1 size-3.5" />
+              {t('admin.nodes.addNode')}
+            </Button>
+            {stats.online > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('broadcast')} className="h-8 text-[13px] border-border/60">
+                <Radio className="mr-1 size-3.5" />
+                {t('admin.nodes.broadcast.label')}
+              </Button>
+            )}
+            {stats.updatable > 0 && (
+              <Button variant="outline" size="sm" onClick={() => openDialog('batchUpdate')} className="h-8 text-[13px] border-border/60">
+                <ArrowUpCircle className="mr-1 size-3.5" />
+                {t('admin.nodes.update')}
+              </Button>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
         {/* Filter Bar */}
         <NodeFilters
@@ -498,8 +493,8 @@ export function NodeManagementPage() {
 
         {/* Batch Action Bar */}
         {selectedCount > 0 && (
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center justify-between gap-3 px-3 py-2 bg-muted/50 border border-border/60 rounded-lg animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center gap-2 text-[13px]">
               <span className="text-muted-foreground">{t('common.selected', { count: selectedCount })}</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -508,17 +503,17 @@ export function NodeManagementPage() {
                 size="sm"
                 onClick={handleBatchInstallScriptClick}
                 disabled={isGettingBatchInstallScript}
-                className="h-8 px-2.5 gap-1.5"
+                className="h-8 px-2.5 gap-1.5 text-[13px] border-border/60"
               >
                 <Terminal className="size-3.5" />
                 {t('admin.nodes.table.actions.batchInstallScript')}
               </Button>
-              <div className="w-px h-5 bg-border mx-1" />
+              <div className="w-px h-5 bg-border/60 mx-1" />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setRowSelection({})}
-                className="h-8 px-2.5 gap-1.5"
+                className="h-8 px-2.5 gap-1.5 text-[13px] text-muted-foreground"
               >
                 <X className="size-3.5" />
                 {t('common.actions.cancel')}

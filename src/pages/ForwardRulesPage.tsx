@@ -9,17 +9,12 @@
 import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ArrowLeftRight,
   Plus,
   RefreshCw,
-  CheckCircle2,
-  Activity,
   FileJson,
-  XCircle,
 } from 'lucide-react';
 import type { RowSelectionState } from '@tanstack/react-table';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { PageHeader, type PageHeaderMeta, type PageHeaderBadge } from '@/components/admin';
 import { Button } from '@/components/common/Button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
@@ -226,32 +221,6 @@ export function ForwardRulesPage() {
     const running = forwardRules.filter((r) => r.runStatus === 'running').length;
     return { total: pagination.total, enabled, disabled, running };
   }, [forwardRules, pagination.total]);
-
-  // Page header badge
-  const headerBadge = useMemo(
-    (): PageHeaderBadge => ({
-      label: `${stats.total} ${t('admin.forwardRules.rulesUnit')}`,
-      variant: 'default',
-    }),
-    [stats.total, t]
-  );
-
-  // Page header metadata
-  const headerMetadata = useMemo((): PageHeaderMeta[] => {
-    const items: PageHeaderMeta[] = [
-      { icon: CheckCircle2, text: `${stats.enabled} ${t('common.status.enabled')}` },
-    ];
-
-    if (stats.disabled > 0) {
-      items.push({ icon: XCircle, text: `${stats.disabled} ${t('common.status.disabled')}` });
-    }
-
-    if (stats.running > 0) {
-      items.push({ icon: Activity, text: `${stats.running} ${t('common.status.running')}` });
-    }
-
-    return items;
-  }, [stats, t]);
 
   // Row selection for batch operations
   const rowSelection: RowSelectionState = useMemo(() => {
@@ -588,38 +557,58 @@ export function ForwardRulesPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-6 py-4 pb-safe lg:py-6">
-        {/* Page Header */}
-        <PageHeader
-          title={t('admin.forwardRules.title')}
-          icon={ArrowLeftRight}
-          badge={headerBadge}
-          metadata={headerMetadata}
-          action={
-            <div className="flex items-center gap-2">
-              <Button onClick={handleCreate}>
-                <Plus className="mr-2 size-4" />
-                {t('admin.forwardRules.add')}
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={() => openDialog('batchCreate')}>
-                    <FileJson className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardRules.batchCreateJson')}</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                    <RefreshCw key={refreshKey} className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
-              </Tooltip>
+      <div className="space-y-4 py-4 pb-safe lg:py-5">
+        {/* Page Header — inline layout */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-foreground">{t('admin.forwardRules.title')}</h1>
+              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
+                {stats.total} {t('admin.forwardRules.rulesUnit')}
+              </span>
             </div>
-          }
-        />
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-success" />
+                {stats.enabled} {t('common.status.enabled')}
+              </span>
+              {stats.disabled > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-muted-foreground" />
+                  {stats.disabled} {t('common.status.disabled')}
+                </span>
+              )}
+              {stats.running > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-info" />
+                  {stats.running} {t('common.status.running')}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
+              <Plus className="mr-1 size-3.5" />
+              {t('admin.forwardRules.add')}
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={() => openDialog('batchCreate')}>
+                  <FileJson className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.forwardRules.batchCreateJson')}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
+                  <RefreshCw key={refreshKey} className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
 
         {/* Filters */}
         <ForwardRuleFilters

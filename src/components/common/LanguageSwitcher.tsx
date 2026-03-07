@@ -48,9 +48,9 @@ export function LanguageSwitcher({
         <Button
           variant={variant}
           size={size}
-          className={cn('gap-2', className)}
+          className={cn('size-8 text-muted-foreground/60 hover:text-foreground hover:bg-muted/60', className)}
         >
-          <Globe className="h-4 w-4" />
+          <Globe className="size-4" />
           {showLabel && (
             <span className="hidden sm:inline">{currentLangInfo.nativeName}</span>
           )}
