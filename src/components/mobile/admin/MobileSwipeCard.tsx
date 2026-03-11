@@ -219,9 +219,9 @@ export const MobileSwipeCard = ({
     <div
       ref={containerRef}
       className={cn(
-        'relative overflow-hidden rounded-2xl',
-        'bg-card/60 backdrop-blur-sm',
-        'border border-border/50',
+        'relative overflow-hidden rounded-lg',
+        'bg-card',
+        'ring-1 ring-border/60',
         className
       )}
     >
@@ -241,7 +241,7 @@ export const MobileSwipeCard = ({
               'h-full',
               'transition-opacity',
               action.bgColor,
-              action.textColor || 'text-white'
+              action.textColor || 'text-primary-foreground'
             )}
             style={{ width: ACTION_WIDTH }}
           >

@@ -37,7 +37,7 @@ export const MobileDrawerHeader = ({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <Drawer.Title className="text-sm font-semibold text-foreground truncate">
+            <Drawer.Title className="text-[13px] font-semibold text-foreground truncate">
               {user.displayName || t('common.role.user')}
             </Drawer.Title>
             <p className="text-xs text-muted-foreground truncate">
@@ -56,10 +56,10 @@ export const MobileDrawerHeader = ({
         type="button"
         onClick={onClose}
         className={cn(
-          'flex size-9 items-center justify-center rounded-md',
+          'flex size-11 items-center justify-center rounded-lg',
           'text-muted-foreground hover:text-foreground',
-          'hover:bg-muted active:bg-muted/80',
-          'transition-colors duration-150'
+          'hover:bg-muted/60 active:bg-muted/80',
+          'transition-colors duration-150 motion-reduce:transition-none'
         )}
         aria-label={t('common.actions.close')}
       >

@@ -93,3 +93,5 @@ export { DateTimeCell } from './DateTimeCell';
 export { BulkActionBar, type BulkAction, type BulkActionBarProps } from './BulkActionBar';
 export { useBulkSelection, createExportAction, createDeleteAction, type UseBulkSelectionReturn } from './bulk-action-utils';
 export { DashboardOverviewStrip } from './DashboardOverviewStrip';
+export { StatsPill, type StatsPillProps, type StatsPillVariant } from './StatsPill';
+export { PageToolbar, type PageToolbarProps } from './PageToolbar';

@@ -91,7 +91,7 @@ export const MobileSegmentedFilter = <T extends string = string>({
       ref={containerRef}
       className={cn(
         'relative flex gap-1 p-1',
-        'bg-muted/50 rounded-xl',
+        'bg-muted/50 rounded-lg',
         'overflow-x-auto scrollbar-none',
         '-mx-3 px-3', // Bleed to edges
         className
@@ -103,7 +103,7 @@ export const MobileSegmentedFilter = <T extends string = string>({
           'absolute top-1 bottom-1',
           'bg-background rounded-lg',
           'shadow-sm',
-          'transition-all duration-200 ease-out',
+          'transition-all duration-150 ease-out',
           'motion-reduce:transition-none'
         )}
         style={{
@@ -124,7 +124,7 @@ export const MobileSegmentedFilter = <T extends string = string>({
             className={cn(
               'relative z-10',
               'flex items-center justify-center gap-2',
-              'px-3 py-2 min-h-[40px]',
+              'px-3 py-2 min-h-[44px]',
               'text-[13px] font-medium whitespace-nowrap',
               'rounded-lg',
               'transition-colors duration-150',
@@ -139,7 +139,7 @@ export const MobileSegmentedFilter = <T extends string = string>({
               <span
                 className={cn(
                   'px-1.5 py-0.5 min-w-[18px]',
-                  'text-[10px] font-semibold',
+                  'text-[10px] font-medium',
                   'rounded-full',
                   'text-center',
                   isActive

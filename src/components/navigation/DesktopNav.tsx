@@ -42,8 +42,8 @@ export const DesktopNav = ({ navigationItems, className }: DesktopNavProps) => {
               'transition-colors duration-150',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               isActive
-                ? 'bg-accent text-foreground'
-                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
             )}
           >
             {t(item.labelKey)}

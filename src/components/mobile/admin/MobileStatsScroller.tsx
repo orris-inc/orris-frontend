@@ -51,9 +51,9 @@ const StatCard = ({
       <div
         className={cn(
           'flex flex-col items-center justify-center',
-          'px-1.5 py-2 rounded-xl',
-          'bg-card/80 backdrop-blur-sm',
-          'ring-1 ring-border'
+          'px-1.5 py-2 rounded-lg',
+          'bg-card',
+          'ring-1 ring-border/60'
         )}
       >
         <Skeleton className="size-5 rounded mb-1" />
@@ -69,10 +69,10 @@ const StatCard = ({
         // Centered vertical layout
         'flex flex-col items-center justify-center',
         // More compact padding
-        'px-1.5 py-2 rounded-xl',
+        'px-1.5 py-2 rounded-lg',
         // Glass style
-        'bg-card/80 backdrop-blur-sm',
-        'ring-1 ring-border',
+        'bg-card',
+        'ring-1 ring-border/60',
         // Press feedback
         'motion-safe:transition-transform motion-safe:active:scale-[0.98]'
       )}

@@ -11,7 +11,8 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus, Server } from 'lucide-react';
+import { ArrowUpCircle, Plus, Server } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   MobilePagination,
   MobileListToolbar,
@@ -43,6 +44,10 @@ export interface MobileNodeManagementProps {
   onActivate: (node: Node) => void;
   onDeactivate: (node: Node) => void;
   onPageChange: (page: number) => void;
+  // Batch update
+  updatableCount?: number;
+  onBatchUpdate?: () => void;
+  isBatchUpdating?: boolean;
   // Drag sort
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
@@ -89,6 +94,9 @@ export const MobileNodeManagement = ({
   onActivate,
   onDeactivate,
   onPageChange,
+  updatableCount = 0,
+  onBatchUpdate,
+  isBatchUpdating = false,
   onDragEnd,
 }: MobileNodeManagementProps) => {
   const { t } = useTranslation();
@@ -149,6 +157,26 @@ export const MobileNodeManagement = ({
         refreshing={refreshing}
         onCreate={onCreate}
         createLabel={t('admin.nodes.addNode')}
+        extraActions={
+          updatableCount > 0 && onBatchUpdate ? (
+            <button
+              type="button"
+              onClick={onBatchUpdate}
+              disabled={isBatchUpdating}
+              className={cn(
+                'size-10 rounded-lg shrink-0',
+                'flex items-center justify-center',
+                'border border-warning/50 bg-warning/10',
+                'transition-colors motion-reduce:transition-none',
+                'disabled:opacity-50',
+                'pointer-coarse:size-11'
+              )}
+              title={t('admin.nodes.update')}
+            >
+              <ArrowUpCircle className="size-4 text-warning" />
+            </button>
+          ) : undefined
+        }
       />
 
       {/* Node List - long press to drag sort (only when no filter active) */}

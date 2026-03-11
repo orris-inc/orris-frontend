@@ -15,7 +15,7 @@
  * - ActionSheet for secondary actions
  */
 
-import { useState, memo } from 'react';
+import { useState, memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Server,
@@ -36,6 +36,9 @@ import {
   Check,
 } from 'lucide-react';
 import { useNodeDetailEvents } from '../hooks/useNodeEvents';
+import { triggerNodeUpdate } from '@/api/node';
+import { useNotificationStore } from '@/shared/stores/notification-store';
+import { handleApiError } from '@/shared/lib/axios';
 import { useCopyToClipboard } from '@/shared/hooks/useCopyToClipboard';
 import {
   Sheet,
@@ -193,11 +196,11 @@ const DetailRow = memo(({
 
   return (
     <div className="flex items-center justify-between gap-3 px-3 py-2.5 min-h-[44px]">
-      <dt className="flex items-center gap-2 text-sm text-muted-foreground shrink-0">
+      <dt className="flex items-center gap-2 text-[13px] text-muted-foreground shrink-0">
         {icon && <span className="text-muted-foreground/60">{icon}</span>}
         {label}
       </dt>
-      <dd className="flex items-center gap-1.5 text-sm text-foreground min-w-0">
+      <dd className="flex items-center gap-1.5 text-[13px] text-foreground min-w-0">
         <span className={cn('truncate', mono && 'font-mono text-xs')}>
           {value}
         </span>
@@ -248,8 +251,8 @@ const StatItem = memo(({
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-baseline justify-between gap-1 mb-1">
-        <span className="text-[11px] text-muted-foreground truncate">{label}</span>
-        <span className={cn('text-sm font-semibold tabular-nums', colorClasses[color].split(' ')[0])}>
+        <span className="text-xs text-muted-foreground truncate">{label}</span>
+        <span className={cn('text-[13px] font-semibold tabular-nums', colorClasses[color].split(' ')[0])}>
           {value}
         </span>
       </div>
@@ -367,7 +370,7 @@ const SystemStatusSection = memo(({
             <div className="px-3 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Network className="size-4 text-muted-foreground/60" />
-                <div className="flex items-center gap-3 text-sm tabular-nums">
+                <div className="flex items-center gap-3 text-[13px] tabular-nums">
                   <span className="text-success">↓ {formatBytesRate(status.networkRxRate)}/s</span>
                   <span className="text-info">↑ {formatBytesRate(status.networkTxRate)}/s</span>
                 </div>
@@ -418,6 +421,21 @@ export const NodeDetailSheet = ({
 }: NodeDetailSheetProps) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const [isUpdatingAgent, setIsUpdatingAgent] = useState(false);
+  const { showSuccess, showError } = useNotificationStore();
+
+  const handleTriggerUpdate = useCallback(async () => {
+    if (!node?.id) return;
+    setIsUpdatingAgent(true);
+    try {
+      const response = await triggerNodeUpdate(node.id);
+      showSuccess(response.message || t('admin.nodes.detail.triggerUpdate'));
+    } catch (err) {
+      showError(handleApiError(err));
+    } finally {
+      setIsUpdatingAgent(false);
+    }
+  }, [node?.id, showSuccess, showError, t]);
 
   // Subscribe to real-time status via SSE - always enable when sheet is open
   // This allows us to get real-time status for any node, regardless of its current status
@@ -436,6 +454,17 @@ export const NodeDetailSheet = ({
 
   // Action Sheet actions
   const moreActions = [
+    // Trigger agent update - only show when update is available and node is online
+    ...(node.hasUpdate && (isOnline || node.isOnline)
+      ? [
+          {
+            label: t('admin.nodes.detail.triggerUpdate'),
+            icon: <ArrowUpCircle className="size-5" />,
+            onPress: handleTriggerUpdate,
+            disabled: isUpdatingAgent,
+          },
+        ]
+      : []),
     {
       label: t('admin.nodes.actions.delete'),
       icon: <Trash2 className="size-5" />,
@@ -479,7 +508,7 @@ export const NodeDetailSheet = ({
             <div className="flex items-center gap-3">
               {/* Icon with online indicator */}
               <div className="relative shrink-0">
-                <div className="size-11 rounded-xl flex items-center justify-center bg-primary/10">
+                <div className="size-11 rounded-lg flex items-center justify-center bg-primary/10">
                   <Server className="size-5 text-primary" />
                 </div>
                 {/* Online status dot */}
@@ -680,7 +709,7 @@ export const NodeDetailSheet = ({
                 }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5',
-                  'h-11 rounded-xl',
+                  'h-11 rounded-lg',
                   'bg-primary text-primary-foreground',
                   'text-sm font-medium',
                   'active:scale-[0.98] active:opacity-80 transition-all'
@@ -702,7 +731,7 @@ export const NodeDetailSheet = ({
                 }}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-1.5',
-                  'h-11 rounded-xl',
+                  'h-11 rounded-lg',
                   'text-sm font-medium',
                   'border',
                   'active:scale-[0.98] active:opacity-80 transition-all',
@@ -728,7 +757,7 @@ export const NodeDetailSheet = ({
                 type="button"
                 onClick={() => setActionSheetOpen(true)}
                 className={cn(
-                  'size-11 rounded-xl shrink-0',
+                  'size-11 rounded-lg shrink-0',
                   'flex items-center justify-center',
                   'bg-muted text-muted-foreground',
                   'active:scale-[0.98] active:opacity-80 transition-all'

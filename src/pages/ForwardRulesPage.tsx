@@ -18,6 +18,8 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { Button } from '@/components/common/Button';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
@@ -463,7 +465,7 @@ export function ForwardRulesPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobileForwardRuleManagement
             rules={forwardRules}
             agentsMap={agentsMap}
@@ -557,36 +559,10 @@ export function ForwardRulesPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header — inline layout */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('admin.forwardRules.title')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {stats.total} {t('admin.forwardRules.rulesUnit')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-success" />
-                {stats.enabled} {t('common.status.enabled')}
-              </span>
-              {stats.disabled > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-muted-foreground" />
-                  {stats.disabled} {t('common.status.disabled')}
-                </span>
-              )}
-              {stats.running > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-info" />
-                  {stats.running} {t('common.status.running')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats pills + actions */}
+        <PageToolbar
+          actions={<>
             <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
               <Plus className="mr-1 size-3.5" />
               {t('admin.forwardRules.add')}
@@ -607,8 +583,17 @@ export function ForwardRulesPage() {
               </TooltipTrigger>
               <TooltipContent>{t('admin.forwardRules.refreshList')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{stats.total} {t('admin.forwardRules.rulesUnit')}</StatsPill>
+          <StatsPill variant="success" dot>{stats.enabled} {t('common.status.enabled')}</StatsPill>
+          {stats.disabled > 0 && (
+            <StatsPill variant="muted" dot>{stats.disabled} {t('common.status.disabled')}</StatsPill>
+          )}
+          {stats.running > 0 && (
+            <StatsPill variant="info" dot>{stats.running} {t('common.status.running')}</StatsPill>
+          )}
+        </PageToolbar>
 
         {/* Filters */}
         <ForwardRuleFilters

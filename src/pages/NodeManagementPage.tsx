@@ -20,6 +20,8 @@ import {
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
@@ -365,7 +367,7 @@ export function NodeManagementPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobileNodeManagement
             nodes={nodes}
             resourceGroupsMap={resourceGroupsMap}
@@ -381,6 +383,9 @@ export function NodeManagementPage() {
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
             onPageChange={handlePageChange}
+            updatableCount={stats.updatable}
+            onBatchUpdate={() => openDialog('batchUpdate')}
+            isBatchUpdating={isBatchUpdating}
             onDragEnd={handleDragEnd}
           />
         </div>
@@ -408,6 +413,22 @@ export function NodeManagementPage() {
           entity={selectedNode}
           onConfirm={handleDeleteConfirm}
         />
+
+        {activeDialog === 'batchUpdate' && (
+          <Suspense fallback={null}>
+            <BatchUpdateDialog
+              open
+              onClose={() => {
+                closeDialog();
+                setBatchUpdateResult(null);
+              }}
+              nodes={nodes}
+              onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
+              isUpdating={isBatchUpdating}
+              result={batchUpdateResult}
+            />
+          </Suspense>
+        )}
       </AdminLayout>
     );
   }
@@ -415,42 +436,10 @@ export function NodeManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('nav.nodeAgent')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {stats.total} {t('admin.nodes.nodesUnit')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-success" />
-                {stats.online} {t('common.status.online')}
-              </span>
-              {stats.offline > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-muted-foreground" />
-                  {stats.offline} {t('common.status.offline')}
-                </span>
-              )}
-              {stats.maintenance > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-warning" />
-                  {stats.maintenance} {t('common.status.maintenance')}
-                </span>
-              )}
-              {stats.onlineSubscriptions > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Users className="size-3" />
-                  {stats.onlineSubscriptions} {t('admin.nodes.detail.onlineSubscriptions')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats Overview Strip + Actions (no separate title — breadcrumbs handle it) */}
+        <PageToolbar
+          actions={<>
             <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
               <Plus className="mr-1 size-3.5" />
               {t('admin.nodes.addNode')}
@@ -475,8 +464,20 @@ export function NodeManagementPage() {
               </TooltipTrigger>
               <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{stats.total} {t('admin.nodes.nodesUnit')}</StatsPill>
+          <StatsPill variant="success" dot>{stats.online} {t('common.status.online')}</StatsPill>
+          {stats.offline > 0 && (
+            <StatsPill variant="muted" dot>{stats.offline} {t('common.status.offline')}</StatsPill>
+          )}
+          {stats.maintenance > 0 && (
+            <StatsPill variant="warning" dot>{stats.maintenance} {t('common.status.maintenance')}</StatsPill>
+          )}
+          {stats.onlineSubscriptions > 0 && (
+            <StatsPill variant="info" icon={<Users className="size-3" />}>{stats.onlineSubscriptions} {t('admin.nodes.detail.onlineSubscriptions')}</StatsPill>
+          )}
+        </PageToolbar>
 
         {/* Filter Bar */}
         <NodeFilters

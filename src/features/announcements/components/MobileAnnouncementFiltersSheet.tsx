@@ -3,7 +3,7 @@
  * Bottom sheet for filtering announcements on mobile
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Filter, X } from 'lucide-react';
 import {
@@ -81,9 +81,12 @@ export const MobileFilterButton = ({
       type="button"
       onClick={onClick}
       className={cn(
-        'relative flex items-center justify-center',
-        'size-9 rounded-xl ring-1 ring-border bg-background',
-        'hover:bg-muted active:scale-[0.98] transition-all',
+        'size-10 rounded-lg shrink-0',
+        'flex items-center justify-center',
+        'ring-1 ring-border bg-background',
+        'hover:bg-muted active:bg-muted/80 active:scale-[0.98]',
+        'transition-colors relative',
+        'pointer-coarse:size-11',
         className
       )}
     >
@@ -107,37 +110,46 @@ export const MobileAnnouncementFiltersSheet = ({
 }: MobileAnnouncementFiltersSheetProps) => {
   const { t } = useTranslation();
 
-  // Local state for editing
-  const [localFilters, setLocalFilters] = useState<AnnouncementFilters>({});
-
-  // Sync local state when sheet opens
-  useEffect(() => {
-    if (open) {
-      setLocalFilters(filters);
-    }
-  }, [open, filters]);
-
   // Check if any filter is active
   const hasFilters = useMemo(() => {
     return !!(filters.status || filters.type || filters.sortBy);
   }, [filters]);
 
-  // Apply filters
-  const handleApply = () => {
-    onFiltersChange(localFilters);
-    onOpenChange(false);
+  // Handle status change
+  const handleStatusChange = (value: string) => {
+    onFiltersChange({
+      status: value === 'all' ? undefined : (value as AnnouncementStatus),
+    });
+  };
+
+  // Handle type change
+  const handleTypeChange = (value: string) => {
+    onFiltersChange({
+      type: value === 'all' ? undefined : (value as AnnouncementType),
+    });
+  };
+
+  // Handle sort change
+  const handleSortChange = (value: string) => {
+    onFiltersChange({
+      sortBy: value === 'none' ? undefined : (value as AnnouncementFilters['sortBy']),
+      sortOrder: value === 'none' ? undefined : (filters.sortOrder ?? 'desc'),
+    });
   };
 
   // Clear all filters
   const handleClear = () => {
-    const cleared: AnnouncementFilters = {
+    onFiltersChange({
       status: undefined,
       type: undefined,
       sortBy: undefined,
       sortOrder: undefined,
-    };
-    setLocalFilters(cleared);
-    onFiltersChange(cleared);
+    });
+    onOpenChange(false);
+  };
+
+  // Apply and close
+  const handleApply = () => {
     onOpenChange(false);
   };
 
@@ -161,18 +173,13 @@ export const MobileAnnouncementFiltersSheet = ({
           </SheetTitle>
         </SheetHeader>
 
-        <SheetBody className="py-4 space-y-5">
+        <SheetBody className="py-4 space-y-3">
           {/* Status filter */}
           <div className="space-y-2">
             <Label>{t('common.status.label')}</Label>
             <Select
-              value={localFilters.status ?? 'all'}
-              onValueChange={(value) =>
-                setLocalFilters((prev) => ({
-                  ...prev,
-                  status: value === 'all' ? undefined : (value as AnnouncementStatus),
-                }))
-              }
+              value={filters.status ?? 'all'}
+              onValueChange={handleStatusChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('filter.all')} />
@@ -192,13 +199,8 @@ export const MobileAnnouncementFiltersSheet = ({
           <div className="space-y-2">
             <Label>{t('announcements.type.label')}</Label>
             <Select
-              value={localFilters.type ?? 'all'}
-              onValueChange={(value) =>
-                setLocalFilters((prev) => ({
-                  ...prev,
-                  type: value === 'all' ? undefined : (value as AnnouncementType),
-                }))
-              }
+              value={filters.type ?? 'all'}
+              onValueChange={handleTypeChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('filter.allTypes')} />
@@ -218,14 +220,8 @@ export const MobileAnnouncementFiltersSheet = ({
           <div className="space-y-2">
             <Label>{t('filter.sortBy')}</Label>
             <Select
-              value={localFilters.sortBy ?? 'none'}
-              onValueChange={(value) =>
-                setLocalFilters((prev) => ({
-                  ...prev,
-                  sortBy: value === 'none' ? undefined : (value as AnnouncementFilters['sortBy']),
-                  sortOrder: value === 'none' ? undefined : (prev.sortOrder ?? 'desc'),
-                }))
-              }
+              value={filters.sortBy ?? 'none'}
+              onValueChange={handleSortChange}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('filter.defaultSort')} />

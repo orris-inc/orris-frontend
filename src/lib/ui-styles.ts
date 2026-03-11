@@ -179,9 +179,9 @@ export const mobileFixedHeaderStyles = {
         // Mobile: fixed positioning + border + glass effect
         'fixed top-0 left-0 right-0 border-b border-border',
         'bg-background/95 backdrop-blur-sm pt-[env(safe-area-inset-top)]',
-        // Desktop: sticky + lighter border
+        // Desktop: sticky, no border (clean separation via spacing)
         'md:sticky md:left-auto md:right-auto',
-        'md:bg-background md:pt-0 md:backdrop-blur-none md:border-border/60'
+        'md:bg-background md:pt-0 md:backdrop-blur-none md:border-b-0'
     ),
 
     /**
@@ -202,7 +202,7 @@ export const mobileFixedHeaderStyles = {
      * 移动端需要 padding-top 补偿 fixed header 高度
      */
     mainSmall: cn(
-        'flex-1 overflow-x-hidden',
+        'flex-1 overflow-x-hidden pb-safe',
         // Mobile: pt = header(44px/2.75rem) + safe-area + base-padding(0.75rem)
         'p-3 pt-[calc(2.75rem+env(safe-area-inset-top)+0.75rem)]',
         // Desktop: normal padding
@@ -219,6 +219,17 @@ export const mobileFixedHeaderStyles = {
         // Desktop: normal padding
         'md:pt-4 sm:py-6'
     ),
+};
+
+/**
+ * Admin Page Content 样式
+ * Standard wrapper for admin page content areas
+ */
+export const adminContentStyles = {
+    /** Desktop content area: space-y-4 with vertical padding */
+    desktop: 'space-y-4 py-4 pb-safe lg:py-5',
+    /** Mobile content area: compact padding */
+    mobile: 'py-3 pb-safe',
 };
 
 /**

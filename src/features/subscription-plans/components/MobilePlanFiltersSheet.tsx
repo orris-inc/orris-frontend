@@ -62,7 +62,7 @@ export const MobileFilterButton = ({ hasFilters, onClick }: MobileFilterButtonPr
       type="button"
       onClick={onClick}
       className={cn(
-        'size-10 rounded-xl shrink-0',
+        'size-10 rounded-lg shrink-0',
         'flex items-center justify-center',
         'ring-1 ring-border bg-background',
         'hover:bg-muted active:bg-muted/80 active:scale-[0.98]',
@@ -146,7 +146,7 @@ export const MobilePlanFiltersSheet = ({
           </SheetTitle>
         </SheetHeader>
 
-        <SheetBody className="py-4 space-y-5">
+        <SheetBody className="py-4 space-y-3">
           {/* Status filter */}
           <div className="space-y-2">
             <Label>{t('common.status.label')}</Label>

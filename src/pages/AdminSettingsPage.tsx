@@ -422,17 +422,8 @@ export const AdminSettingsPage = () => {
   return (
     <AdminLayout>
       <div className="flex flex-col min-h-0 space-y-4">
-        {/* Page Header — inline layout */}
-        <div>
-          <div className="flex items-center gap-2.5">
-            <Settings className="size-5 text-muted-foreground/60" strokeWidth={1.5} />
-            <h1 className="text-lg font-semibold text-foreground">{t('admin.settings.title')}</h1>
-          </div>
-          <p className="mt-0.5 text-[13px] text-muted-foreground ml-[30px]">{t('admin.settings.description')}</p>
-        </div>
-
         {/* Level 1: Category Cards */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {CATEGORIES.map((category) => {
             const Icon = category.icon;
             const isActive = category.id === activeCategoryId;
@@ -443,7 +434,7 @@ export const AdminSettingsPage = () => {
                 onClick={() => handleCategoryChange(category.id)}
                 className={cn(
                   'group flex flex-col items-center gap-1.5 p-2.5',
-                  'md:flex-row md:items-start md:gap-2.5 md:p-3',
+                  'sm:flex-row sm:items-start sm:gap-2.5 sm:p-3',
                   'rounded-lg transition-all',
                   'touch-target',
                   isActive
@@ -461,7 +452,7 @@ export const AdminSettingsPage = () => {
                 >
                   <Icon className="size-4" />
                 </span>
-                <div className="text-center md:text-left min-w-0">
+                <div className="text-center sm:text-left min-w-0">
                   <div
                     className={cn(
                       'text-xs font-medium',

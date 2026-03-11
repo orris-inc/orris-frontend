@@ -4,7 +4,7 @@
  * A grouped list component that mimics the iOS Settings app design.
  * Features:
  * - iOS-style grouped sections with titles
- * - Card container with rounded corners (16px)
+ * - Card container with rounded corners (8px)
  * - Touch-friendly targets (min 44px height)
  * - Subtle dividers between items
  * - Active state feedback
@@ -68,7 +68,7 @@ export const MobileGroupedList = ({
       {(title || action) && (
         <div className="flex items-center justify-between px-3">
           {title && (
-            <h3 className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
+            <h3 className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
               {title}
             </h3>
           )}
@@ -79,9 +79,9 @@ export const MobileGroupedList = ({
       {/* Card container for list items */}
       <div
         className={cn(
-          'rounded-xl overflow-hidden',
-          'bg-card/60 backdrop-blur-sm',
-          'ring-1 ring-border'
+          'rounded-lg overflow-hidden',
+          'bg-card',
+          'ring-1 ring-border/60'
         )}
       >
         {children}
@@ -122,9 +122,9 @@ export const MobileListItem = ({
         // Minimum touch target height (iOS standard)
         'min-h-[44px]',
         // Border radius for first/last items
-        first && last && 'rounded-xl',
-        first && !last && 'rounded-t-xl',
-        !first && last && 'rounded-b-xl',
+        first && last && 'rounded-lg',
+        first && !last && 'rounded-t-lg',
+        !first && last && 'rounded-b-lg',
         // Divider between items (not on last item)
         !last && 'border-b border-border/30',
         // Interactive states

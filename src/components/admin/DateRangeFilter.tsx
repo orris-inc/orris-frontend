@@ -212,7 +212,16 @@ function getDisplayLabel(value: DateRangeValue, t: (key: string) => string): str
 // Chip styles (shared between variants)
 // ============================================================================
 
-const chipBase = cn(
+// Compact = popover (desktop), full = inline (mobile)
+const chipCompact = cn(
+  'shrink-0 rounded-lg px-2 text-xs font-medium',
+  'h-[26px]',
+  'transition-all duration-150',
+  'whitespace-nowrap',
+  'select-none'
+);
+
+const chipFull = cn(
   'shrink-0 rounded-lg px-3 text-sm font-medium',
   'min-h-[36px]',
   'transition-all duration-150',
@@ -220,12 +229,12 @@ const chipBase = cn(
   'select-none'
 );
 
-const chipActive = 'bg-primary text-primary-foreground ring-1 ring-primary/20';
+const chipActive = 'bg-primary/10 text-primary ring-1 ring-primary/20';
 
 const chipInactive = cn(
-  'bg-muted/60 text-muted-foreground',
-  'ring-1 ring-border/50',
-  'hover:bg-muted active:bg-muted/80',
+  'bg-muted/40 text-muted-foreground',
+  'ring-1 ring-border/60',
+  'hover:bg-muted/60 active:bg-muted/80',
   'active:scale-[0.97]'
 );
 
@@ -237,9 +246,11 @@ interface DateRangeContentProps {
   value: DateRangeValue;
   onChange: (value: DateRangeValue) => void;
   onClose?: () => void;
+  /** Compact mode for desktop popover (smaller chips) */
+  compact?: boolean;
 }
 
-const DateRangeContent = ({ value, onChange, onClose }: DateRangeContentProps) => {
+const DateRangeContent = ({ value, onChange, onClose, compact = false }: DateRangeContentProps) => {
   const { t } = useTranslation();
   const presets = useMemo(() => buildPresets(), []);
   const activePreset = useMemo(() => detectPreset(value), [value]);
@@ -299,7 +310,7 @@ const DateRangeContent = ({ value, onChange, onClose }: DateRangeContentProps) =
               key={preset.key}
               type="button"
               onClick={() => handlePresetClick(preset)}
-              className={cn(chipBase, isActive ? chipActive : chipInactive)}
+              className={cn(compact ? chipCompact : chipFull, isActive ? chipActive : chipInactive)}
             >
               {t(preset.label)}
             </button>
@@ -309,11 +320,11 @@ const DateRangeContent = ({ value, onChange, onClose }: DateRangeContentProps) =
 
       {/* Custom date inputs */}
       {showCustom && (
-        <div className="space-y-2.5 pt-1 animate-[fade-in_0.15s_ease-out]">
+        <div className="space-y-2 pt-1 animate-[fade-in_0.15s_ease-out]">
           <div className="grid grid-cols-2 gap-2">
             {/* Start date */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-[11px] text-muted-foreground/60">
                 {t('subscription.startDate')}
               </Label>
               <input
@@ -323,14 +334,14 @@ const DateRangeContent = ({ value, onChange, onClose }: DateRangeContentProps) =
                 max={value.endDate ?? undefined}
                 className={cn(
                   inputStyles,
-                  'h-9 text-sm [&::-webkit-calendar-picker-indicator]:opacity-60'
+                  'h-8 text-[13px] [&::-webkit-calendar-picker-indicator]:opacity-60'
                 )}
               />
             </div>
 
             {/* End date */}
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-[11px] text-muted-foreground/60">
                 {t('subscription.endDate')}
               </Label>
               <input
@@ -340,7 +351,7 @@ const DateRangeContent = ({ value, onChange, onClose }: DateRangeContentProps) =
                 min={value.startDate ?? undefined}
                 className={cn(
                   inputStyles,
-                  'h-9 text-sm [&::-webkit-calendar-picker-indicator]:opacity-60'
+                  'h-8 text-[13px] [&::-webkit-calendar-picker-indicator]:opacity-60'
                 )}
               />
             </div>
@@ -414,10 +425,10 @@ const PopoverDateRangeFilter = ({
         onClick={() => setOpen(!open)}
         className={cn(
           'flex items-center justify-between gap-2',
-          'h-9 rounded-xl ring-1 ring-border bg-background px-3',
-          'text-sm',
-          'hover:bg-accent/40 transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'h-8 rounded-lg ring-1 ring-border/60 bg-background px-3',
+          'text-[13px]',
+          'hover:bg-muted/60 transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20',
           triggerWidth,
           hasValue && 'text-foreground',
           !hasValue && 'text-muted-foreground'
@@ -440,9 +451,9 @@ const PopoverDateRangeFilter = ({
         <div
           className={cn(
             'absolute top-full left-0 z-50 mt-1',
-            'min-w-[320px] p-3 rounded-xl',
+            'min-w-[300px] p-3 rounded-lg',
             'bg-popover text-popover-foreground',
-            'ring-1 ring-border shadow-lg',
+            'ring-1 ring-border/60 shadow-sm',
             'animate-[scale-in_0.15s_ease-out]',
             'origin-top-left'
           )}
@@ -451,6 +462,7 @@ const PopoverDateRangeFilter = ({
             value={value}
             onChange={onChange}
             onClose={() => setOpen(false)}
+            compact
           />
         </div>
       )}

@@ -70,7 +70,7 @@ export const MobileAnnouncementCard = ({
         {/* Row 1: Title + Type */}
         <div className="flex items-center gap-2 mb-1">
           <TypeIcon className="size-3.5 text-muted-foreground shrink-0" />
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {announcement.title}
           </span>
         </div>
@@ -78,12 +78,12 @@ export const MobileAnnouncementCard = ({
         {/* Row 2: Type + Date + Views */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{t(`announcements.type.${announcement.type}`)}</span>
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
           <div className="flex items-center gap-1">
             <Calendar className="size-3" />
             <span className="tabular-nums">{formatDate(announcement.createdAt)}</span>
           </div>
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
           <div className="flex items-center gap-1">
             <Eye className="size-3" />
             <span>{announcement.viewCount}</span>
@@ -94,7 +94,7 @@ export const MobileAnnouncementCard = ({
       {/* Right side: Status */}
       <AdminBadge
         variant={STATUS_VARIANT_MAP[announcement.status]}
-        className="text-[10px] px-1.5 py-0 shrink-0"
+        className="text-[10px] shrink-0"
       >
         {t(`announcements.status.${announcement.status}`)}
       </AdminBadge>

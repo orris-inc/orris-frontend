@@ -80,7 +80,7 @@ const StatusBadge = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium',
         config.className
       )}
     >
@@ -131,7 +131,7 @@ export const MobileResourceGroupCard = ({
               {planTypeConfig.shortLabel}
             </span>
           )}
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {group.name}
           </span>
         </div>

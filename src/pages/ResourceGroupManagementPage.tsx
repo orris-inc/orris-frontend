@@ -13,7 +13,9 @@ import { useQuery } from '@tanstack/react-query';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { StatsPill, PageToolbar } from '@/components/admin';
 import { cn } from '@/lib/utils';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { queryKeys } from '@/shared/lib/query-client';
@@ -150,7 +152,7 @@ export const ResourceGroupManagementPage = () => {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className={adminContentStyles.mobile}>
           <MobileResourceGroupManagement
             resourceGroups={resourceGroups}
             plansMap={plansMap}
@@ -205,30 +207,10 @@ export const ResourceGroupManagementPage = () => {
   // Desktop view - Tailwind UI Application UI style layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header — inline layout */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('admin.resourceGroups.title')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {stats.total} {t('admin.resourceGroups.groupsUnit')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-success" />
-                {stats.active} {t('common.status.enabled')}
-              </span>
-              {stats.inactive > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-muted-foreground" />
-                  {stats.inactive} {t('common.status.disabled')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats pills + actions */}
+        <PageToolbar
+          actions={<>
             <Button onClick={() => setCreateDialogOpen(true)} size="sm" className="h-8 text-[13px]">
               <Plus className="mr-1 size-3.5" />
               {t('common.actions.create')}
@@ -241,8 +223,14 @@ export const ResourceGroupManagementPage = () => {
               </TooltipTrigger>
               <TooltipContent>{t('admin.common.refreshList')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{stats.total} {t('admin.resourceGroups.groupsUnit')}</StatsPill>
+          <StatsPill variant="success" dot>{stats.active} {t('common.status.enabled')}</StatsPill>
+          {stats.inactive > 0 && (
+            <StatsPill variant="muted" dot>{stats.inactive} {t('common.status.disabled')}</StatsPill>
+          )}
+        </PageToolbar>
 
         {/* Status filter chips */}
         <div className="flex items-center gap-1">

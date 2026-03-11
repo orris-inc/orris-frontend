@@ -95,19 +95,19 @@ export const MobileUserCard = ({ user, onCardPress }: MobileUserCardProps) => {
       <div className="flex-1 min-w-0">
         {/* Name and Status */}
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-medium text-foreground truncate text-sm">
+          <span className="font-medium text-foreground truncate text-[13px]">
             {user.name || user.email.split('@')[0]}
           </span>
           <AdminBadge
             variant={statusConfig.variant}
-            className="text-[10px] px-1.5 py-0 shrink-0"
+            className="text-[10px] shrink-0"
           >
             {t(statusConfig.labelKey)}
           </AdminBadge>
         </div>
 
         {/* Email and Role */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Mail className="size-3 shrink-0" />
           <span className="truncate">{user.email}</span>
         </div>
@@ -116,7 +116,7 @@ export const MobileUserCard = ({ user, onCardPress }: MobileUserCardProps) => {
       {/* Role Badge - Only show for admin */}
       {user.role === 'admin' && (
         <div className="shrink-0">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-warning/10 text-warning">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/10 text-warning">
             <Shield className="size-3" />
             <span className="text-[10px] font-medium">
               {t(roleConfig.labelKey)}

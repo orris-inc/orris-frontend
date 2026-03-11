@@ -67,7 +67,7 @@ MicroProgress.displayName = 'MicroProgress';
 const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorOverview; isConnected: boolean }) => {
   const { t } = useTranslation();
   return (
-  <div className="glass rounded-2xl p-3 space-y-2">
+  <div className="rounded-lg ring-1 ring-border/60 bg-card p-3 space-y-2">
     {/* Top row: connection status + counts */}
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className={cn('text-sm font-bold tabular-nums', getResourceTextClass(overview.avgCpu))}>
           {overview.avgCpu.toFixed(0)}%
         </span>
-        <span className="text-[9px] text-muted-foreground">CPU</span>
+        <span className="text-[10px] text-muted-foreground">CPU</span>
       </div>
 
       {/* Memory */}
@@ -110,7 +110,7 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className={cn('text-sm font-bold tabular-nums', getResourceTextClass(overview.avgMemory))}>
           {overview.avgMemory.toFixed(0)}%
         </span>
-        <span className="text-[9px] text-muted-foreground">{t('admin.monitor.metrics.memory')}</span>
+        <span className="text-[10px] text-muted-foreground">{t('admin.monitor.metrics.memory')}</span>
       </div>
 
       {/* Download */}
@@ -119,8 +119,8 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-success">
           {formatBitRate(overview.totalNetworkRxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">{t('common.actions.download')}</span>
-        <span className="text-[8px] text-muted-foreground/60 tabular-nums">
+        <span className="text-[10px] text-muted-foreground">{t('common.actions.download')}</span>
+        <span className="text-[10px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkRxBytes)}
         </span>
       </div>
@@ -131,8 +131,8 @@ const MobileStatusHeader = memo(({ overview, isConnected }: { overview: MonitorO
         <span className="text-sm font-bold tabular-nums text-primary">
           {formatBitRate(overview.totalNetworkTxRate, true)}
         </span>
-        <span className="text-[9px] text-muted-foreground">{t('common.actions.upload')}</span>
-        <span className="text-[8px] text-muted-foreground/60 tabular-nums">
+        <span className="text-[10px] text-muted-foreground">{t('common.actions.upload')}</span>
+        <span className="text-[10px] text-muted-foreground/60 tabular-nums">
           {formatBytes(overview.totalNetworkTxBytes)}
         </span>
       </div>
@@ -155,9 +155,9 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
     <div
       onClick={onClick}
       className={cn(
-        'flex items-center gap-2 p-2.5 rounded-xl transition-colors touch-manipulation cursor-pointer',
+        'flex items-center gap-2 p-3 rounded-lg transition-colors touch-manipulation cursor-pointer',
         'active:bg-accent/70 active:scale-[0.98]',
-        isOnline ? 'bg-card' : 'bg-muted/30 opacity-60'
+        isOnline ? 'bg-card' : 'bg-muted/30 opacity-70'
       )}
     >
       {/* Icon with status indicator */}
@@ -183,7 +183,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
       {/* Name and metrics */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {entity.name || entity.id.slice(0, 8)}
           </span>
         </div>
@@ -192,7 +192,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
           <div className="flex items-center gap-3 mt-1">
             {/* CPU mini bar */}
             <div className="flex items-center gap-1 flex-1">
-              <span className="text-[9px] text-muted-foreground w-6">CPU</span>
+              <span className="text-[10px] text-muted-foreground w-6">CPU</span>
               <MicroProgress value={cpuPercent} size="xs" />
               <span className={cn('text-[10px] tabular-nums w-7 text-right', getResourceMutedTextClass(cpuPercent))}>
                 {cpuPercent.toFixed(0)}%
@@ -200,7 +200,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
             </div>
             {/* Memory mini bar */}
             <div className="flex items-center gap-1 flex-1">
-              <span className="text-[9px] text-muted-foreground w-6">MEM</span>
+              <span className="text-[10px] text-muted-foreground w-6">MEM</span>
               <MicroProgress value={memoryPercent} size="xs" />
               <span className={cn('text-[10px] tabular-nums w-7 text-right', getResourceMutedTextClass(memoryPercent))}>
                 {memoryPercent.toFixed(0)}%
@@ -208,7 +208,7 @@ const MobileEntityRow = memo(({ entity, onClick }: { entity: EntityStatus; onCli
             </div>
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {entity.lastSeenAt ? `${t('common.status.offline')} · ${formatRelativeTime(entity.lastSeenAt)}` : t('common.status.offline')}
           </p>
         )}
@@ -256,23 +256,23 @@ const MobileEventLog = memo(({ events, isExpanded, onToggle }: {
   };
 
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className="rounded-lg ring-1 ring-border/60 bg-card overflow-hidden">
       {/* Header */}
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between p-3 cursor-pointer touch-manipulation active:scale-[0.98]"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">{t('admin.monitor.eventLog')}</span>
+          <span className="text-[13px] font-medium text-foreground">{t('admin.monitor.eventLog')}</span>
           <Badge variant="secondary" className="text-[10px] h-5">{events.length}</Badge>
         </div>
         {isExpanded ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
       </button>
 
       {/* Event list */}
-      <div className={cn('border-t border-border/50', isExpanded ? 'max-h-60' : 'max-h-28', 'overflow-hidden')}>
+      <div className={cn('border-t border-border/60', isExpanded ? 'max-h-60' : 'max-h-28', 'overflow-hidden')}>
         <ScrollArea className="h-full">
-          <div className="divide-y divide-border/30">
+          <div className="divide-y divide-border/60">
             {recentEvents.length === 0 ? (
               <div className="py-4 text-center text-xs text-muted-foreground">{t('admin.monitor.noEvents')}</div>
             ) : (
@@ -339,10 +339,10 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('all')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] active:scale-[0.98]',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors touch-manipulation min-h-[44px] active:scale-[0.98]',
               entityFilter === 'all'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted/60 text-muted-foreground'
+                ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+                : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             {t('filter.all')} {entities.length}
@@ -350,10 +350,10 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('node')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1 active:scale-[0.98]',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors touch-manipulation min-h-[44px] flex items-center gap-1 active:scale-[0.98]',
               entityFilter === 'node'
-                ? 'bg-info text-info-foreground'
-                : 'bg-muted/60 text-muted-foreground'
+                ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+                : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             <Server className="size-3" />
@@ -362,10 +362,10 @@ export const MonitorMobileView = memo(({
           <button
             onClick={() => setEntityFilter('agent')}
             className={cn(
-              'px-3 py-1.5 rounded-full text-xs font-medium transition-colors touch-manipulation min-h-[32px] flex items-center gap-1 active:scale-[0.98]',
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors touch-manipulation min-h-[44px] flex items-center gap-1 active:scale-[0.98]',
               entityFilter === 'agent'
-                ? 'bg-relay text-white'
-                : 'bg-muted/60 text-muted-foreground'
+                ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+                : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             <Cpu className="size-3" />
@@ -403,8 +403,8 @@ export const MonitorMobileView = memo(({
       </div>
 
       {/* Entity list */}
-      <div className="glass rounded-2xl overflow-hidden">
-        <div className="divide-y divide-border/30">
+      <div className="rounded-lg ring-1 ring-border/60 bg-card overflow-hidden">
+        <div className="divide-y divide-border/60">
           {filteredEntities.length === 0 ? (
             <div className="py-8 text-center">
               <Activity className="size-8 text-muted-foreground/30 mx-auto mb-2" />

@@ -12,6 +12,8 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { usePageTitle } from '@/shared/hooks';
@@ -195,7 +197,7 @@ export function UserManagementPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobileUserManagement
             users={users}
             loading={isLoading}
@@ -255,14 +257,11 @@ export function UserManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header */}
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">{t('admin.users.title')}</h1>
-          <span className="text-xs text-muted-foreground/70 tabular-nums">
-            {pagination.total} {t('admin.users.usersLabel')}
-          </span>
-        </div>
+      <div className={adminContentStyles.desktop}>
+        {/* Stats Overview Strip */}
+        <PageToolbar>
+          <StatsPill>{pagination.total} {t('admin.users.usersLabel')}</StatsPill>
+        </PageToolbar>
 
         {/* Search-first Filter Bar with Actions */}
         <UserFilters

@@ -108,7 +108,7 @@ export function MobileListToolbar<T extends string = string>({
         <div
           className={cn(
             'relative flex-1 min-w-0',
-            'transition-all duration-200'
+            'transition-all duration-150'
           )}
         >
           <Search
@@ -127,10 +127,10 @@ export function MobileListToolbar<T extends string = string>({
             onBlur={() => setIsSearchFocused(false)}
             placeholder={searchPlaceholder}
             className={cn(
-              'w-full h-10 pl-9 pr-9',
+              'w-full h-11 pl-9 pr-9',
               // Use text-base (16px) to prevent iOS auto-zoom on focus
               'text-base sm:text-sm text-foreground placeholder:text-muted-foreground',
-              'bg-background border border-input rounded-xl',
+              'bg-background ring-1 ring-border/60 rounded-lg',
               'transition-shadow duration-150',
               'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
               // Touch optimization
@@ -143,7 +143,7 @@ export function MobileListToolbar<T extends string = string>({
               onClick={handleClear}
               className={cn(
                 'absolute right-2 top-1/2 -translate-y-1/2',
-                'p-1 rounded-full',
+                'p-1.5 rounded-full',
                 'hover:bg-muted active:bg-muted/80',
                 'transition-colors'
               )}
@@ -163,7 +163,7 @@ export function MobileListToolbar<T extends string = string>({
             onClick={onRefresh}
             disabled={refreshing}
             className={cn(
-              'size-10 rounded-xl shrink-0',
+              'size-10 rounded-lg shrink-0',
               'flex items-center justify-center',
               'border border-input bg-background',
               'hover:bg-muted active:bg-muted/80 active:scale-[0.98]',
@@ -187,7 +187,7 @@ export function MobileListToolbar<T extends string = string>({
             type="button"
             onClick={onCreate}
             className={cn(
-              'size-10 rounded-xl shrink-0',
+              'size-10 rounded-lg shrink-0',
               'flex items-center justify-center',
               'bg-primary text-primary-foreground',
               'hover:bg-primary/90 active:bg-primary/80 active:scale-[0.98]',
@@ -226,7 +226,7 @@ export function MobileListToolbar<T extends string = string>({
                 onClick={() => onFilterChange?.(option.value)}
                 className={cn(
                   'inline-flex items-center gap-1.5 shrink-0',
-                  'px-3 py-1.5 rounded-full text-sm font-medium',
+                  'px-3 py-1.5 rounded-full text-xs font-medium',
                   'whitespace-nowrap',
                   'transition-all duration-150 active:scale-[0.98]',
                   // Touch optimization

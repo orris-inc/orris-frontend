@@ -59,10 +59,11 @@ export function MobileListActionBar({
         onClick={onRefresh}
         disabled={refreshing}
         className={cn(
-          'size-10 rounded-xl shrink-0',
+          'size-11 rounded-lg shrink-0',
           'flex items-center justify-center',
           'border border-input bg-background',
-          'hover:bg-muted transition-colors active:scale-[0.98]',
+          'hover:bg-muted transition-colors motion-reduce:transition-none',
+          'active:scale-[0.98] motion-reduce:active:scale-100',
           'disabled:opacity-50'
         )}
         title={createLabel}
@@ -76,10 +77,11 @@ export function MobileListActionBar({
           type="button"
           onClick={onCreate}
           className={cn(
-            'size-10 rounded-xl shrink-0',
+            'size-11 rounded-lg shrink-0',
             'flex items-center justify-center',
             'bg-primary text-primary-foreground',
-            'hover:bg-primary/90 transition-colors active:scale-[0.98]'
+            'hover:bg-primary/90 transition-colors motion-reduce:transition-none',
+            'active:scale-[0.98] motion-reduce:active:scale-100'
           )}
           title={createLabel}
         >

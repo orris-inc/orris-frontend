@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import {
   CreditCard,
   HardDrive,
+  Monitor,
   User as UserIcon,
   Calendar,
 } from 'lucide-react';
@@ -70,10 +71,10 @@ export const MobileSubscriptionCard = ({
         {/* Row 1: User Name + Plan */}
         <div className="flex items-center gap-2 mb-1">
           <UserIcon className="size-3.5 text-muted-foreground shrink-0" />
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {userDisplayName}
           </span>
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <CreditCard className="size-3" />
             <span className="truncate max-w-[100px]">
@@ -94,7 +95,15 @@ export const MobileSubscriptionCard = ({
             <span className="tabular-nums">{subscription.endDate && !isNeverExpiresDate(subscription.endDate) ? formatDate(subscription.endDate) : t('common.fields.neverExpires')}</span>
           </div>
 
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
+          <div className="flex items-center gap-1">
+            <Monitor className="size-3" />
+            <span className="tabular-nums">
+              {subscription.onlineDeviceCount} / {subscription.deviceLimit === 0 ? '∞' : subscription.deviceLimit}
+            </span>
+          </div>
+
+          <span className="text-muted-foreground/40">·</span>
           <div className="flex items-center gap-1">
             <HardDrive className="size-3" />
             <span className="tabular-nums">
@@ -107,7 +116,7 @@ export const MobileSubscriptionCard = ({
       {/* Right side: Status */}
       <AdminBadge
         variant={statusConfig.variant}
-        className="text-[10px] px-1.5 py-0 shrink-0"
+        className="text-[10px] shrink-0"
       >
         {t(statusConfig.labelKey)}
       </AdminBadge>

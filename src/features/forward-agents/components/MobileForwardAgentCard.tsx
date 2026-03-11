@@ -15,8 +15,9 @@ import {
   ArrowUpCircle,
   Network,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
+import { AdminBadge } from '@/components/admin';
+import { OnlineIndicator } from '@/components/mobile/admin/OnlineIndicator';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardAgent } from '@/api/forward';
 
@@ -29,75 +30,11 @@ export interface MobileForwardAgentCardProps {
   onCardPress: (agent: ForwardAgent) => void;
 }
 
-// ============================================================================
-// Sub Components
-// ============================================================================
-
-/**
- * Online status indicator - compact dot with optional label
- */
-const OnlineIndicator = memo(({
-  isOnline,
-  showLabel = true,
-  t,
-}: {
-  isOnline: boolean;
-  showLabel?: boolean;
-  t: (key: string) => string;
-}) => {
-  if (isOnline) {
-    return (
-      <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-success" />
-        {showLabel && (
-          <span className="text-xs text-success font-medium">{t('common.status.online')}</span>
-        )}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="size-2 rounded-full bg-muted-foreground/40" />
-      {showLabel && (
-        <span className="text-xs text-muted-foreground">{t('common.status.offline')}</span>
-      )}
-    </span>
-  );
-});
-
-OnlineIndicator.displayName = 'OnlineIndicator';
-
-/**
- * Status badge - enabled/disabled indicator
- */
-const StatusBadge = memo(({
-  status,
-  t,
-}: {
-  status: string;
-  t: (key: string) => string;
-}) => {
-  const config = ENABLED_STATUS_CONFIG[status] || {
-    labelKey: 'common.status.unknown',
-    variant: 'default' as const,
-  };
-  const colorClass = status === 'enabled'
-    ? 'bg-success/10 text-success'
-    : 'bg-muted text-muted-foreground';
-
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-        colorClass
-      )}
-    >
-      {t(config.labelKey)}
-    </span>
-  );
-});
-
-StatusBadge.displayName = 'StatusBadge';
+// Status badge variant mapping
+const STATUS_VARIANT_MAP: Record<string, 'default' | 'success'> = {
+  enabled: 'success',
+  disabled: 'default',
+};
 
 // ============================================================================
 // Main Component
@@ -126,10 +63,10 @@ export const MobileForwardAgentCard = memo(({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + Online status + Update indicator */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {agent.name}
           </span>
-          <OnlineIndicator isOnline={agent.isOnline} showLabel={false} t={t} />
+          <OnlineIndicator isOnline={agent.isOnline} showLabel={false} onlineText={t('common.status.online')} offlineText={t('common.status.offline')} />
           {agent.hasUpdate && agent.isOnline && (
             <ArrowUpCircle className="size-3.5 text-warning shrink-0" />
           )}
@@ -144,14 +81,14 @@ export const MobileForwardAgentCard = memo(({
 
           {agent.agentVersion && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground/40">·</span>
               <span className="shrink-0">v{agent.agentVersion}</span>
             </>
           )}
 
           {agent.isOnline && agent.systemStatus && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground/40">·</span>
               <span className="flex items-center gap-0.5">
                 <Activity className="size-3" />
                 <span className="tabular-nums">
@@ -164,7 +101,12 @@ export const MobileForwardAgentCard = memo(({
       </div>
 
       {/* Right side: Status */}
-      <StatusBadge status={agent.status} t={t} />
+      <AdminBadge
+        variant={STATUS_VARIANT_MAP[agent.status] || 'default'}
+        className="text-[10px] shrink-0"
+      >
+        {t((ENABLED_STATUS_CONFIG[agent.status] || { labelKey: 'common.status.unknown' }).labelKey)}
+      </AdminBadge>
     </div>
   );
 });

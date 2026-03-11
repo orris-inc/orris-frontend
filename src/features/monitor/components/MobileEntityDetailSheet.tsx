@@ -103,7 +103,7 @@ const ProgressRing = memo(({
         </svg>
         {/* Center value */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={cn('text-lg font-bold tabular-nums', getResourceTextClass(value))}>
+          <span className={cn('text-lg font-semibold tabular-nums', getResourceTextClass(value))}>
             {value.toFixed(0)}%
           </span>
         </div>
@@ -132,12 +132,12 @@ const MetricItem = memo(({
   subValue?: string;
 }) => (
   <div className="flex items-center gap-3 py-2.5 min-h-[44px]">
-    <div className="p-2 rounded-xl bg-muted/50 shrink-0">
+    <div className="p-2 rounded-lg bg-muted/50 shrink-0">
       {icon}
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className={cn('text-sm font-semibold tabular-nums truncate', valueClass || 'text-foreground')}>
+      <p className={cn('text-[13px] font-semibold tabular-nums truncate', valueClass || 'text-foreground')}>
         {value ?? '-'}
       </p>
     </div>
@@ -163,7 +163,7 @@ const CollapsibleSection = memo(({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="glass rounded-2xl overflow-hidden">
+    <div className="rounded-lg ring-1 ring-border/60 bg-card overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 p-4 min-h-[52px] cursor-pointer touch-manipulation active:scale-[0.98]"
@@ -171,7 +171,7 @@ const CollapsibleSection = memo(({
         <div className="p-1.5 rounded-lg bg-muted/50">
           {icon}
         </div>
-        <span className="flex-1 text-left text-sm font-semibold text-foreground">{title}</span>
+        <span className="flex-1 text-left text-[13px] font-semibold text-foreground">{title}</span>
         <ChevronRight
           className={cn(
             'size-4 text-muted-foreground transition-transform duration-200',
@@ -213,19 +213,19 @@ const NetworkSpeedCard = memo(({
     total: string;
   };
 }) => (
-  <div className="glass rounded-2xl p-4">
+  <div className="rounded-lg ring-1 ring-border/60 bg-card p-4">
     <div className="flex items-center gap-2 mb-3">
       <Network className="size-4 text-muted-foreground" />
-      <span className="text-sm font-semibold text-foreground">{labels.title}</span>
+      <span className="text-[13px] font-semibold text-foreground">{labels.title}</span>
     </div>
     <div className="grid grid-cols-2 gap-4">
       {/* Download */}
-      <div className="p-3 rounded-xl bg-success/10 border border-success/20">
+      <div className="p-3 rounded-lg bg-success/10 border border-success/20">
         <div className="flex items-center gap-1.5 mb-1">
           <ArrowDown className="size-4 text-success" />
           <span className="text-xs text-muted-foreground">{labels.download}</span>
         </div>
-        <p className="text-lg font-bold text-success tabular-nums">
+        <p className="text-lg font-semibold text-success tabular-nums">
           {formatBitRate(rxRate)}
         </p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -233,12 +233,12 @@ const NetworkSpeedCard = memo(({
         </p>
       </div>
       {/* Upload */}
-      <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
         <div className="flex items-center gap-1.5 mb-1">
           <ArrowUp className="size-4 text-primary" />
           <span className="text-xs text-muted-foreground">{labels.upload}</span>
         </div>
-        <p className="text-lg font-bold text-primary tabular-nums">
+        <p className="text-lg font-semibold text-primary tabular-nums">
           {formatBitRate(txRate)}
         </p>
         <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -330,7 +330,7 @@ export const MobileEntityDetailSheet = memo(({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cn(
-                'p-2.5 rounded-xl',
+                'p-2.5 rounded-lg',
                 entity.type === 'node'
                   ? isOnline ? 'bg-info/15' : 'bg-muted'
                   : isOnline ? 'bg-primary/15' : 'bg-muted'
@@ -368,7 +368,7 @@ export const MobileEntityDetailSheet = memo(({
               <button
                 onClick={() => onOpenChange(false)}
                 className={cn(
-                  'size-8 flex items-center justify-center rounded-full',
+                  'size-11 flex items-center justify-center rounded-full',
                   'bg-muted/80 active:bg-muted',
                   'text-muted-foreground active:text-foreground',
                   'transition-colors duration-150',
@@ -385,7 +385,7 @@ export const MobileEntityDetailSheet = memo(({
           {isOnline && status ? (
             <>
               {/* Resource Rings */}
-              <div className="glass rounded-2xl p-4">
+              <div className="rounded-lg ring-1 ring-border/60 bg-card p-4">
                 <div className="flex justify-around">
                   <ProgressRing
                     value={status.cpuPercent}
@@ -420,7 +420,7 @@ export const MobileEntityDetailSheet = memo(({
               />
 
               {/* Quick Stats */}
-              <div className="glass rounded-2xl p-4 space-y-1">
+              <div className="rounded-lg ring-1 ring-border/60 bg-card p-4 space-y-1">
                 <MetricItem
                   icon={<Clock className="size-4 text-muted-foreground" />}
                   label={t('admin.monitor.uptime')}
@@ -448,7 +448,7 @@ export const MobileEntityDetailSheet = memo(({
                 title={t('admin.monitor.detail.systemInfo')}
                 defaultOpen
               >
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-[13px]">
                   {(status as NodeSystemStatus).publicIpv4 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('admin.monitor.detail.publicIpv4')}</span>
@@ -726,7 +726,7 @@ export const MobileEntityDetailSheet = memo(({
             </>
           ) : (
             /* Offline state */
-            <div className="glass rounded-2xl p-8 text-center">
+            <div className="rounded-lg ring-1 ring-border/60 bg-card p-8 text-center">
               <div className="size-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
                 <WifiOff className="size-8 text-muted-foreground/40" />
               </div>

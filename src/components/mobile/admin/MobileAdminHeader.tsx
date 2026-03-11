@@ -94,7 +94,7 @@ export const MobileAdminHeader = ({
       onClick={handleBack}
       aria-label="Go back"
       className={cn(
-        'flex items-center gap-0.5',
+        'flex items-center gap-1',
         'h-11 min-w-[44px] px-1',
         'text-primary',
         'active:opacity-50',
@@ -102,9 +102,9 @@ export const MobileAdminHeader = ({
         '-ml-2' // Align chevron with edge visually
       )}
     >
-      <ChevronLeft className="size-[28px] -mr-1" strokeWidth={2.5} />
+      <ChevronLeft className="size-7 -mr-1" strokeWidth={2.5} />
       {backLabel && (
-        <span className="text-[17px]">{backLabel}</span>
+        <span className="text-base">{backLabel}</span>
       )}
     </button>
   );
@@ -148,9 +148,9 @@ export const MobileAdminHeader = ({
           <div className="flex-1 flex justify-center min-w-0">
             <h1
               className={cn(
-                'text-[17px] font-semibold leading-tight',
+                'text-base font-semibold leading-tight',
                 'text-foreground truncate',
-                'transition-opacity duration-200 motion-reduce:transition-none'
+                'transition-opacity duration-150 motion-reduce:transition-none'
               )}
               style={{ opacity: standardTitleOpacity }}
             >
@@ -174,7 +174,7 @@ export const MobileAdminHeader = ({
             'border-b border-border/40',
             'px-4 pb-2',
             'overflow-hidden',
-            'transition-[border-color] duration-200'
+            'transition-[border-color] duration-150'
           )}
           style={{
             opacity: largeTitleOpacity,
@@ -186,7 +186,7 @@ export const MobileAdminHeader = ({
         >
           <h1
             className={cn(
-              'text-[34px] font-bold leading-tight',
+              'text-3xl font-bold leading-tight',
               'text-foreground'
             )}
           >

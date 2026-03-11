@@ -139,44 +139,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
           className={cn(
             'fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden md:flex',
             'bg-background',
-            'border-r border-border/60',
             'transition-all duration-200 motion-reduce:transition-none',
             collapsed ? 'w-16' : 'w-60'
           )}
         >
-          {/* Sidebar header */}
-          <div
-            className={cn(
-              'flex h-14 shrink-0 items-center',
-              collapsed ? 'justify-center px-1.5' : 'justify-between px-3'
-            )}
-          >
-            {!collapsed && (
-              <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                {t('nav.admin')}
-              </span>
-            )}
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={cn(
-                'flex items-center justify-center rounded-md',
-                'size-8',
-                'text-muted-foreground/60',
-                'transition-colors motion-reduce:transition-none',
-                'hover:bg-muted hover:text-foreground'
-              )}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {collapsed ? (
-                <ChevronRight className="size-4" />
-              ) : (
-                <ChevronLeft className="size-4" />
-              )}
-            </button>
-          </div>
-
           {/* Navigation menu */}
-          <div className="flex-1 overflow-y-auto py-1">
+          <div className="flex-1 overflow-y-auto pt-3 pb-1">
             <AdminSidebarNav items={adminNavItems} collapsed={collapsed} />
           </div>
 
@@ -185,17 +153,43 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             <SwitchToUserViewLink collapsed={collapsed} />
           </AdminSidebarFooter>
 
+          {/* Collapse toggle - bottom position like reference */}
+          <div className={cn('shrink-0 pb-1', collapsed ? 'px-1.5' : 'px-2')}>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                'group flex items-center rounded-lg w-full',
+                'min-h-[36px]',
+                'text-muted-foreground/60',
+                'transition-colors duration-100',
+                'hover:bg-muted/60 hover:text-foreground',
+                'motion-reduce:transition-none',
+                collapsed ? 'justify-center p-2' : 'gap-3 px-2 py-1.5'
+              )}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed ? (
+                <ChevronRight className="size-[18px] shrink-0" strokeWidth={1.75} />
+              ) : (
+                <>
+                  <ChevronLeft className="size-[18px] shrink-0" strokeWidth={1.75} />
+                  <span className="text-[13px] font-medium whitespace-nowrap">{t('nav.collapseSidebar')}</span>
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Version info */}
           {(serverVersion || clientVersion) && (
             <div
               className={cn(
                 'shrink-0',
-                'py-2.5 text-[10px] text-muted-foreground/40',
+                'py-2.5 text-[10px] text-muted-foreground/60',
                 collapsed ? 'px-2 text-center' : 'px-3'
               )}
             >
               {collapsed ? (
-                <div className="space-y-0.5 font-mono text-[9px]">
+                <div className="space-y-0.5 font-mono text-[10px]">
                   {serverVersion && <div>{serverVersion}</div>}
                   <div>{clientVersion}</div>
                 </div>
@@ -233,9 +227,10 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   className={cn(
                     'flex items-center justify-center',
                     'size-11',
-                    'rounded-full',
-                    'text-foreground',
-                    'active:bg-foreground/10',
+                    'rounded-md',
+                    'text-muted-foreground/60',
+                    'hover:bg-muted/60 hover:text-foreground',
+                    'active:bg-muted',
                     'transition-colors motion-reduce:transition-none'
                   )}
                   onClick={() => setMobileDrawerOpen(true)}
@@ -252,7 +247,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                   className={cn(
                     'text-[17px] font-semibold leading-tight',
                     'text-foreground truncate',
-                    'max-w-[60vw]',
+                    'flex-1 min-w-0',
                     'md:hidden'
                   )}
                 >

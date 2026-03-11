@@ -16,6 +16,8 @@ import { AdminLayout } from '@/layouts/AdminLayout';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useNotificationStore } from '@/shared/stores/notification-store';
@@ -139,7 +141,7 @@ export const AdminAnnouncementsPage: React.FC = () => {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3">
+        <div className={adminContentStyles.mobile}>
           <MobileAnnouncementManagement
             announcements={announcements}
             loading={isLoading || isFetching}
@@ -205,16 +207,10 @@ export const AdminAnnouncementsPage: React.FC = () => {
   // Desktop view - Linear/Vercel style
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header - inline layout */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">{t('announcements.pageTitle')}</h1>
-            <span className="text-xs text-muted-foreground/70 tabular-nums">
-              {pagination.total}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats Overview Strip + Actions */}
+        <PageToolbar
+          actions={<>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -237,8 +233,10 @@ export const AdminAnnouncementsPage: React.FC = () => {
               <Plus className="size-3.5 mr-1" />
               {t('announcements.create.button')}
             </Button>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{pagination.total}</StatsPill>
+        </PageToolbar>
 
         {/* Unified Filters */}
         <AnnouncementFilters filters={filters} onFiltersChange={handleFiltersChange} />

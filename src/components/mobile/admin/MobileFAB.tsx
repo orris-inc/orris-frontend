@@ -41,7 +41,7 @@ export const MobileFAB = ({
         'bg-primary text-primary-foreground',
         'shadow-lg shadow-primary/25',
         'flex items-center justify-center',
-        'active:scale-[0.98] transition-transform',
+        'active:scale-[0.98] transition-transform motion-reduce:transition-none',
         'z-40',
         className
       )}

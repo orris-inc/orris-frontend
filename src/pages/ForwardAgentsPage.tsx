@@ -15,6 +15,8 @@ import {
   X,
 } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { Button } from '@/components/common/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/common/Select';
 import { Switch, SwitchThumb } from '@/components/common/Switch';
@@ -422,7 +424,7 @@ export function ForwardAgentsPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobileForwardAgentManagement
             forwardAgents={forwardAgents}
             loading={isLoading}
@@ -517,30 +519,10 @@ export function ForwardAgentsPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header — inline layout */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('admin.forwardAgents.title')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {detailedStats.total} {t('admin.forwardAgents.agentsUnit')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-success" />
-                {detailedStats.online} {t('common.status.online')}
-              </span>
-              {detailedStats.offline > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-muted-foreground" />
-                  {detailedStats.offline} {t('common.status.offline')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats Overview Strip + Actions */}
+        <PageToolbar
+          actions={<>
             <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
               <Plus className="mr-1 size-3.5" />
               {t('common.actions.create')}
@@ -565,8 +547,14 @@ export function ForwardAgentsPage() {
               </TooltipTrigger>
               <TooltipContent>{t('common.actions.refresh')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{detailedStats.total} {t('admin.forwardAgents.agentsUnit')}</StatsPill>
+          <StatsPill variant="success" dot>{detailedStats.online} {t('common.status.online')}</StatsPill>
+          {detailedStats.offline > 0 && (
+            <StatsPill variant="muted" dot>{detailedStats.offline} {t('common.status.offline')}</StatsPill>
+          )}
+        </PageToolbar>
 
         {/* Filter Bar */}
         <div className="flex flex-wrap items-center gap-2.5">
@@ -578,7 +566,7 @@ export function ForwardAgentsPage() {
               value={filters.name || ''}
               onChange={(e) => handleSearchChange(e.target.value)}
               placeholder={t('admin.forwardAgents.filters.searchAgent')}
-              className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
+              className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-[13px] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
             />
           </div>
 

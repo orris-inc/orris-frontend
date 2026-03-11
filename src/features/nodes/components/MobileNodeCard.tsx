@@ -11,8 +11,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity, ArrowUpCircle, Network, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
+import { AdminBadge } from '@/components/admin';
+import { OnlineIndicator } from '@/components/mobile/admin/OnlineIndicator';
 import type { Node, NodeStatus, NodeProtocol } from '@/api/node';
 
 // ============================================================================
@@ -30,19 +31,19 @@ export interface MobileNodeCardProps {
 
 const STATUS_CONFIG: Record<
   NodeStatus,
-  { labelKey: string; className: string }
+  { labelKey: string; variant: 'default' | 'success' | 'warning' }
 > = {
   active: {
     labelKey: 'common.status.enabled',
-    className: 'bg-success/10 text-success',
+    variant: 'success',
   },
   inactive: {
     labelKey: 'common.status.disabled',
-    className: 'bg-muted text-muted-foreground',
+    variant: 'default',
   },
   maintenance: {
     labelKey: 'common.status.maintenance',
-    className: 'bg-warning/10 text-warning',
+    variant: 'warning',
   },
 };
 
@@ -55,77 +56,6 @@ const PROTOCOL_CONFIG: Record<NodeProtocol, { label: string; color: string }> = 
   tuic: { label: 'TUIC', color: 'text-chart-3' },
   anytls: { label: 'AnyTLS', color: 'text-success' },
 };
-
-// ============================================================================
-// Sub Components
-// ============================================================================
-
-/**
- * Online status indicator - compact dot with optional label
- */
-const OnlineIndicator = memo(({
-  isOnline,
-  showLabel = true,
-  t,
-}: {
-  isOnline: boolean;
-  showLabel?: boolean;
-  t: (key: string) => string;
-}) => {
-  if (isOnline) {
-    return (
-      <span className="inline-flex items-center gap-1">
-        <span className="size-2 rounded-full bg-success" />
-        {showLabel && (
-          <span className="text-xs text-success font-medium">
-            {t('common.status.online')}
-          </span>
-        )}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="size-2 rounded-full bg-muted-foreground/40" />
-      {showLabel && (
-        <span className="text-xs text-muted-foreground">
-          {t('common.status.offline')}
-        </span>
-      )}
-    </span>
-  );
-});
-
-OnlineIndicator.displayName = 'OnlineIndicator';
-
-/**
- * Status badge
- */
-const StatusBadge = memo(({
-  status,
-  t,
-}: {
-  status: NodeStatus;
-  t: (key: string) => string;
-}) => {
-  const config = STATUS_CONFIG[status] || {
-    labelKey: 'common.status.unknown',
-    className: 'bg-muted text-muted-foreground',
-  };
-
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-        config.className
-      )}
-    >
-      {t(config.labelKey)}
-    </span>
-  );
-});
-
-StatusBadge.displayName = 'StatusBadge';
 
 // ============================================================================
 // Main Component
@@ -156,10 +86,10 @@ export const MobileNodeCard = memo(({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + Online status + Update indicator */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {node.name}
           </span>
-          <OnlineIndicator isOnline={node.isOnline} showLabel={false} t={t} />
+          <OnlineIndicator isOnline={node.isOnline} showLabel={false} onlineText={t('common.status.online')} offlineText={t('common.status.offline')} />
           {node.onlineSubscriptionCount > 0 && (
             <span className="inline-flex items-center gap-0.5 text-[10px] text-success font-medium shrink-0">
               <Users className="size-3" strokeWidth={2} />
@@ -178,19 +108,19 @@ export const MobileNodeCard = memo(({
             {node.serverAddress}:{node.agentPort}
           </span>
 
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
           <span className={`shrink-0 font-medium ${protocolConfig.color}`}>{protocolConfig.label}</span>
 
           {node.region && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground/40">·</span>
               <span className="truncate max-w-[60px]">{node.region}</span>
             </>
           )}
 
           {node.isOnline && node.systemStatus && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground/40">·</span>
               <span className="flex items-center gap-0.5">
                 <Activity className="size-3" />
                 <span className="tabular-nums">
@@ -203,7 +133,12 @@ export const MobileNodeCard = memo(({
       </div>
 
       {/* Right side: Status */}
-      <StatusBadge status={node.status} t={t} />
+      <AdminBadge
+        variant={(STATUS_CONFIG[node.status] || { variant: 'default' as const }).variant}
+        className="text-[10px] shrink-0"
+      >
+        {t((STATUS_CONFIG[node.status] || { labelKey: 'common.status.unknown' }).labelKey)}
+      </AdminBadge>
     </div>
   );
 });

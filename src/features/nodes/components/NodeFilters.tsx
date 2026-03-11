@@ -111,7 +111,7 @@ export const NodeFilters = ({
           value={filters.search ?? ''}
           onChange={handleSearchChange}
           placeholder={t('admin.nodes.searchPlaceholder')}
-          className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
+          className="h-8 w-[200px] rounded-lg ring-1 ring-border/60 bg-background pl-8 pr-3 text-[13px] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/20"
         />
       </div>
 

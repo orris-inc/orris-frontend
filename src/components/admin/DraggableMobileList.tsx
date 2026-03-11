@@ -10,7 +10,7 @@
  * - Auto-scroll when dragging near edges
  */
 
-import { useState, useMemo, useCallback, memo, type ReactNode } from 'react';
+import { useState, useMemo, useCallback, useRef, memo, type ReactNode, type RefObject } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -37,13 +37,17 @@ interface SortableItemProps {
   children: ReactNode;
   isDraggingAny: boolean;
   isBeingDragged: boolean;
+  dragEndTimeRef: RefObject<number>;
 }
+
+const CLICK_GUARD_MS = 300;
 
 const SortableItemInner = memo(function SortableItemInner({
   id,
   children,
   isDraggingAny,
   isBeingDragged,
+  dragEndTimeRef,
 }: SortableItemProps) {
   const {
     attributes,
@@ -73,6 +77,13 @@ const SortableItemInner = memo(function SortableItemInner({
         // Smooth transition
         'transition-opacity duration-150 ease-out'
       )}
+      // Block click events right after drag to prevent opening detail sheets
+      onClickCapture={(e) => {
+        if (Date.now() - dragEndTimeRef.current < CLICK_GUARD_MS) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }}
       {...attributes}
       {...listeners}
     >
@@ -132,6 +143,7 @@ export function DraggableMobileList<TData>({
   enabled = true,
 }: DraggableMobileListProps<TData>) {
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const dragEndTimeRef = useRef(0);
 
   const itemIds = useMemo(() => items.map(getItemId), [items, getItemId]);
 
@@ -168,6 +180,7 @@ export function DraggableMobileList<TData>({
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    dragEndTimeRef.current = Date.now();
 
     if (over && active.id !== over.id && onDragEnd) {
       const oldIndex = itemIds.indexOf(String(active.id));
@@ -183,6 +196,7 @@ export function DraggableMobileList<TData>({
 
   const handleDragCancel = useCallback(() => {
     setActiveId(null);
+    dragEndTimeRef.current = Date.now();
   }, []);
 
   const isDraggingAny = activeId !== null;
@@ -216,6 +230,7 @@ export function DraggableMobileList<TData>({
               id={getItemId(item)}
               isDraggingAny={isDraggingAny}
               isBeingDragged={activeId === getItemId(item)}
+              dragEndTimeRef={dragEndTimeRef}
             >
               {renderItem(item, index)}
             </SortableItemInner>

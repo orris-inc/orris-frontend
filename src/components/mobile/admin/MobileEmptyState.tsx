@@ -48,10 +48,10 @@ export const MobileEmptyState = ({
         <Icon className="size-6 text-muted-foreground" />
       </div>
 
-      <h3 className="text-base font-medium text-foreground mb-1">{title}</h3>
+      <h3 className="text-[15px] font-semibold text-foreground mb-1">{title}</h3>
 
       {description && (
-        <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+        <p className="text-xs text-muted-foreground mb-6 max-w-xs">
           {description}
         </p>
       )}
@@ -62,8 +62,8 @@ export const MobileEmptyState = ({
           onClick={action.onClick}
           className={cn(
             'inline-flex items-center gap-2',
-            'px-4 py-2 rounded-xl text-sm font-medium',
-            'transition-colors active:scale-[0.98]',
+            'px-4 py-2 rounded-lg text-[13px] font-medium min-h-[44px]',
+            'transition-colors motion-reduce:transition-none',
             action.variant === 'secondary'
               ? 'bg-muted text-foreground hover:bg-muted/80'
               : 'bg-primary text-primary-foreground hover:bg-primary/90'

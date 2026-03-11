@@ -100,10 +100,10 @@ export const MobilePlanCard = ({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + Price */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {plan.name}
           </span>
-          <span className="font-mono text-sm font-medium text-primary shrink-0">
+          <span className="font-mono text-[13px] font-medium text-primary shrink-0">
             {getPriceDisplay(plan)}
           </span>
         </div>
@@ -116,7 +116,7 @@ export const MobilePlanCard = ({
             <span>{t(typeConfig.labelKey)}</span>
           </span>
 
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
 
           {/* Visibility */}
           <span className={cn(
@@ -139,7 +139,7 @@ export const MobilePlanCard = ({
           {/* Pricing Count */}
           {pricingCount > 1 && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-muted-foreground/40">·</span>
               <span>{t('admin.plans.table.multipleCycles', { count: pricingCount })}</span>
             </>
           )}
@@ -149,7 +149,7 @@ export const MobilePlanCard = ({
       {/* Right side: Status */}
       <AdminBadge
         variant={statusConfig.variant}
-        className="text-[10px] px-1.5 py-0 shrink-0"
+        className="text-[10px] shrink-0"
       >
         {t(statusConfig.labelKey)}
       </AdminBadge>

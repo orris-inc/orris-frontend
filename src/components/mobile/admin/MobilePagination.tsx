@@ -37,10 +37,10 @@ export const MobilePagination = ({
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
         className={cn(
-          'size-10 rounded-full',
+          'size-11 rounded-full',
           'flex items-center justify-center',
           'bg-muted/50',
-          'transition-all',
+          'transition-all motion-reduce:transition-none',
           page <= 1
             ? 'opacity-40'
             : 'active:scale-[0.98] active:bg-muted'
@@ -60,10 +60,10 @@ export const MobilePagination = ({
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
         className={cn(
-          'size-10 rounded-full',
+          'size-11 rounded-full',
           'flex items-center justify-center',
           'bg-muted/50',
-          'transition-all',
+          'transition-all motion-reduce:transition-none',
           page >= totalPages
             ? 'opacity-40'
             : 'active:scale-[0.98] active:bg-muted'

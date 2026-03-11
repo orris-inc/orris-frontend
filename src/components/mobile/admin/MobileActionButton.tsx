@@ -68,8 +68,8 @@ const variantStyles: Record<MobileActionButtonVariant, string> = {
 };
 
 const sizeStyles: Record<MobileActionButtonSize, string> = {
-  sm: 'h-8 px-2 gap-1 text-xs rounded-lg',
-  md: 'h-11 min-h-[44px] px-4 gap-1.5 text-sm rounded-xl',
+  sm: 'h-8 pointer-coarse:h-9 px-2 gap-1 text-xs rounded-lg',
+  md: 'h-11 min-h-[44px] px-4 gap-1.5 text-sm rounded-lg',
 };
 
 // ============================================================================
@@ -98,9 +98,10 @@ export const MobileActionButton = ({
         'inline-flex items-center justify-center',
         'font-medium',
         'transition-all duration-150',
+        'motion-reduce:transition-none',
         'touch-manipulation',
         // Active feedback
-        'active:scale-[0.98]',
+        'active:scale-[0.98] motion-reduce:active:scale-100',
         // Focus
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         // Size styles

@@ -260,7 +260,7 @@ export const DashboardPage = () => {
   if (!user) {
     return (
       <DashboardLayout>
-        <div className="flex items-center gap-3 p-4 bg-destructive/10 ring-1 ring-destructive/20 rounded-xl text-destructive">
+        <div className="flex items-center gap-3 p-4 bg-destructive/10 ring-1 ring-destructive/20 rounded-lg text-destructive">
           <CircleAlert className="size-5" />
           <span>{t('user.dashboard.errorLoadUser')}</span>
         </div>
@@ -355,7 +355,7 @@ export const DashboardPage = () => {
 
               {/* Loading State */}
               {isLoading && (
-                <div className="flex items-center justify-center py-12 bg-card rounded-xl ring-1 ring-border">
+                <div className="flex items-center justify-center py-12 bg-card rounded-lg ring-1 ring-border">
                   <Loader2 className="size-5 animate-spin mr-2 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">{t('common.table.loading')}</span>
                 </div>
@@ -471,7 +471,7 @@ export const DashboardPage = () => {
                   {groupedSubscriptions.active.length === 0 &&
                     groupedSubscriptions.attention.length === 0 &&
                     groupedSubscriptions.history.length > 0 && (
-                      <div className="p-4 bg-muted/50 rounded-xl border border-dashed text-center">
+                      <div className="p-4 bg-muted/50 rounded-lg border border-dashed text-center">
                         <Clock className="size-8 mx-auto mb-2 text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">
                           {t('user.dashboard.groups.noActiveHint')}
@@ -495,7 +495,7 @@ export const DashboardPage = () => {
 
           <aside className="lg:col-span-4 space-y-6">
             {/* Announcements Card */}
-            <section className="rounded-xl ring-1 ring-border bg-card p-4 sm:p-6">
+            <section className="rounded-lg ring-1 ring-border bg-card p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-3">
                 <Bell className="size-4 text-muted-foreground" />
                 <h3 className="text-sm font-medium text-foreground">
@@ -563,7 +563,7 @@ export const DashboardPage = () => {
 
             {/* Quick Actions - Mobile-first full width */}
             {!isLoading && subscriptions.length > 0 && (
-              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+              <section className="grid grid-cols-1 gap-3">
                 <QuickActionLink
                   to="/dashboard/pricing"
                   icon={Sparkles}

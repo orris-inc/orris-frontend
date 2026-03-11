@@ -71,7 +71,7 @@ export function NewAdminDashboardPage() {
   if (!user) {
     return (
       <AdminLayout>
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
           <p className="text-sm text-destructive">{t('admin.dashboard.unableToLoadUser')}</p>
         </div>
       </AdminLayout>
@@ -106,9 +106,8 @@ export function NewAdminDashboardPage() {
   return (
     <AdminLayout>
       <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header — inline layout */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-foreground">{t('admin.dashboard.title')}</h1>
+        {/* Date Range Filter */}
+        <div className="flex items-center justify-end">
           <DateRangeFilter value={dateRangeValue} onChange={setDateRangeValue} />
         </div>
 

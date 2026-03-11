@@ -60,15 +60,15 @@ export const MobileDrawerFooter = ({
   // Icon button base styles
   const iconButtonStyles = cn(
     'flex items-center justify-center',
-    'size-10 rounded-lg',
+    'size-11 rounded-lg',
     'text-muted-foreground',
-    'hover:bg-background/80 hover:text-foreground',
-    'active:bg-background',
-    'transition-colors duration-150'
+    'hover:bg-muted/60 hover:text-foreground',
+    'active:bg-muted/80',
+    'transition-colors duration-150 motion-reduce:transition-none'
   );
 
   return (
-    <div className="shrink-0 border-t border-border bg-muted/40">
+    <div className="shrink-0 border-t border-border pb-[env(safe-area-inset-bottom)]">
       {/* Compact action bar - single row of icon buttons */}
       <div className="flex items-center justify-between px-4 py-2.5">
         {/* Left: Quick settings */}
@@ -121,7 +121,7 @@ export const MobileDrawerFooter = ({
                 <button
                   type="button"
                   onClick={handleAdminClick}
-                  className={cn(iconButtonStyles, 'text-primary hover:text-primary')}
+                  className={iconButtonStyles}
                   aria-label={isAdminView ? t('nav.switchToUser') : t('nav.switchToAdmin')}
                 >
                   {isAdminView ? (

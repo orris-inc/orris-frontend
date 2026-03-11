@@ -42,8 +42,8 @@ export const MobileSearchBar = ({
     <div
       className={cn(
         'relative',
-        isOutline ? 'w-full' : 'flex items-center gap-2 h-10 px-3',
-        !isOutline && 'bg-muted/50 rounded-xl focus-within:bg-muted/70',
+        isOutline ? 'w-full' : 'flex items-center gap-2 h-11 px-3',
+        !isOutline && 'bg-muted/50 rounded-lg focus-within:bg-muted/70',
         'transition-colors',
         disabled && 'opacity-50 pointer-events-none',
         className
@@ -65,11 +65,11 @@ export const MobileSearchBar = ({
         disabled={disabled}
         className={cn(
           'flex-1 min-w-0 bg-transparent',
-          'text-sm text-foreground placeholder:text-muted-foreground',
+          'text-base sm:text-sm text-foreground placeholder:text-muted-foreground',
           'focus:outline-none disabled:cursor-not-allowed',
           isOutline && [
-            'w-full h-10 pl-9 pr-9',
-            'bg-background border border-input rounded-xl',
+            'w-full h-11 pl-9 pr-9',
+            'bg-background ring-1 ring-border/60 rounded-lg',
             'focus:ring-2 focus:ring-ring focus:ring-offset-1',
           ]
         )}
@@ -81,7 +81,7 @@ export const MobileSearchBar = ({
           className={cn(
             'flex items-center justify-center',
             isOutline
-              ? 'absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted'
+              ? 'absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-muted'
               : 'size-5 rounded-full bg-muted-foreground/20'
           )}
         >

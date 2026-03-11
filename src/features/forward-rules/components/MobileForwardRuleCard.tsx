@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
+import { AdminBadge } from '@/components/admin';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import { formatBytesCompact } from '@/shared/utils/format-utils';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
@@ -79,35 +80,10 @@ const RunStatusIndicator = ({
   );
 };
 
-/**
- * Status badge
- */
-const StatusBadge = ({
-  status,
-  t,
-}: {
-  status: 'enabled' | 'disabled';
-  t: (key: string) => string;
-}) => {
-  const config = ENABLED_STATUS_CONFIG[status] || {
-    labelKey: 'common.status.unknown',
-    variant: 'default' as const,
-  };
-
-  const colorClass = status === 'enabled'
-    ? 'bg-success/10 text-success'
-    : 'bg-muted text-muted-foreground';
-
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-        colorClass
-      )}
-    >
-      {t(config.labelKey)}
-    </span>
-  );
+// Status badge variant mapping
+const STATUS_VARIANT_MAP: Record<string, 'default' | 'success'> = {
+  enabled: 'success',
+  disabled: 'default',
 };
 
 // ============================================================================
@@ -162,21 +138,26 @@ export const MobileForwardRuleCard = ({
           >
             {ruleTypeConfig.shortLabel}
           </span>
-          <span className="text-sm font-medium text-foreground truncate">
+          <span className="text-[13px] font-medium text-foreground truncate">
             {rule.name}
           </span>
           <RunStatusIndicator status={runStatus} isPolling={isPolling} />
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{t(ruleTypeConfig.labelKey)}</span>
-          <span className="text-border">·</span>
+          <span className="text-muted-foreground/40">·</span>
           <span>{protocolLabel}</span>
         </div>
       </div>
 
       {/* Right: Status + Traffic pills */}
       <div className="flex flex-col items-end gap-1.5 shrink-0">
-        <StatusBadge status={rule.status} t={t} />
+        <AdminBadge
+          variant={STATUS_VARIANT_MAP[rule.status] || 'default'}
+          className="text-[10px] shrink-0"
+        >
+          {t((ENABLED_STATUS_CONFIG[rule.status] || { labelKey: 'common.status.unknown' }).labelKey)}
+        </AdminBadge>
         {(rule.uploadBytes > 0 || rule.downloadBytes > 0) && (
           <span className="inline-flex items-center gap-2 px-2 py-0.5 rounded-full bg-muted/50 text-[11px] font-mono tabular-nums">
             <span className={cn(

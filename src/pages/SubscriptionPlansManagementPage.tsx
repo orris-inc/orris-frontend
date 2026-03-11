@@ -10,6 +10,8 @@ import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -168,7 +170,7 @@ export function SubscriptionPlansManagementPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobilePlanManagement
             plans={plans}
             loading={isLoading}
@@ -225,40 +227,10 @@ export function SubscriptionPlansManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('admin.plans.pageTitle')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {stats.total} {t('admin.plans.plans')}
-              </span>
-            </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-success" />
-                {stats.active} {t('common.status.enabled')}
-              </span>
-              {stats.inactive > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-muted-foreground" />
-                  {stats.inactive} {t('common.status.disabled')}
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-info" />
-                {stats.publicPlans} {t('admin.plans.public')}
-              </span>
-              {stats.privatePlans > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-warning" />
-                  {stats.privatePlans} {t('admin.plans.private')}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats + Actions */}
+        <PageToolbar
+          actions={<>
             <Button onClick={handleCreate} size="sm" className="h-8 text-[13px]">
               <Plus className="mr-1 size-3.5" />
               {t('admin.plans.createPlan')}
@@ -271,8 +243,18 @@ export function SubscriptionPlansManagementPage() {
               </TooltipTrigger>
               <TooltipContent>{t('admin.plans.refreshList')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          </>}
+        >
+          <StatsPill>{stats.total} {t('admin.plans.plans')}</StatsPill>
+          <StatsPill variant="success" dot>{stats.active} {t('common.status.enabled')}</StatsPill>
+          {stats.inactive > 0 && (
+            <StatsPill variant="muted" dot>{stats.inactive} {t('common.status.disabled')}</StatsPill>
+          )}
+          <StatsPill variant="info" dot>{stats.publicPlans} {t('admin.plans.public')}</StatsPill>
+          {stats.privatePlans > 0 && (
+            <StatsPill variant="warning" dot>{stats.privatePlans} {t('admin.plans.private')}</StatsPill>
+          )}
+        </PageToolbar>
 
         {/* Filters */}
         <PlanFilters

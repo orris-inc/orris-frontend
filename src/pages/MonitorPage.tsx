@@ -76,7 +76,7 @@ export const MonitorPage = () => {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="px-3 py-3">
+        <div className="px-3 py-3 pb-safe">
           <MonitorMobileView
             overview={overview}
             entities={allEntities}
@@ -91,14 +91,14 @@ export const MonitorPage = () => {
   // Desktop view
   return (
     <AdminLayout>
-      <div className="py-3 space-y-3">
+      <div className="py-3 space-y-3 pb-safe">
         {/* High-Density Status Bar - All metrics inline */}
         <header className={cn(cardStyles, 'px-3 py-2')}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-4">
             {/* Left: Title + Connection + Entity counts */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className={`size-2 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
+                <div className={cn('size-2 rounded-full', isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground')} />
                 <h1 className="text-sm font-semibold text-foreground">{t('nav.liveMonitor')}</h1>
               </div>
               <div className="h-4 w-px bg-border" />
@@ -114,35 +114,35 @@ export const MonitorPage = () => {
               </div>
             </div>
 
-            {/* Center: Resource metrics */}
-            <div className="flex items-center gap-4 text-xs">
+            {/* Center: Resource metrics - hidden on md, visible on lg+ */}
+            <div className="hidden lg:flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <Activity className="size-3 text-muted-foreground" />
                 <span className="text-muted-foreground">{t('admin.monitor.cpu')}</span>
-                <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgCpu)}`}>
+                <span className={cn('font-semibold tabular-nums', getStatusColor(overview.avgCpu))}>
                   {overview.avgCpu.toFixed(0)}%
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Cpu className="size-3 text-muted-foreground" />
                 <span className="text-muted-foreground">{t('admin.monitor.memory')}</span>
-                <span className={`font-semibold tabular-nums ${getStatusColor(overview.avgMemory)}`}>
+                <span className={cn('font-semibold tabular-nums', getStatusColor(overview.avgMemory))}>
                   {overview.avgMemory.toFixed(0)}%
                 </span>
               </div>
             </div>
 
-            {/* Right: Network metrics */}
-            <div className="flex items-center gap-4 text-xs">
+            {/* Right: Network metrics - hidden on md, visible on lg+ */}
+            <div className="hidden lg:flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <ArrowDown className="size-3 text-success" />
                 <span className="font-semibold tabular-nums text-success">{formatBitRate(overview.totalNetworkRxRate)}</span>
-                <span className="text-muted-foreground/60 hidden lg:inline">({formatBytes(overview.totalNetworkRxBytes)})</span>
+                <span className="text-muted-foreground/60 hidden xl:inline">({formatBytes(overview.totalNetworkRxBytes)})</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ArrowUp className="size-3 text-primary" />
                 <span className="font-semibold tabular-nums text-primary">{formatBitRate(overview.totalNetworkTxRate)}</span>
-                <span className="text-muted-foreground/60 hidden lg:inline">({formatBytes(overview.totalNetworkTxBytes)})</span>
+                <span className="text-muted-foreground/60 hidden xl:inline">({formatBytes(overview.totalNetworkTxBytes)})</span>
               </div>
             </div>
           </div>

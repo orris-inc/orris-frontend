@@ -70,9 +70,9 @@ export const MobileDataCard = ({
 
   // Card container classes - iOS 26 Liquid Glass style
   const cardClasses = cn(
-    'bg-card/60 backdrop-blur-sm',
-    'rounded-2xl',
-    'border border-border/50',
+    'bg-card',
+    'rounded-lg',
+    'ring-1 ring-border/60',
     'overflow-hidden',
     className
   );

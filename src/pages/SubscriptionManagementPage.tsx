@@ -8,6 +8,8 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RefreshCw } from 'lucide-react';
 import { AdminLayout } from '@/layouts/AdminLayout';
+import { StatsPill, PageToolbar } from '@/components/admin';
+import { adminContentStyles } from '@/lib/ui-styles';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
@@ -312,7 +314,7 @@ export function SubscriptionManagementPage() {
   if (isMobile) {
     return (
       <AdminLayout>
-        <div className="py-3 pb-safe">
+        <div className={adminContentStyles.mobile}>
           <MobileSubscriptionManagement
             subscriptions={subscriptions}
             usersMap={usersMap}
@@ -396,44 +398,10 @@ export function SubscriptionManagementPage() {
   // Desktop layout
   return (
     <AdminLayout>
-      <div className="space-y-4 py-4 pb-safe lg:py-5">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-foreground">{t('admin.subscriptions.pageTitle')}</h1>
-              <span className="text-xs font-medium text-muted-foreground/70 tabular-nums">
-                {pagination.total} {t('admin.subscriptions.label')}
-              </span>
-            </div>
-            {subs && (
-              <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-success" />
-                  {subs.active} {t('common.status.enabled')}
-                </span>
-                {subs.suspended > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-warning" />
-                    {subs.suspended} {t('common.status.suspended')}
-                  </span>
-                )}
-                {subs.expired > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-muted-foreground" />
-                    {subs.expired} {t('common.status.expired')}
-                  </span>
-                )}
-                {subs.expiringIn7Days > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-destructive" />
-                    {subs.expiringIn7Days} {t('admin.subscriptions.expiringSoon')}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5">
+      <div className={adminContentStyles.desktop}>
+        {/* Stats + Actions */}
+        <PageToolbar
+          actions={
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" className="size-8 text-muted-foreground/60 hover:text-foreground" onClick={handleRefresh}>
@@ -442,8 +410,24 @@ export function SubscriptionManagementPage() {
               </TooltipTrigger>
               <TooltipContent>{t('admin.subscriptions.refreshList')}</TooltipContent>
             </Tooltip>
-          </div>
-        </div>
+          }
+        >
+          <StatsPill>{pagination.total} {t('admin.subscriptions.label')}</StatsPill>
+          {subs && (
+            <>
+              <StatsPill variant="success" dot>{subs.active} {t('common.status.enabled')}</StatsPill>
+              {subs.suspended > 0 && (
+                <StatsPill variant="warning" dot>{subs.suspended} {t('common.status.suspended')}</StatsPill>
+              )}
+              {subs.expired > 0 && (
+                <StatsPill variant="muted" dot>{subs.expired} {t('common.status.expired')}</StatsPill>
+              )}
+              {subs.expiringIn7Days > 0 && (
+                <StatsPill variant="destructive" dot>{subs.expiringIn7Days} {t('admin.subscriptions.expiringSoon')}</StatsPill>
+              )}
+            </>
+          )}
+        </PageToolbar>
 
         {/* Filters */}
         <SubscriptionFilters filters={filters} onFiltersChange={handleFiltersChange} />
