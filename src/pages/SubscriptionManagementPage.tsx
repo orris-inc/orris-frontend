@@ -33,7 +33,6 @@ import { ChangePlanDialog } from '@/features/subscriptions/components/ChangePlan
 import { ChangePlanSheet } from '@/features/subscriptions/components/ChangePlanSheet';
 import { MobileSubscriptionManagement } from '@/features/subscriptions/components/MobileSubscriptionManagement';
 import { SubscriptionFilters } from '@/features/subscriptions/components/SubscriptionFilters';
-import { useDashboardStats } from '@/features/admin-traffic/hooks/useDashboardStats';
 import {
   adminCreateSubscription,
   adminUpdateSubscriptionStatus,
@@ -80,6 +79,7 @@ export function SubscriptionManagementPage() {
   const {
     subscriptions,
     pagination,
+    statusCounts,
     isLoading,
     isFetching,
     refetch,
@@ -96,9 +96,6 @@ export function SubscriptionManagementPage() {
   const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Global subscription stats from dashboard API
-  const { dashboard } = useDashboardStats();
-  const subs = dashboard?.subscriptions;
 
   // Dialog handlers
   const openDialog = useCallback((type: DialogType, subscription?: Subscription) => {
@@ -413,17 +410,17 @@ export function SubscriptionManagementPage() {
           }
         >
           <StatsPill>{pagination.total} {t('admin.subscriptions.label')}</StatsPill>
-          {subs && (
+          {statusCounts && (
             <>
-              <StatsPill variant="success" dot>{subs.active} {t('common.status.enabled')}</StatsPill>
-              {subs.suspended > 0 && (
-                <StatsPill variant="warning" dot>{subs.suspended} {t('common.status.suspended')}</StatsPill>
+              <StatsPill variant="success" dot>{statusCounts.active} {t('common.status.enabled')}</StatsPill>
+              {statusCounts.suspended > 0 && (
+                <StatsPill variant="warning" dot>{statusCounts.suspended} {t('common.status.suspended')}</StatsPill>
               )}
-              {subs.expired > 0 && (
-                <StatsPill variant="muted" dot>{subs.expired} {t('common.status.expired')}</StatsPill>
+              {statusCounts.expired > 0 && (
+                <StatsPill variant="muted" dot>{statusCounts.expired} {t('common.status.expired')}</StatsPill>
               )}
-              {subs.expiringIn7Days > 0 && (
-                <StatsPill variant="destructive" dot>{subs.expiringIn7Days} {t('admin.subscriptions.expiringSoon')}</StatsPill>
+              {statusCounts.expiringIn7Days > 0 && (
+                <StatsPill variant="destructive" dot>{statusCounts.expiringIn7Days} {t('admin.subscriptions.expiringSoon')}</StatsPill>
               )}
             </>
           )}

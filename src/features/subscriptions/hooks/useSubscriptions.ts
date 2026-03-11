@@ -10,11 +10,11 @@ import { queryKeys } from '@/shared/lib/query-client';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { handleApiError } from '@/shared/lib/axios';
 import {
-  adminListSubscriptions,
   adminCreateSubscription,
   adminChangeSubscriptionPlan,
   adminGetSubscription,
 } from '@/api/subscription';
+import { listAdminSubscriptionsWithCounts } from '@/api/admin';
 import {
   listTokens,
   generateToken,
@@ -33,10 +33,10 @@ import type {
   SubscriptionStatus,
   GenerateTokenRequest,
   ListTokensParams,
-  AdminListSubscriptionsParams,
   AdminCreateSubscriptionRequest,
   AdminChangePlanRequest,
 } from '@/api/subscription/types';
+import type { SubscriptionStatusCounts, AdminSubscriptionListParams } from '@/api/admin/types';
 import type { UserResponse } from '@/api/user/types';
 
 export interface SubscriptionFilters {
@@ -63,7 +63,6 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
   const { showSuccess, showError } = useNotificationStore();
 
   // Build query parameters
-  // Note: Backend supports extended params (planId, billingCycle, etc.) but types.ts not yet updated
   const params = {
     page,
     pageSize,
@@ -74,9 +73,9 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     expiresBefore: filters.expiresBefore,
     sortBy: filters.sortBy,
     sortOrder: filters.sortOrder,
-  } as AdminListSubscriptionsParams;
+  } as AdminSubscriptionListParams;
 
-  // Query subscription list
+  // Query subscription list with status counts (single request optimization)
   const {
     data,
     isLoading,
@@ -84,8 +83,8 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
     error,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.subscriptions.list(params),
-    queryFn: () => adminListSubscriptions(params),
+    queryKey: [...queryKeys.subscriptions.list(params), 'withCounts'],
+    queryFn: () => listAdminSubscriptionsWithCounts(params),
     enabled,
   });
 
@@ -116,13 +115,15 @@ export const useSubscriptions = (options: UseSubscriptionsOptions = {}) => {
 
   return {
     // Data
-    subscriptions: data?.items ?? [],
+    // AdminSubscriptionDTO is structurally compatible with Subscription at runtime
+    subscriptions: (data?.items ?? []) as unknown as Subscription[],
     pagination: {
       page: data?.page ?? page,
       pageSize: data?.pageSize ?? pageSize,
       total: data?.total ?? 0,
       totalPages: data?.totalPages ?? 0,
     },
+    statusCounts: data?.statusCounts as SubscriptionStatusCounts | undefined,
 
     // State
     isLoading,
@@ -344,11 +345,11 @@ export const useSubscriptionsPage = () => {
         expiresBefore: filters.expiresBefore,
         sortBy: filters.sortBy,
         sortOrder: filters.sortOrder,
-      } as AdminListSubscriptionsParams;
+      } as AdminSubscriptionListParams;
 
       queryClient.prefetchQuery({
-        queryKey: queryKeys.subscriptions.list(params),
-        queryFn: () => adminListSubscriptions(params),
+        queryKey: [...queryKeys.subscriptions.list(params), 'withCounts'],
+        queryFn: () => listAdminSubscriptionsWithCounts(params),
         staleTime: 5 * 60 * 1000,
       });
     },
