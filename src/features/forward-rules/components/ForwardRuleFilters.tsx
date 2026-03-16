@@ -19,7 +19,7 @@ import { Switch, SwitchThumb } from '@/components/common/Switch';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { cn } from '@/lib/utils';
-import type { ForwardRuleFilters as ForwardRuleFiltersType } from '../hooks/useForwardRules';
+import type { ForwardRuleFilters as ForwardRuleFiltersType, ForwardRuleGroupBy } from '../hooks/useForwardRules';
 
 // ============================================================================
 // Types
@@ -37,6 +37,9 @@ export interface ForwardRuleFiltersProps {
   dragSortEnabled?: boolean;
   onDragSortChange?: (enabled: boolean) => void;
   isReordering?: boolean;
+  /** Group by option */
+  groupBy?: ForwardRuleGroupBy;
+  onGroupByChange?: (groupBy: ForwardRuleGroupBy) => void;
   className?: string;
 }
 
@@ -70,6 +73,8 @@ export const ForwardRuleFilters = ({
   dragSortEnabled = false,
   onDragSortChange,
   isReordering = false,
+  groupBy = 'none',
+  onGroupByChange,
   className,
 }: ForwardRuleFiltersProps) => {
   const { t } = useTranslation();
@@ -158,6 +163,20 @@ export const ForwardRuleFilters = ({
           ))}
         </SelectContent>
       </Select>
+
+      {/* Group by filter */}
+      {onGroupByChange && (
+        <Select value={groupBy} onValueChange={(v) => onGroupByChange(v as ForwardRuleGroupBy)}>
+          <SelectTrigger className="w-[110px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">{t('admin.forwardRules.groupBy.none')}</SelectItem>
+            <SelectItem value="agent">{t('admin.forwardRules.groupBy.agent')}</SelectItem>
+            <SelectItem value="ruleType">{t('admin.forwardRules.groupBy.ruleType')}</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Vertical divider */}
       <div className="h-5 w-px bg-border/60" />

@@ -1341,6 +1341,17 @@
       "rulesUnit": "条规则",
       "userRules": "用户规则",
       "dragSort": "拖拽排序",
+      "groupBy": {
+        "label": "分组",
+        "none": "不分组",
+        "agent": "按隧道",
+        "ruleType": "按类型"
+      },
+      "groupHeader": {
+        "rulesCount": "{{count}} 条规则",
+        "totalTraffic": "总流量",
+        "unknownAgent": "未知隧道"
+      },
       "refreshList": "刷新列表",
       "batchCreate": "批量创建",
       "batchCreateJson": "批量创建 (JSON)",
@@ -1550,6 +1561,11 @@
         "bindIp": "绑定IP",
         "bindIpPlaceholder": "例如：0.0.0.0",
         "bindIpHint": "留空绑定所有接口",
+        "addressPreference": "地址偏好",
+        "addressPreferenceHint": "选择下一跳连接使用的代理地址",
+        "addressPreferenceAuto": "自动（隧道 > 公网）",
+        "addressPreferencePublic": "公网地址",
+        "addressPreferenceTunnel": "隧道地址",
         "trafficMultiplier": "流量倍率",
         "trafficMultiplierAutoHint": "留空使用自动倍率",
         "trafficMultiplierHint": "流量将按此值倍率计费",

@@ -116,6 +116,12 @@ const TUNNEL_TYPE_LABELS: Record<TunnelType, string> = {
   tls_smux: 'TLS + SMUX',
 };
 
+const ADDRESS_PREFERENCE_LABEL_KEYS: Record<string, string> = {
+  auto: 'admin.forwardRules.form.addressPreferenceAuto',
+  public: 'admin.forwardRules.form.addressPreferencePublic',
+  tunnel: 'admin.forwardRules.form.addressPreferenceTunnel',
+};
+
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; colorClass: string }> = {
   synced: { labelKey: 'common.status.synced', icon: CheckCircle2, colorClass: 'text-success' },
   pending: { labelKey: 'common.status.pending', icon: CircleDashed, colorClass: 'text-warning' },
@@ -543,6 +549,9 @@ export const ForwardRuleDetailSheet = ({
               )}
               {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
                 <Row label={t('admin.forwardRules.detail.tunnelType')} value={TUNNEL_TYPE_LABELS[rule.tunnelType]} />
+              )}
+              {rule.addressPreference && rule.addressPreference !== 'auto' && (
+                <Row label={t('admin.forwardRules.form.addressPreference')} value={t(ADDRESS_PREFERENCE_LABEL_KEYS[rule.addressPreference])} />
               )}
             </Section>
 

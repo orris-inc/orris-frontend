@@ -15,6 +15,7 @@ import type {
   TunnelType,
   ExitAgent,
   LoadBalanceStrategy,
+  AddressPreference,
 } from '@/api/forward';
 import type { Node, RouteConfig } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
@@ -105,6 +106,7 @@ export function useEditForwardRuleForm({
         externalSource: rule.externalSource,
         externalRuleId: rule.externalRuleId,
         route: rule.route,
+        addressPreference: rule.addressPreference || 'auto',
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setExitMode(rule.exitAgents && rule.exitAgents.length > 0 ? 'multi' : 'single');
@@ -570,6 +572,13 @@ export function useEditForwardRuleForm({
       updates.groupSids = currentGroups;
     }
 
+    // Address preference
+    const currentPref = formData.addressPreference || 'auto';
+    const originalPref = rule.addressPreference || 'auto';
+    if (currentPref !== originalPref) {
+      updates.addressPreference = currentPref as AddressPreference;
+    }
+
     // Route config
     const hasRouteChange = JSON.stringify(formData.route) !== JSON.stringify(rule.route);
     if (hasRouteChange) {
@@ -622,6 +631,7 @@ export function useEditForwardRuleForm({
         externalSource: rule.externalSource,
         externalRuleId: rule.externalRuleId,
         route: rule.route,
+        addressPreference: rule.addressPreference || 'auto',
       });
       setTargetType(rule.targetNodeId ? 'node' : 'manual');
       setExitMode(rule.exitAgents && rule.exitAgents.length > 0 ? 'multi' : 'single');

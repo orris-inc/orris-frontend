@@ -1341,6 +1341,17 @@
       "rulesUnit": "rules",
       "userRules": "User rules",
       "dragSort": "Drag sort",
+      "groupBy": {
+        "label": "Group",
+        "none": "No grouping",
+        "agent": "By tunnel",
+        "ruleType": "By type"
+      },
+      "groupHeader": {
+        "rulesCount": "{{count}} rules",
+        "totalTraffic": "Total traffic",
+        "unknownAgent": "Unknown tunnel"
+      },
       "refreshList": "Refresh list",
       "batchCreate": "Batch create",
       "batchCreateJson": "Batch create (JSON)",
@@ -1550,6 +1561,11 @@
         "bindIp": "Bind IP",
         "bindIpPlaceholder": "e.g., 0.0.0.0",
         "bindIpHint": "Empty binds all interfaces",
+        "addressPreference": "Address Preference",
+        "addressPreferenceHint": "Choose which agent address to use for next hop connections",
+        "addressPreferenceAuto": "Auto (tunnel > public)",
+        "addressPreferencePublic": "Public Address",
+        "addressPreferenceTunnel": "Tunnel Address",
         "trafficMultiplier": "Multiplier",
         "trafficMultiplierAutoHint": "Leave empty to use auto multiplier",
         "trafficMultiplierHint": "Traffic will be multiplied by this value for billing",

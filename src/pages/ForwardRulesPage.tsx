@@ -23,6 +23,7 @@ import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
+import { GroupedForwardRuleList } from '@/features/forward-rules/components/GroupedForwardRuleList';
 import { MobileForwardRuleManagement } from '@/features/forward-rules/components/MobileForwardRuleManagement';
 import { ForwardRuleFilters } from '@/features/forward-rules/components/ForwardRuleFilters';
 import { BatchActionBar } from '@/features/forward-rules/components/batch';
@@ -152,6 +153,8 @@ export function ForwardRulesPage() {
     handleIncludeUserRulesChange,
     handleReorder,
     isReordering,
+    groupBy,
+    handleGroupByChange,
   } = useForwardRulesPage();
 
   const { nodes } = useNodes({ pageSize: 100 });
@@ -606,6 +609,8 @@ export function ForwardRulesPage() {
           dragSortEnabled={dragSortEnabled}
           onDragSortChange={setDragSortEnabled}
           isReordering={isReordering}
+          groupBy={groupBy}
+          onGroupByChange={handleGroupByChange}
         />
 
         {/* Batch Action Bar */}
@@ -623,35 +628,60 @@ export function ForwardRulesPage() {
           />
         )}
 
-        {/* Rules Table */}
-        <ForwardRuleListTable
-          rules={forwardRules}
-          agentsMap={agentsMap}
-          resourceGroupsMap={resourceGroupsMap}
-          nodes={nodes}
-          polledStatusMap={polledStatusMap}
-          pollingRuleIds={pollingRuleIds}
-          loading={isTableLoading}
-          page={pagination.page}
-          pageSize={pagination.pageSize}
-          total={pagination.total}
-          onPageChange={handlePageChangeWithClear}
-          onPageSizeChange={handlePageSizeChange}
-          onEdit={handleEdit}
-          onDelete={handleDeleteClick}
-          onEnable={handleEnable}
-          onDisable={handleDisable}
-          onResetTraffic={handleResetTrafficClick}
-          onViewDetail={handleViewDetail}
-          onProbe={handleProbe}
-          onCopy={handleCopy}
-          probingRuleId={probingRuleId}
-          enableDragSort={dragSortEnabled}
-          onDragEnd={handleDragEnd}
-          rowSelection={rowSelection}
-          onRowSelectionChange={handleRowSelectionChange}
-          enableSelection
-        />
+        {/* Rules Table / Grouped View */}
+        {groupBy !== 'none' ? (
+          <GroupedForwardRuleList
+            rules={forwardRules}
+            groupBy={groupBy}
+            agentsMap={agentsMap}
+            resourceGroupsMap={resourceGroupsMap}
+            nodes={nodes}
+            polledStatusMap={polledStatusMap}
+            pollingRuleIds={pollingRuleIds}
+            loading={isTableLoading}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onResetTraffic={handleResetTrafficClick}
+            onViewDetail={handleViewDetail}
+            onProbe={handleProbe}
+            onCopy={handleCopy}
+            probingRuleId={probingRuleId}
+            rowSelection={rowSelection}
+            onRowSelectionChange={handleRowSelectionChange}
+            enableSelection
+          />
+        ) : (
+          <ForwardRuleListTable
+            rules={forwardRules}
+            agentsMap={agentsMap}
+            resourceGroupsMap={resourceGroupsMap}
+            nodes={nodes}
+            polledStatusMap={polledStatusMap}
+            pollingRuleIds={pollingRuleIds}
+            loading={isTableLoading}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            total={pagination.total}
+            onPageChange={handlePageChangeWithClear}
+            onPageSizeChange={handlePageSizeChange}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
+            onEnable={handleEnable}
+            onDisable={handleDisable}
+            onResetTraffic={handleResetTrafficClick}
+            onViewDetail={handleViewDetail}
+            onProbe={handleProbe}
+            onCopy={handleCopy}
+            probingRuleId={probingRuleId}
+            enableDragSort={dragSortEnabled}
+            onDragEnd={handleDragEnd}
+            rowSelection={rowSelection}
+            onRowSelectionChange={handleRowSelectionChange}
+            enableSelection
+          />
+        )}
       </div>
 
       {/* Desktop Dialogs */}

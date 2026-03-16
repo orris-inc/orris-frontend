@@ -33,6 +33,8 @@ import {
   type ReorderForwardRulesRequest,
 } from '@/api/forward';
 
+export type ForwardRuleGroupBy = 'none' | 'agent' | 'ruleType';
+
 export interface ForwardRuleFilters {
   name?: string;
   protocol?: 'tcp' | 'udp' | 'both';
@@ -307,8 +309,13 @@ export const useForwardRulesPage = () => {
   });
   const [includeUserRules, setIncludeUserRules] = useState(false);
   const [selectedRule, setSelectedRule] = useState<ForwardRule | null>(null);
+  const [groupBy, setGroupBy] = useState<ForwardRuleGroupBy>('none');
 
-  const rulesQuery = useForwardRules({ page, pageSize, filters, includeUserRules });
+  // When grouping is active, use larger page size to fetch more data
+  const effectivePageSize = groupBy !== 'none' ? 200 : pageSize;
+  const effectivePage = groupBy !== 'none' ? 1 : page;
+
+  const rulesQuery = useForwardRules({ page: effectivePage, pageSize: effectivePageSize, filters, includeUserRules });
 
   // Get all forward agents to build agentId -> agent mapping
   // Load simultaneously with rules list to avoid showing ID first then name
@@ -351,6 +358,13 @@ export const useForwardRulesPage = () => {
     await rulesQuery.reorderRules({ ruleOrders });
   };
 
+  const handleGroupByChange = (newGroupBy: ForwardRuleGroupBy) => {
+    setGroupBy(newGroupBy);
+    if (newGroupBy !== 'none') {
+      setPage(1);
+    }
+  };
+
   return {
     ...rulesQuery,
     // Merge loading states, ensure agent data is also loaded before showing table
@@ -361,12 +375,14 @@ export const useForwardRulesPage = () => {
     includeUserRules,
     selectedRule,
     agentsMap,
+    groupBy,
     setSelectedRule,
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
     handleIncludeUserRulesChange,
     handleReorder,
+    handleGroupByChange,
   };
 };
 

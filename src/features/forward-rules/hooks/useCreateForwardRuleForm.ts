@@ -16,6 +16,7 @@ import type {
   TunnelType,
   ExitAgent,
   LoadBalanceStrategy,
+  AddressPreference,
 } from '@/api/forward';
 import type { Node, RouteConfig } from '@/api/node';
 import type { ResourceGroup } from '@/api/resource/types';
@@ -54,6 +55,7 @@ export interface CreateForwardRuleFormData {
   externalSource: string;
   externalRuleId: string;
   route: RouteConfig | undefined;
+  addressPreference: AddressPreference;
 }
 
 export interface UseCreateForwardRuleFormOptions {
@@ -97,6 +99,7 @@ const DEFAULT_FORM_DATA: CreateForwardRuleFormData = {
   externalSource: '',
   externalRuleId: '',
   route: undefined,
+  addressPreference: 'auto',
 };
 
 // Rule type keys for translation lookup
@@ -161,6 +164,7 @@ export function useCreateForwardRuleForm({
           externalRuleId:
             (initialData as Record<string, unknown>).externalRuleId as string || '',
           route: initialData.route,
+          addressPreference: (initialData as Record<string, unknown>).addressPreference as AddressPreference || 'auto',
         });
         setTargetType(
           initialData.targetType || (initialData.targetNodeId ? 'node' : 'manual'),
@@ -654,6 +658,9 @@ export function useCreateForwardRuleForm({
     }
     if (formData.route) {
       submitData.route = formData.route;
+    }
+    if (formData.addressPreference && formData.addressPreference !== 'auto') {
+      submitData.addressPreference = formData.addressPreference;
     }
 
     return submitData;

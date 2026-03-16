@@ -23,7 +23,7 @@ import {
 } from '@/components/common/Collapsible';
 import { FolderTree, ChevronDown } from 'lucide-react';
 import { FormField } from './form-primitives';
-import type { IPVersion } from '@/api/forward';
+import type { IPVersion, AddressPreference } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -40,6 +40,7 @@ interface AdvancedOptionsFieldsProps {
     externalSource?: string;
     remark: string;
     groupSids: string[];
+    addressPreference?: AddressPreference;
   };
   onFieldChange: (field: string, value: unknown) => void;
   onGroupToggle: (sid: string) => void;
@@ -117,6 +118,31 @@ export const AdvancedOptionsFields: React.FC<AdvancedOptionsFieldsProps> = ({
                 onChange={(e) => onFieldChange('bindIp', e.target.value)}
                 placeholder={t('admin.forwardRules.form.bindIpPlaceholder')}
               />
+            </FormField>
+          )}
+
+          {/* Address Preference - only for entry/chain/direct_chain */}
+          {!isExternal && (ruleType === 'entry' || ruleType === 'chain' || ruleType === 'direct_chain') && (
+            <FormField
+              label={t('admin.forwardRules.form.addressPreference')}
+              hint={t('admin.forwardRules.form.addressPreferenceHint')}
+              className="col-span-6 sm:col-span-2"
+            >
+              <Select
+                value={formData.addressPreference || 'auto'}
+                onValueChange={(value) =>
+                  onFieldChange('addressPreference', value as AddressPreference)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">{t('admin.forwardRules.form.addressPreferenceAuto')}</SelectItem>
+                  <SelectItem value="public">{t('admin.forwardRules.form.addressPreferencePublic')}</SelectItem>
+                  <SelectItem value="tunnel">{t('admin.forwardRules.form.addressPreferenceTunnel')}</SelectItem>
+                </SelectContent>
+              </Select>
             </FormField>
           )}
 

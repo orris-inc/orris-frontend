@@ -74,6 +74,7 @@ const RULE_TYPE_CONFIG: Record<string, { labelKey: string; icon: React.ElementTy
 const PROTOCOL_LABELS: Record<string, string> = { tcp: 'TCP', udp: 'UDP', both: 'TCP/UDP' };
 const IP_VERSION_LABEL_KEYS: Record<string, string> = { auto: 'common.auto', ipv4: 'admin.forwardRules.detail.ipVersionIpv4', ipv6: 'admin.forwardRules.detail.ipVersionIpv6' };
 const TUNNEL_TYPE_LABEL_KEYS: Record<string, string> = { ws: 'admin.forwardRules.detail.tunnelTypeWs', tls: 'admin.forwardRules.detail.tunnelTypeTls', ws_smux: 'admin.forwardRules.detail.tunnelTypeWsSmux', tls_smux: 'admin.forwardRules.detail.tunnelTypeTlsSmux' };
+const ADDRESS_PREFERENCE_LABEL_KEYS: Record<string, string> = { auto: 'admin.forwardRules.form.addressPreferenceAuto', public: 'admin.forwardRules.form.addressPreferencePublic', tunnel: 'admin.forwardRules.form.addressPreferenceTunnel' };
 
 // Sync status config
 const SYNC_STATUS_CONFIG: Record<RuleSyncStatus, { labelKey: string; icon: React.ElementType; color: string }> = {
@@ -565,6 +566,11 @@ export const ForwardRuleDetailDialog: React.FC<ForwardRuleDetailDialogProps> = (
                   {(rule.ruleType === 'entry' || rule.ruleType === 'chain') && rule.tunnelType && (
                     <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-info/10 text-info">
                       {t(TUNNEL_TYPE_LABEL_KEYS[rule.tunnelType])}
+                    </span>
+                  )}
+                  {rule.addressPreference && rule.addressPreference !== 'auto' && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-warning/10 text-warning">
+                      {t(ADDRESS_PREFERENCE_LABEL_KEYS[rule.addressPreference])}
                     </span>
                   )}
                   <span className="text-xs text-muted-foreground ml-auto">{t('admin.forwardRules.detail.nodesCount', { count: flowNodes.length })}</span>

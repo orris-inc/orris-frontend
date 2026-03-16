@@ -34,6 +34,7 @@ import type {
   ForwardRuleType,
   IPVersion,
   ExitAgent,
+  AddressPreference,
 } from '@/api/forward';
 import { useUserForwardAgents } from '../hooks/useUserForwardAgents';
 import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
@@ -88,6 +89,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     sortOrder: '',
     protocol: 'both' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
+    addressPreference: 'auto' as AddressPreference,
     remark: '',
   });
 
@@ -119,6 +121,7 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
         sortOrder: '',
         protocol: 'both',
         ipVersion: 'auto',
+        addressPreference: 'auto',
         remark: '',
       });
       setTargetType('manual');
@@ -300,6 +303,14 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
     } else if (formData.ruleType === 'direct_chain') {
       data.chainAgentIds = formData.chainAgentIds;
       data.chainPortConfig = formData.chainPortConfig;
+    }
+
+    // Address preference (only for entry/chain/direct_chain)
+    if (
+      (formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') &&
+      formData.addressPreference && formData.addressPreference !== 'auto'
+    ) {
+      data.addressPreference = formData.addressPreference;
     }
 
     onSubmit(data);
@@ -848,6 +859,28 @@ export const CreateUserForwardRuleDialog: React.FC<CreateUserForwardRuleDialogPr
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Address Preference - only for entry/chain/direct_chain */}
+              {(formData.ruleType === 'entry' || formData.ruleType === 'chain' || formData.ruleType === 'direct_chain') && (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="addressPreference">{t('admin.forwardRules.form.addressPreference')}</Label>
+                  <Select
+                    value={formData.addressPreference}
+                    onValueChange={(value) => handleChange('addressPreference', value)}
+                    disabled={isCreating}
+                  >
+                    <SelectTrigger id="addressPreference">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">{t('admin.forwardRules.form.addressPreferenceAuto')}</SelectItem>
+                      <SelectItem value="public">{t('admin.forwardRules.form.addressPreferencePublic')}</SelectItem>
+                      <SelectItem value="tunnel">{t('admin.forwardRules.form.addressPreferenceTunnel')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t('admin.forwardRules.form.addressPreferenceHint')}</p>
+                </div>
+              )}
 
               {/* Sort order */}
               <div className="flex flex-col gap-2">

@@ -34,6 +34,7 @@ import type {
   ForwardProtocol,
   IPVersion,
   ExitAgent,
+  AddressPreference,
 } from '@/api/forward';
 import { useUserForwardAgents } from '@/features/user-forward-rules/hooks/useUserForwardAgents';
 import { useUserNodes } from '@/features/user-nodes/hooks/useUserNodes';
@@ -93,6 +94,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
     exitAgents: [] as ExitAgent[],
     protocol: 'tcp' as ForwardProtocol,
     ipVersion: 'auto' as IPVersion,
+    addressPreference: 'auto' as AddressPreference,
     remark: '',
   });
 
@@ -124,6 +126,7 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
         exitAgents: rule.exitAgents || [],
         protocol: rule.protocol,
         ipVersion: rule.ipVersion,
+        addressPreference: rule.addressPreference || 'auto',
         remark: rule.remark || '',
       });
       setTargetType(ruleTargetType);
@@ -237,7 +240,11 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
       }
     }
 
-    return basicChanges || targetTypeChanged || targetChanges || exitModeChanged || exitAgentChanges;
+    // Check address preference change
+    const addressPrefChanged =
+      (formData.addressPreference || 'auto') !== (rule.addressPreference || 'auto');
+
+    return basicChanges || targetTypeChanged || targetChanges || exitModeChanged || exitAgentChanges || addressPrefChanged;
   }, [formData, rule, targetType, originalTargetType, exitMode, originalExitMode]);
 
   const handleSubmit = () => {
@@ -310,6 +317,13 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
           updates.exitAgents = formData.exitAgents;
         }
       }
+    }
+
+    // Address preference
+    const currentPref = formData.addressPreference || 'auto';
+    const originalPref = rule.addressPreference || 'auto';
+    if (currentPref !== originalPref) {
+      updates.addressPreference = currentPref as AddressPreference;
     }
 
     // If any changes, submit update
@@ -559,6 +573,28 @@ export const EditSubscriptionForwardRuleDialog: React.FC<EditSubscriptionForward
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Address Preference - only for entry/chain/direct_chain */}
+                {(rule.ruleType === 'entry' || rule.ruleType === 'chain' || rule.ruleType === 'direct_chain') && (
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="edit-sub-addressPreference">{t('admin.forwardRules.form.addressPreference')}</Label>
+                    <Select
+                      value={formData.addressPreference}
+                      onValueChange={(value) => handleChange('addressPreference', value)}
+                      disabled={isUpdating}
+                    >
+                      <SelectTrigger id="edit-sub-addressPreference">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">{t('admin.forwardRules.form.addressPreferenceAuto')}</SelectItem>
+                        <SelectItem value="public">{t('admin.forwardRules.form.addressPreferencePublic')}</SelectItem>
+                        <SelectItem value="tunnel">{t('admin.forwardRules.form.addressPreferenceTunnel')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">{t('admin.forwardRules.form.addressPreferenceHint')}</p>
+                  </div>
+                )}
 
                 {/* Target type selection */}
                 <div className="flex flex-col gap-2 @md:col-span-2">
