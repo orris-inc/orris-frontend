@@ -79,6 +79,12 @@ const IP_VERSION_OPTIONS_KEYS = [
   { value: 'ipv6', label: 'IPv6' },
 ];
 
+const ADDRESS_PREFERENCE_OPTIONS_KEYS = [
+  { value: 'auto', labelKey: 'admin.forwardRules.form.addressPreferenceAuto' },
+  { value: 'public', labelKey: 'admin.forwardRules.form.addressPreferencePublic' },
+  { value: 'tunnel', labelKey: 'admin.forwardRules.form.addressPreferenceTunnel' },
+];
+
 const TUNNEL_TYPE_OPTIONS: MobileSelectOption[] = [
   { value: 'ws', label: 'WebSocket' },
   { value: 'tls', label: 'TLS' },
@@ -192,6 +198,10 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
   );
   const IP_VERSION_OPTIONS = useMemo(
     () => IP_VERSION_OPTIONS_KEYS.map((opt) => ({ value: opt.value, label: opt.label || t(opt.labelKey as string) })),
+    [t]
+  );
+  const ADDRESS_PREFERENCE_OPTIONS = useMemo(
+    () => ADDRESS_PREFERENCE_OPTIONS_KEYS.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })),
     [t]
   );
   const TARGET_TYPE_OPTIONS = useMemo(
@@ -660,6 +670,20 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                       />
                     </FormField>
                   </div>
+
+                  {/* Address Preference - only for entry/chain/direct_chain */}
+                  {(form.formData.ruleType === 'entry' || form.formData.ruleType === 'chain' || form.formData.ruleType === 'direct_chain') && (
+                    <FormField
+                      label={t('admin.forwardRules.form.addressPreference')}
+                      hint={t('admin.forwardRules.form.addressPreferenceHint')}
+                    >
+                      <MobileSelect
+                        value={form.formData.addressPreference || 'auto'}
+                        onChange={(value) => form.handleChange('addressPreference', value)}
+                        options={ADDRESS_PREFERENCE_OPTIONS}
+                      />
+                    </FormField>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <FormField label={t('admin.forwardRules.form.trafficMultiplier')}>

@@ -540,7 +540,7 @@ export const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100dvh-3.5rem)] flex flex-col justify-center px-4 py-12 sm:py-16 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-3.5rem)] min-h-[calc(100dvh-3.5rem)] flex flex-col justify-center px-4 py-12 sm:py-16 overflow-hidden">
         {/* Hero gradient background */}
         <div className="absolute inset-0 -z-10 hero-gradient" />
 
@@ -555,7 +555,7 @@ export const LandingPage = () => {
           className="absolute top-1/4 left-1/4 size-64 sm:size-80 lg:size-96 rounded-full blur-3xl -z-10"
           style={{
             background:
-              'radial-gradient(circle, oklch(from var(--color-primary) l c h / 0.15) 0%, transparent 70%)',
+              'radial-gradient(circle, var(--color-primary-alpha-15) 0%, transparent 70%)',
           }}
         />
         <motion.div
@@ -565,7 +565,7 @@ export const LandingPage = () => {
           className="absolute bottom-1/3 right-1/4 size-48 sm:size-64 lg:size-80 rounded-full blur-3xl -z-10"
           style={{
             background:
-              'radial-gradient(circle, oklch(from var(--color-accent) l c h / 0.12) 0%, transparent 70%)',
+              'radial-gradient(circle, var(--color-accent-alpha-12) 0%, transparent 70%)',
           }}
         />
 
@@ -747,7 +747,7 @@ export const LandingPage = () => {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             style={{
               background:
-                'linear-gradient(135deg, oklch(0.2 0.02 260) 0%, oklch(from var(--color-primary) calc(l - 0.2) c h / 0.9) 50%, oklch(0.2 0.02 260) 100%)',
+                'linear-gradient(135deg, oklch(0.2 0.02 260) 0%, var(--color-primary-darker-90) 50%, oklch(0.2 0.02 260) 100%)',
             }}
           >
             {/* Grid pattern overlay */}

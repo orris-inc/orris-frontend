@@ -44,25 +44,25 @@ export const CircularProgress = memo(({
         start: 'var(--color-progress-success-start)',
         end: 'var(--color-progress-success-end)',
         text: 'text-success',
-        glow: 'oklch(from var(--color-progress-success-start) l c h / 0.4)',
+        glow: 'var(--color-progress-success-glow)',
       },
       warning: {
         start: 'var(--color-progress-warning-start)',
         end: 'var(--color-progress-warning-end)',
         text: 'text-warning',
-        glow: 'oklch(from var(--color-progress-warning-start) l c h / 0.4)',
+        glow: 'var(--color-progress-warning-glow)',
       },
       danger: {
         start: 'var(--color-progress-danger-start)',
         end: 'var(--color-progress-danger-end)',
         text: 'text-destructive',
-        glow: 'oklch(from var(--color-progress-danger-start) l c h / 0.4)',
+        glow: 'var(--color-progress-danger-glow)',
       },
       info: {
         start: 'var(--color-progress-info-start)',
         end: 'var(--color-progress-info-end)',
         text: 'text-info',
-        glow: 'oklch(from var(--color-progress-info-start) l c h / 0.4)',
+        glow: 'var(--color-progress-info-glow)',
       },
     };
 

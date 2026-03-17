@@ -506,6 +506,7 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                 externalSource: form.formData.externalSource,
                 remark: form.formData.remark || '',
                 groupSids: form.formData.groupSids || [],
+                addressPreference: form.formData.addressPreference,
               }}
               onFieldChange={(field, value) =>
                 form.handleChange(field as keyof UpdateForwardRuleRequest, value as string | number | undefined)

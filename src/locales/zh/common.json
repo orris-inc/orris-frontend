@@ -2227,6 +2227,12 @@
         "activatePricing": "启用此定价",
         "nodeLimits": "节点限制配置",
         "trafficLimit": "月流量上限 (GB)",
+        "trafficResetMode": {
+          "label": "流量重置方式",
+          "calendarMonth": "日历月重置",
+          "billingCycle": "账单周期重置",
+          "hint": "日历月：每月1日重置；账单周期：按订阅计费周期重置"
+        },
         "deviceLimit": "设备数量上限",
         "speedLimit": "速度限制 (Mbps)",
         "connectionLimit": "连接数上限",

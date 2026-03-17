@@ -153,7 +153,7 @@ export const SheetContent = ({
           // Position & z-index
           'fixed inset-x-0 bottom-0 z-50',
           // Size - use dvh for dynamic viewport
-          'w-full max-h-[85dvh]',
+          'w-full max-h-[85vh] max-h-[85dvh]',
           // Shape
           'rounded-t-2xl',
           // Background

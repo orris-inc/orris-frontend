@@ -542,6 +542,7 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                 externalSource: form.formData.externalSource,
                 remark: form.formData.remark,
                 groupSids: form.formData.groupSids || [],
+                addressPreference: form.formData.addressPreference,
               }}
               onFieldChange={(field, value) => form.handleChange(field as any, value as any)}
               onGroupToggle={form.handleGroupToggle}

@@ -41,7 +41,9 @@ import {
   useEditPlanForm,
   BILLING_CYCLE_VALUES,
   FORWARD_RULE_TYPE_VALUES,
+  TRAFFIC_RESET_MODE_VALUES,
 } from '../hooks/useEditPlanForm';
+import type { TrafficResetMode } from '../hooks/useEditPlanForm';
 
 type EditPlanSheetProps = EditSheetProps<SubscriptionPlan, UpdatePlanRequest>;
 
@@ -65,6 +67,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
   const [activePricingIndex, setActivePricingIndex] = useState<number | null>(null);
   const [billingCycleSheetOpen, setBillingCycleSheetOpen] = useState(false);
   const [currencySheetOpen, setCurrencySheetOpen] = useState(false);
+  const [trafficResetModeSheetOpen, setTrafficResetModeSheetOpen] = useState(false);
 
   const form = useEditPlanForm({ plan });
 
@@ -78,6 +81,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
     { value: 'CNY', label: 'CNY' },
     { value: 'USD', label: 'USD' },
   ];
+
+  const trafficResetModeOptions: SelectSheetOption<TrafficResetMode>[] = TRAFFIC_RESET_MODE_VALUES.map((mode) => ({
+    value: mode,
+    label: t(`admin.plans.form.trafficResetMode.${mode === 'calendar_month' ? 'calendarMonth' : 'billingCycle'}`),
+  }));
 
   const handleSubmit = useCallback(async () => {
     if (!plan) return;
@@ -281,7 +289,7 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('admin.plans.form.nodeLimits')}
               </h4>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficLimit')}</label>
                   <input
@@ -305,6 +313,27 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                     disabled={loading}
                     className={compactInputStyles}
                   />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficResetMode.label')}</label>
+                  <button
+                    type="button"
+                    onClick={() => !loading && setTrafficResetModeSheetOpen(true)}
+                    disabled={loading}
+                    className={cn(
+                      'w-full h-10 px-3 rounded-xl text-sm text-left',
+                      'flex items-center justify-between',
+                      'ring-1 ring-border bg-background',
+                      'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                      'active:scale-[0.98]',
+                      loading && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    <span className="truncate">
+                      {t(`admin.plans.form.trafficResetMode.${(form.formData.planLimits.trafficResetMode || 'billing_cycle') === 'calendar_month' ? 'calendarMonth' : 'billingCycle'}`)}
+                    </span>
+                    <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+                  </button>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">{t('admin.plans.form.deviceLimit')}</label>
@@ -428,6 +457,27 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
                 </div>
               </div>
               <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">{t('admin.plans.form.trafficResetMode.label')}</label>
+                <button
+                  type="button"
+                  onClick={() => !loading && setTrafficResetModeSheetOpen(true)}
+                  disabled={loading}
+                  className={cn(
+                    'w-full h-10 px-3 rounded-xl text-sm text-left',
+                    'flex items-center justify-between',
+                    'ring-1 ring-border bg-background',
+                    'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                    'active:scale-[0.98]',
+                    loading && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  <span className="truncate">
+                    {t(`admin.plans.form.trafficResetMode.${(form.formData.planLimits.trafficResetMode || 'billing_cycle') === 'calendar_month' ? 'calendarMonth' : 'billingCycle'}`)}
+                  </span>
+                  <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+                </button>
+              </div>
+              <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">{t('admin.plans.form.allowedRuleTypes')}</label>
                 <div className="flex flex-wrap gap-x-4 gap-y-1">
                   {FORWARD_RULE_TYPE_VALUES.map((type) => (
@@ -501,6 +551,16 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
           </Button>
         </SheetFooter>
       </SheetContent>
+
+      {/* Traffic Reset Mode SelectSheet */}
+      <SelectSheet
+        open={trafficResetModeSheetOpen}
+        onOpenChange={setTrafficResetModeSheetOpen}
+        value={form.formData.planLimits.trafficResetMode || 'billing_cycle'}
+        onChange={(v) => form.handleLimitChange('trafficResetMode', v as TrafficResetMode)}
+        options={trafficResetModeOptions}
+        title={t('admin.plans.form.trafficResetMode.label')}
+      />
 
       {/* Billing Cycle SelectSheet */}
       <SelectSheet

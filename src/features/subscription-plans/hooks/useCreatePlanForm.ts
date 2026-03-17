@@ -16,8 +16,11 @@ import type {
 // Locally defined types (not part of the API SDK)
 export type ForwardRuleTypeOption = 'direct' | 'entry' | 'chain' | 'direct_chain';
 
+export type TrafficResetMode = 'calendar_month' | 'billing_cycle';
+
 export interface PlanLimits {
   trafficLimit?: number;
+  trafficResetMode?: TrafficResetMode;
   deviceLimit?: number;
   speedLimit?: number;
   connectionLimit?: number;
@@ -30,6 +33,7 @@ export interface PlanLimits {
 function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
+  if (limits.trafficResetMode !== undefined) result['traffic_reset_mode'] = limits.trafficResetMode;
   if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
   if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
   if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
@@ -39,11 +43,20 @@ function planLimitsToApiFormat(limits: PlanLimits): Record<string, unknown> {
   return result;
 }
 
+// Traffic reset mode options
+export const TRAFFIC_RESET_MODE_VALUES: TrafficResetMode[] = ['calendar_month', 'billing_cycle'];
+
+export const TRAFFIC_RESET_MODE_KEYS: Record<TrafficResetMode, string> = {
+  calendar_month: 'admin.plans.form.trafficResetMode.calendarMonth',
+  billing_cycle: 'admin.plans.form.trafficResetMode.billingCycle',
+};
+
 // Helper function: parse API format limits (axios-case-converter converts response to camelCase)
 function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): PlanLimits {
   if (!apiLimits) return {};
   return {
     trafficLimit: apiLimits.trafficLimit as number | undefined,
+    trafficResetMode: apiLimits.trafficResetMode as TrafficResetMode | undefined,
     deviceLimit: apiLimits.deviceLimit as number | undefined,
     speedLimit: apiLimits.speedLimit as number | undefined,
     connectionLimit: apiLimits.connectionLimit as number | undefined,

@@ -604,7 +604,7 @@ export const CommandPalette = ({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={handleOpenChange}>
-        <SheetContent showClose={false} className="h-[70dvh]">
+        <SheetContent showClose={false} className="h-[70vh] h-[70dvh]">
           <SheetHeader className="sr-only">
             <SheetTitle>{t('commandPalette.title')}</SheetTitle>
           </SheetHeader>

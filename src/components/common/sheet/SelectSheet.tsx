@@ -209,7 +209,7 @@ export function SelectSheet<T extends string = string>({
           ref={contentRef}
           className={cn(
             'fixed inset-x-0 bottom-0 z-50',
-            'w-full max-h-[70dvh]',
+            'w-full max-h-[70vh] max-h-[70dvh]',
             'rounded-t-2xl',
             'bg-background border-t border-border',
             'flex flex-col',

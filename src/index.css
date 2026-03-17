@@ -25,7 +25,7 @@
  * Tailwind v4 Optimized Theme Configuration
  * ============================================
  * - Uses oklch color space for perceptually uniform colors
- * - Uses light-dark() for automatic theme switching
+ * - Uses .dark class overrides for theme switching (iOS 16 compatible)
  * - Integrates fluid typography into Tailwind's namespace
  * - Removes redundant utility classes
  */
@@ -62,78 +62,78 @@
   --spacing-fluid-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
 
   /* ========== Atomic Colors (Base Palette) ========== */
-  --color-base-emerald: light-dark(oklch(0.6 0.19 160), oklch(0.65 0.19 160));
-  --color-base-red: light-dark(oklch(0.55 0.22 25), oklch(0.6 0.22 25));
-  --color-base-amber: light-dark(oklch(0.75 0.18 70), oklch(0.78 0.18 70));
-  --color-base-indigo: light-dark(oklch(0.55 0.25 265), oklch(0.65 0.25 265));
-  --color-base-blue: light-dark(oklch(0.6 0.2 250), oklch(0.68 0.2 250));
+  --color-base-emerald: oklch(0.6 0.19 160);
+  --color-base-red: oklch(0.55 0.22 25);
+  --color-base-amber: oklch(0.75 0.18 70);
+  --color-base-indigo: oklch(0.55 0.25 265);
+  --color-base-blue: oklch(0.6 0.2 250);
 
-  /* ========== Semantic Colors (oklch + light-dark) ========== */
+  /* ========== Semantic Colors ========== */
   /* Background & Foreground */
-  --color-background: light-dark(oklch(0.995 0 0), oklch(0.145 0.015 260));
-  --color-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
+  --color-background: oklch(0.995 0 0);
+  --color-foreground: oklch(0.2 0.02 260);
 
   /* Card */
-  --color-card: light-dark(oklch(1 0 0), oklch(0.18 0.015 260));
-  --color-card-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.2 0.02 260);
 
   /* Popover */
-  --color-popover: light-dark(oklch(1 0 0), oklch(0.18 0.015 260));
-  --color-popover-foreground: light-dark(oklch(0.2 0.02 260), oklch(0.95 0.01 260));
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.2 0.02 260);
 
   /* Primary - Indigo */
   --color-primary: var(--color-base-indigo);
-  --color-primary-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-primary-foreground: oklch(1 0 0);
 
   /* Secondary */
-  --color-secondary: light-dark(oklch(0.97 0.02 270), oklch(0.25 0.02 260));
+  --color-secondary: oklch(0.97 0.02 270);
   --color-secondary-foreground: var(--color-base-indigo);
 
   /* Muted */
-  --color-muted: light-dark(oklch(0.97 0.01 260), oklch(0.22 0.015 260));
-  --color-muted-foreground: light-dark(oklch(0.45 0.02 260), oklch(0.65 0.02 260));
+  --color-muted: oklch(0.97 0.01 260);
+  --color-muted-foreground: oklch(0.45 0.02 260);
 
   /* Accent - Orange */
   --color-accent: var(--color-base-amber);
-  --color-accent-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-accent-foreground: oklch(1 0 0);
 
   /* Destructive - Red */
   --color-destructive: var(--color-base-red);
-  --color-destructive-foreground: light-dark(oklch(1 0 0), oklch(0.95 0.01 260));
+  --color-destructive-foreground: oklch(1 0 0);
 
   /* Success - Emerald */
   --color-success: var(--color-base-emerald);
-  --color-success-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
-  --color-success-muted: light-dark(oklch(0.97 0.04 160), oklch(0.2 0.05 160));
+  --color-success-foreground: oklch(1 0 0);
+  --color-success-muted: oklch(0.97 0.04 160);
 
   /* Warning - Amber */
   --color-warning: var(--color-base-amber);
-  --color-warning-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
-  --color-warning-muted: light-dark(oklch(0.97 0.05 85), oklch(0.2 0.05 70));
+  --color-warning-foreground: oklch(1 0 0);
+  --color-warning-muted: oklch(0.97 0.05 85);
 
   /* Info - Blue */
   --color-info: var(--color-base-blue);
-  --color-info-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
-  --color-info-muted: light-dark(oklch(0.97 0.03 250), oklch(0.2 0.05 250));
+  --color-info-foreground: oklch(1 0 0);
+  --color-info-muted: oklch(0.97 0.03 250);
 
   /* Relay - Purple (for forward-rule flow relay nodes) */
-  --color-relay: light-dark(oklch(0.55 0.2 300), oklch(0.65 0.2 300));
-  --color-relay-foreground: light-dark(oklch(1 0 0), oklch(0.145 0.015 260));
+  --color-relay: oklch(0.55 0.2 300);
+  --color-relay-foreground: oklch(1 0 0);
 
   /* Border & Input */
-  --color-border: light-dark(oklch(0.92 0.01 260), oklch(0.28 0.015 260));
-  --color-input: light-dark(oklch(0.9 0.01 260), oklch(0.25 0.015 260));
+  --color-border: oklch(0.92 0.01 260);
+  --color-input: oklch(0.9 0.01 260);
   --color-ring: var(--color-base-indigo);
 
   /* ========== Chart Colors ========== */
   --color-chart-1: var(--color-base-indigo);
   --color-chart-2: var(--color-base-amber);
-  --color-chart-3: light-dark(oklch(0.6 0.15 180), oklch(0.65 0.15 180));
-  --color-chart-4: light-dark(oklch(0.6 0.2 300), oklch(0.65 0.2 300));
-  --color-chart-5: light-dark(oklch(0.6 0.2 350), oklch(0.65 0.2 350));
+  --color-chart-3: oklch(0.6 0.15 180);
+  --color-chart-4: oklch(0.6 0.2 300);
+  --color-chart-5: oklch(0.6 0.2 350);
   --color-chart-upload: var(--color-base-blue);
   --color-chart-download: var(--color-base-emerald);
-  --color-chart-muted: light-dark(oklch(0.6 0.02 260), oklch(0.55 0.02 260));
+  --color-chart-muted: oklch(0.6 0.02 260);
 
   /* ========== Status Colors ========== */
   --color-status-online: var(--color-base-emerald);
@@ -141,11 +141,11 @@
   --color-status-warning: var(--color-base-amber);
 
   /* ========== Rank Badge Colors ========== */
-  --color-rank-gold: light-dark(oklch(0.8 0.16 85), oklch(0.82 0.16 85));
-  --color-rank-gold-muted: light-dark(oklch(0.97 0.04 85), oklch(0.2 0.05 85));
-  --color-rank-silver: light-dark(oklch(0.55 0.02 260), oklch(0.6 0.02 260));
-  --color-rank-bronze: light-dark(oklch(0.7 0.15 50), oklch(0.72 0.15 50));
-  --color-rank-bronze-muted: light-dark(oklch(0.97 0.04 50), oklch(0.2 0.05 50));
+  --color-rank-gold: oklch(0.8 0.16 85);
+  --color-rank-gold-muted: oklch(0.97 0.04 85);
+  --color-rank-silver: oklch(0.55 0.02 260);
+  --color-rank-bronze: oklch(0.7 0.15 50);
+  --color-rank-bronze-muted: oklch(0.97 0.04 50);
 
   /* ========== Brand Colors ========== */
   --color-brand-telegram: oklch(0.65 0.18 220);
@@ -155,14 +155,14 @@
   --color-brand-google-red: oklch(0.63 0.24 27);
 
   /* ========== Progress Gradient Colors ========== */
-  --color-progress-success-start: light-dark(oklch(0.65 0.2 145), oklch(0.68 0.2 145));
+  --color-progress-success-start: oklch(0.65 0.2 145);
   --color-progress-success-end: var(--color-base-emerald);
   --color-progress-warning-start: var(--color-base-amber);
-  --color-progress-warning-end: light-dark(oklch(0.8 0.16 85), oklch(0.82 0.16 85));
-  --color-progress-danger-start: light-dark(oklch(0.6 0.22 25), oklch(0.65 0.22 25));
-  --color-progress-danger-end: light-dark(oklch(0.7 0.18 45), oklch(0.72 0.18 45));
+  --color-progress-warning-end: oklch(0.8 0.16 85);
+  --color-progress-danger-start: oklch(0.6 0.22 25);
+  --color-progress-danger-end: oklch(0.7 0.18 45);
   --color-progress-info-start: var(--color-base-blue);
-  --color-progress-info-end: light-dark(oklch(0.65 0.18 200), oklch(0.7 0.18 200));
+  --color-progress-info-end: oklch(0.65 0.18 200);
 
   /* ========== iOS 26 Liquid Glass System ========== */
   /* Blur - Tailwind standard namespace for blur-* utilities */
@@ -172,13 +172,37 @@
   --blur-glass-xl: 32px;
 
   /* Glass backgrounds */
-  --glass-bg: light-dark(rgba(255, 255, 255, 0.72), rgba(30, 30, 35, 0.72));
-  --glass-bg-elevated: light-dark(rgba(255, 255, 255, 0.85), rgba(40, 40, 48, 0.85));
-  --glass-bg-intense: light-dark(rgba(255, 255, 255, 0.92), rgba(50, 50, 58, 0.92));
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.85);
+  --glass-bg-intense: rgba(255, 255, 255, 0.92);
 
   /* Glass borders */
-  --glass-border: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.12));
-  --glass-border-subtle: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-border-subtle: rgba(0, 0, 0, 0.06);
+
+  /* Glass card */
+  --glass-card-bg: rgba(255, 255, 255, 0.6);
+  --glass-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  /* ========== Derived Alpha Colors (iOS 16 compat: replaces oklch relative color syntax) ========== */
+  --color-selection-bg: oklch(0.55 0.25 265 / 0.2);
+  --color-scrollbar-thumb: oklch(0.45 0.02 260 / 0.3);
+  --color-scrollbar-thumb-hover: oklch(0.45 0.02 260 / 0.5);
+  --color-primary-lighter: oklch(0.65 0.25 265);
+  --color-primary-alpha-8: oklch(0.55 0.25 265 / 0.08);
+  --color-primary-alpha-10: oklch(0.55 0.25 265 / 0.1);
+  --color-primary-alpha-15: oklch(0.55 0.25 265 / 0.15);
+  --color-primary-alpha-20: oklch(0.55 0.25 265 / 0.2);
+  --color-primary-alpha-30: oklch(0.55 0.25 265 / 0.3);
+  --color-primary-alpha-60: oklch(0.55 0.25 265 / 0.6);
+  --color-primary-darker-90: oklch(0.35 0.25 265 / 0.9);
+  --color-accent-alpha-10: oklch(0.75 0.18 70 / 0.1);
+  --color-accent-alpha-12: oklch(0.75 0.18 70 / 0.12);
+  --color-border-alpha-30: oklch(0.92 0.01 260 / 0.3);
+  --color-progress-success-glow: oklch(0.65 0.2 145 / 0.4);
+  --color-progress-warning-glow: oklch(0.75 0.18 70 / 0.4);
+  --color-progress-danger-glow: oklch(0.6 0.22 25 / 0.4);
+  --color-progress-info-glow: oklch(0.6 0.2 250 / 0.4);
 
   /* Shadow - Tailwind standard namespace for shadow-* utilities */
   --shadow-glass: 0 2px 20px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.1);
@@ -318,6 +342,89 @@
   }
 }
 
+/* ========== Dark Mode Overrides (unlayered for correct @theme cascade) ========== */
+.dark {
+  /* Base palette */
+  --color-base-emerald: oklch(0.65 0.19 160);
+  --color-base-red: oklch(0.6 0.22 25);
+  --color-base-amber: oklch(0.78 0.18 70);
+  --color-base-indigo: oklch(0.65 0.25 265);
+  --color-base-blue: oklch(0.68 0.2 250);
+
+  /* Semantic colors */
+  --color-background: oklch(0.145 0.015 260);
+  --color-foreground: oklch(0.95 0.01 260);
+  --color-card: oklch(0.18 0.015 260);
+  --color-card-foreground: oklch(0.95 0.01 260);
+  --color-popover: oklch(0.18 0.015 260);
+  --color-popover-foreground: oklch(0.95 0.01 260);
+  --color-primary-foreground: oklch(0.145 0.015 260);
+  --color-secondary: oklch(0.25 0.02 260);
+  --color-muted: oklch(0.22 0.015 260);
+  --color-muted-foreground: oklch(0.65 0.02 260);
+  --color-accent-foreground: oklch(0.145 0.015 260);
+  --color-destructive-foreground: oklch(0.95 0.01 260);
+  --color-success-foreground: oklch(0.145 0.015 260);
+  --color-success-muted: oklch(0.2 0.05 160);
+  --color-warning-foreground: oklch(0.145 0.015 260);
+  --color-warning-muted: oklch(0.2 0.05 70);
+  --color-info-foreground: oklch(0.145 0.015 260);
+  --color-info-muted: oklch(0.2 0.05 250);
+  --color-relay: oklch(0.65 0.2 300);
+  --color-relay-foreground: oklch(0.145 0.015 260);
+  --color-border: oklch(0.28 0.015 260);
+  --color-input: oklch(0.25 0.015 260);
+
+  /* Chart */
+  --color-chart-3: oklch(0.65 0.15 180);
+  --color-chart-4: oklch(0.65 0.2 300);
+  --color-chart-5: oklch(0.65 0.2 350);
+  --color-chart-muted: oklch(0.55 0.02 260);
+
+  /* Rank */
+  --color-rank-gold: oklch(0.82 0.16 85);
+  --color-rank-gold-muted: oklch(0.2 0.05 85);
+  --color-rank-silver: oklch(0.6 0.02 260);
+  --color-rank-bronze: oklch(0.72 0.15 50);
+  --color-rank-bronze-muted: oklch(0.2 0.05 50);
+
+  /* Progress */
+  --color-progress-success-start: oklch(0.68 0.2 145);
+  --color-progress-warning-end: oklch(0.82 0.16 85);
+  --color-progress-danger-start: oklch(0.65 0.22 25);
+  --color-progress-danger-end: oklch(0.72 0.18 45);
+  --color-progress-info-end: oklch(0.7 0.18 200);
+
+  /* Glass */
+  --glass-bg: rgba(30, 30, 35, 0.72);
+  --glass-bg-elevated: rgba(40, 40, 48, 0.85);
+  --glass-bg-intense: rgba(50, 50, 58, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-card-bg: rgba(255, 255, 255, 0.06);
+  --glass-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  /* Derived alpha colors */
+  --color-selection-bg: oklch(0.65 0.25 265 / 0.2);
+  --color-scrollbar-thumb: oklch(0.65 0.02 260 / 0.3);
+  --color-scrollbar-thumb-hover: oklch(0.65 0.02 260 / 0.5);
+  --color-primary-lighter: oklch(0.75 0.25 265);
+  --color-primary-alpha-8: oklch(0.65 0.25 265 / 0.08);
+  --color-primary-alpha-10: oklch(0.65 0.25 265 / 0.1);
+  --color-primary-alpha-15: oklch(0.65 0.25 265 / 0.15);
+  --color-primary-alpha-20: oklch(0.65 0.25 265 / 0.2);
+  --color-primary-alpha-30: oklch(0.65 0.25 265 / 0.3);
+  --color-primary-alpha-60: oklch(0.65 0.25 265 / 0.6);
+  --color-primary-darker-90: oklch(0.45 0.25 265 / 0.9);
+  --color-accent-alpha-10: oklch(0.78 0.18 70 / 0.1);
+  --color-accent-alpha-12: oklch(0.78 0.18 70 / 0.12);
+  --color-border-alpha-30: oklch(0.28 0.015 260 / 0.3);
+  --color-progress-success-glow: oklch(0.68 0.2 145 / 0.4);
+  --color-progress-warning-glow: oklch(0.78 0.18 70 / 0.4);
+  --color-progress-danger-glow: oklch(0.65 0.22 25 / 0.4);
+  --color-progress-info-glow: oklch(0.68 0.2 250 / 0.4);
+}
+
 @layer base {
   /* Theme variables */
   :root {
@@ -361,25 +468,22 @@
     scroll-behavior: smooth;
     overflow-x: hidden;
     max-width: 100vw;
-    /* Reserve scrollbar space to prevent layout shift when modal/dropdown opens */
-    scrollbar-gutter: stable;
+  }
 
-    /* Nested body styles */
-    & body {
-      overflow-x: hidden;
-      max-width: 100vw;
-      background-color: var(--color-background);
-      color: var(--color-foreground);
-      /* Inter OpenType features for UI: alternate digits, simplified letters */
-      font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'rlig' 1, 'calt' 1;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100vh;
-      min-height: 100dvh;
-      /* Disable Radix UI scrollbar compensation since scrollbar-gutter: stable handles it */
-      --removed-body-scroll-bar-size: 0px !important;
-      margin-right: 0 !important;
-    }
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    /* Inter OpenType features for UI: alternate digits, simplified letters */
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Disable Radix UI scrollbar compensation */
+    --removed-body-scroll-bar-size: 0px !important;
+    margin-right: 0 !important;
   }
 
   /* Root app container */
@@ -392,7 +496,7 @@
 
   /* Selection color */
   ::selection {
-    background-color: oklch(from var(--color-primary) l c h / 0.2);
+    background-color: var(--color-selection-bg);
     color: var(--color-foreground);
   }
 
@@ -408,13 +512,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: oklch(from var(--color-muted-foreground) l c h / 0.3);
+    background: var(--color-scrollbar-thumb);
     border-radius: 4px;
     transition: background 0.2s;
+  }
 
-    &:hover {
-      background: oklch(from var(--color-muted-foreground) l c h / 0.5);
-    }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-thumb-hover);
   }
 
   /* Grid background decoration */
@@ -696,32 +800,32 @@
 
 /* Glass card for sidebar navigation groups - lighter blur for nested content */
 @utility glass-card {
-  background: light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.06));
+  background: var(--glass-card-bg);
   backdrop-filter: blur(var(--blur-glass-md));
   -webkit-backdrop-filter: blur(var(--blur-glass-md));
   border: 1px solid var(--glass-border-subtle);
-  box-shadow: 0 2px 8px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.2));
+  box-shadow: var(--glass-card-shadow);
 }
 
 /* ========== Landing Page Hero Effects ========== */
 @utility hero-gradient {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, oklch(from var(--color-primary) l c h / 0.15), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 50%, oklch(from var(--color-accent) l c h / 0.1), transparent),
-    radial-gradient(ellipse 50% 50% at 20% 80%, oklch(from var(--color-primary) l c h / 0.08), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--color-primary-alpha-15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, var(--color-accent-alpha-10), transparent),
+    radial-gradient(ellipse 50% 50% at 20% 80%, var(--color-primary-alpha-8), transparent);
 }
 
 @utility hero-grid {
   background-image:
-    linear-gradient(to right, oklch(from var(--color-border) l c h / 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, oklch(from var(--color-border) l c h / 0.3) 1px, transparent 1px);
+    linear-gradient(to right, var(--color-border-alpha-30) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border-alpha-30) 1px, transparent 1px);
   background-size: 4rem 4rem;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 70%);
 }
 
 @utility text-gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, oklch(from var(--color-primary) calc(l + 0.1) c h) 50%, var(--color-accent) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-lighter) 50%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -729,15 +833,15 @@
 
 @utility glow-primary {
   box-shadow:
-    0 0 20px oklch(from var(--color-primary) l c h / 0.3),
-    0 0 40px oklch(from var(--color-primary) l c h / 0.2),
-    0 0 60px oklch(from var(--color-primary) l c h / 0.1);
+    0 0 20px var(--color-primary-alpha-30),
+    0 0 40px var(--color-primary-alpha-20),
+    0 0 60px var(--color-primary-alpha-10);
 }
 
 @utility glow-primary-sm {
   box-shadow:
-    0 0 10px oklch(from var(--color-primary) l c h / 0.2),
-    0 0 20px oklch(from var(--color-primary) l c h / 0.1);
+    0 0 10px var(--color-primary-alpha-20),
+    0 0 20px var(--color-primary-alpha-10);
 }
 
 /* ========== Spring Animations ========== */

@@ -36,7 +36,10 @@ import {
   BILLING_CYCLE_KEYS,
   FORWARD_RULE_TYPE_VALUES,
   FORWARD_RULE_TYPE_KEYS,
+  TRAFFIC_RESET_MODE_VALUES,
+  TRAFFIC_RESET_MODE_KEYS,
 } from '../hooks/useEditPlanForm';
+import type { TrafficResetMode } from '../hooks/useEditPlanForm';
 
 interface EditPlanDialogProps {
   open: boolean;
@@ -234,6 +237,27 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  <Label htmlFor="editTrafficResetMode">{t('admin.plans.form.trafficResetMode.label')}</Label>
+                  <Select
+                    value={form.formData.planLimits.trafficResetMode || 'billing_cycle'}
+                    onValueChange={(value) => form.handleLimitChange('trafficResetMode', value as TrafficResetMode)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="editTrafficResetMode">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRAFFIC_RESET_MODE_VALUES.map((mode) => (
+                        <SelectItem key={mode} value={mode}>
+                          {t(TRAFFIC_RESET_MODE_KEYS[mode])}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t('admin.plans.form.trafficResetMode.hint')}</p>
+                </div>
+
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="deviceLimit">{t('admin.plans.form.deviceLimit')}</Label>
                   <Input
                     id="deviceLimit"
@@ -319,6 +343,27 @@ export const EditPlanDialog: React.FC<EditPlanDialogProps> = ({
                     onChange={(e) => form.handleLimitChange('trafficLimit', e.target.value === '' ? undefined : Math.round(Number(e.target.value) * 1024 * 1024 * 1024))}
                     disabled={loading}
                   />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="editFwdTrafficResetMode">{t('admin.plans.form.trafficResetMode.label')}</Label>
+                  <Select
+                    value={form.formData.planLimits.trafficResetMode || 'billing_cycle'}
+                    onValueChange={(value) => form.handleLimitChange('trafficResetMode', value as TrafficResetMode)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="editFwdTrafficResetMode">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRAFFIC_RESET_MODE_VALUES.map((mode) => (
+                        <SelectItem key={mode} value={mode}>
+                          {t(TRAFFIC_RESET_MODE_KEYS[mode])}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t('admin.plans.form.trafficResetMode.hint')}</p>
                 </div>
 
                 <div className="flex flex-col gap-2 @sm:col-span-2">

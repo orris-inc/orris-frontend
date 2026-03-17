@@ -2227,6 +2227,12 @@
         "activatePricing": "Enable this pricing",
         "nodeLimits": "Node Limits",
         "trafficLimit": "Monthly Traffic Limit (GB)",
+        "trafficResetMode": {
+          "label": "Traffic Reset Mode",
+          "calendarMonth": "Calendar Month",
+          "billingCycle": "Billing Cycle",
+          "hint": "Calendar month: resets on the 1st; Billing cycle: resets on subscription billing cycle boundaries"
+        },
         "deviceLimit": "Device Limit",
         "speedLimit": "Speed Limit (Mbps)",
         "connectionLimit": "Connection Limit",

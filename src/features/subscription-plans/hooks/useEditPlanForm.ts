@@ -12,12 +12,14 @@ import type {
 } from '@/api/subscription/types';
 
 // Re-export shared types from create hook for consistency
-export type { ForwardRuleTypeOption, PlanLimits } from './useCreatePlanForm';
+export type { ForwardRuleTypeOption, PlanLimits, TrafficResetMode } from './useCreatePlanForm';
 export {
   BILLING_CYCLE_VALUES,
   FORWARD_RULE_TYPE_VALUES,
   BILLING_CYCLE_KEYS,
   FORWARD_RULE_TYPE_KEYS,
+  TRAFFIC_RESET_MODE_VALUES,
+  TRAFFIC_RESET_MODE_KEYS,
   getDefaultPricing,
 } from './useCreatePlanForm';
 
@@ -25,6 +27,7 @@ export {
 function planLimitsToApiFormat(limits: import('./useCreatePlanForm').PlanLimits): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (limits.trafficLimit !== undefined) result['traffic_limit'] = limits.trafficLimit;
+  if (limits.trafficResetMode !== undefined) result['traffic_reset_mode'] = limits.trafficResetMode;
   if (limits.deviceLimit !== undefined) result['device_limit'] = limits.deviceLimit;
   if (limits.speedLimit !== undefined) result['speed_limit'] = limits.speedLimit;
   if (limits.connectionLimit !== undefined) result['connection_limit'] = limits.connectionLimit;
@@ -39,6 +42,7 @@ function parsePlanLimits(apiLimits: Record<string, unknown> | undefined): import
   if (!apiLimits) return {};
   return {
     trafficLimit: apiLimits.trafficLimit as number | undefined,
+    trafficResetMode: apiLimits.trafficResetMode as import('./useCreatePlanForm').TrafficResetMode | undefined,
     deviceLimit: apiLimits.deviceLimit as number | undefined,
     speedLimit: apiLimits.speedLimit as number | undefined,
     connectionLimit: apiLimits.connectionLimit as number | undefined,
