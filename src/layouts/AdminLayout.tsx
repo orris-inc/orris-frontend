@@ -114,7 +114,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="min-h-viewport bg-background">
+      <div className="min-h-viewport md:h-viewport md:overflow-hidden bg-background">
         {/* Mobile drawer - iOS 26 Liquid Glass Design */}
         <MobileDrawer
           open={mobileDrawerOpen}
@@ -214,7 +214,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         {/* Main content area */}
         <div
           className={cn(
-            'flex min-h-viewport flex-col transition-all duration-200 motion-reduce:transition-none',
+            'flex min-h-viewport md:h-viewport flex-col transition-all duration-200 motion-reduce:transition-none',
             collapsed ? 'md:pl-16' : 'md:pl-60'
           )}
         >
@@ -324,7 +324,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             className={mobileFixedHeaderStyles.mainSmall}
             data-view-transition="content"
           >
-            <div className="mx-auto max-w-7xl min-w-0">
+            <div className="min-w-0">
               {children}
             </div>
           </main>

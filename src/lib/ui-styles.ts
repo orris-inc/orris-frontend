@@ -202,7 +202,7 @@ export const mobileFixedHeaderStyles = {
      * 移动端需要 padding-top 补偿 fixed header 高度
      */
     mainSmall: cn(
-        'flex-1 overflow-x-hidden pb-safe',
+        'flex-1 overflow-x-hidden md:overflow-y-auto pb-safe min-h-0',
         // Mobile: pt = header(44px/2.75rem) + safe-area + base-padding(0.75rem)
         'p-3 pt-[calc(2.75rem+env(safe-area-inset-top)+0.75rem)]',
         // Desktop: normal padding
@@ -213,7 +213,7 @@ export const mobileFixedHeaderStyles = {
      * Main 内容区域样式 - 中等间距版本 (p-4)
      */
     mainMedium: cn(
-        'flex-1 overflow-x-hidden pb-safe',
+        'flex-1 overflow-x-hidden md:overflow-y-auto pb-safe min-h-0',
         // Mobile: pt = header(44px/2.75rem) + safe-area + base-padding(1rem)
         'py-4 pt-[calc(2.75rem+env(safe-area-inset-top)+1rem)]',
         // Desktop: normal padding
