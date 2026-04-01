@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, CreditCard, MoreHorizontal, KeyRound, Shield } from 'lucide-react';
 import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { UserMobileList } from './UserMobileList';
 import {
@@ -96,12 +97,8 @@ function UserIdentityCell({ user }: { user: UserResponse }) {
 
         {/* Name + email */}
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-foreground truncate text-[13px]">
-            {user.name || user.email.split('@')[0]}
-          </div>
-          <div className="text-xs text-muted-foreground font-mono truncate">
-            {user.email}
-          </div>
+          <SmartTruncate text={user.name || user.email.split('@')[0]} className="font-medium text-foreground text-[13px]" />
+          <SmartTruncate text={user.email} className="text-xs text-muted-foreground" mono />
         </div>
       </div>
     </TableHoverCardList>

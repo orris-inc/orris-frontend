@@ -10,6 +10,7 @@ import { X } from 'lucide-react';
 import { Drawer } from 'vaul';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/common/Avatar';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 
 import type { MobileDrawerHeaderProps } from './types';
 
@@ -37,12 +38,10 @@ export const MobileDrawerHeader = ({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <Drawer.Title className="text-[13px] font-semibold text-foreground truncate">
-              {user.displayName || t('common.role.user')}
+            <Drawer.Title className="text-[13px] font-semibold text-foreground">
+              <SmartTruncate text={user.displayName || t('common.role.user')} />
             </Drawer.Title>
-            <p className="text-xs text-muted-foreground truncate">
-              {user.email}
-            </p>
+            <SmartTruncate text={user.email || ''} className="text-xs text-muted-foreground" />
           </div>
         </div>
       ) : (

@@ -10,6 +10,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Dialog,
   DialogContent,
@@ -433,9 +434,7 @@ export const CreateForwardAgentDialog: React.FC<
                                   checked={isSelected}
                                   onCheckedChange={() => form.handleGroupToggle(group.sid)}
                                 />
-                                <span className="text-sm font-medium truncate flex-1">
-                                  {group.name}
-                                </span>
+                                <SmartTruncate text={group.name} className="text-sm font-medium flex-1" />
                               </label>
                             );
                           })}

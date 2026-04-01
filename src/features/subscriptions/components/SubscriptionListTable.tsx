@@ -25,6 +25,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { Subscription } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
@@ -114,9 +115,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
             contentClassName="w-72"
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <span className="font-semibold text-foreground whitespace-nowrap truncate">
-                {user?.name || user?.email || `User #${subscription.userId}`}
-              </span>
+              <SmartTruncate text={user?.name || user?.email || `User #${subscription.userId}`} className="font-semibold text-foreground" />
               <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
                 {subscription.id}
               </code>

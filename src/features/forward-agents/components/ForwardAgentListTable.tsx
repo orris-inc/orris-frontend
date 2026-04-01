@@ -24,6 +24,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type { ForwardAgent, ForwardStatus } from '@/api/forward';
 import type { ResourceGroup } from '@/api/resource/types';
 
@@ -256,9 +257,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
             contentClassName="w-80"
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <span className="font-semibold text-foreground whitespace-nowrap truncate">
-                {agent.name}
-              </span>
+              <SmartTruncate text={agent.name} className="font-semibold text-foreground whitespace-nowrap" />
               <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
                 {agent.publicAddress || '-'}
               </code>

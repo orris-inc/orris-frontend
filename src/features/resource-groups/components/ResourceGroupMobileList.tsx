@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Edit,
   MoreHorizontal,
@@ -147,9 +148,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                 <div className="flex-1 min-w-0">
                   {/* Name and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {resourceGroup.name}
-                    </span>
+                    <SmartTruncate text={resourceGroup.name} className="font-medium text-sm text-foreground" />
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                       {t(statusConfig.labelKey)}
                     </AdminBadge>
@@ -158,7 +157,7 @@ export const ResourceGroupMobileList: React.FC<ResourceGroupMobileListProps> = (
                   {/* Plan name */}
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <FileText className="size-3 text-muted-foreground flex-shrink-0" />
-                    <span className="truncate">{plan?.name || `${t('admin.resourceGroups.detail.plan')} #${resourceGroup.planId}`}</span>
+                    <SmartTruncate text={plan?.name || `${t('admin.resourceGroups.detail.plan')} #${resourceGroup.planId}`} />
                   </div>
                 </div>
 

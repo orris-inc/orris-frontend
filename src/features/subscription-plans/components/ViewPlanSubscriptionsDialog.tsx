@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Loader2, Users, Search, CheckCircle, Calendar } from 'lucide-react';
 import {
   Dialog,
@@ -221,16 +222,14 @@ export const ViewPlanSubscriptionsDialog: React.FC<ViewPlanSubscriptionsDialogPr
                       {/* Main info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <span className="font-semibold text-foreground truncate">
-                            {displayName}
-                          </span>
+                          <SmartTruncate text={displayName} className="font-semibold text-foreground" />
                           <AdminBadge variant={statusConfig.variant} size="sm">
                             {t(statusConfig.labelKey)}
                           </AdminBadge>
                         </div>
                         <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
                           {user?.email && (
-                            <span className="truncate max-w-[180px]">{user.email}</span>
+                            <SmartTruncate text={user.email} className="max-w-[180px]" />
                           )}
                           <span className="flex items-center gap-1">
                             <Calendar className="size-3.5" strokeWidth={2} />

@@ -10,6 +10,7 @@
 
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Activity, ArrowUpCircle, Network, Users } from 'lucide-react';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import { AdminBadge } from '@/components/admin';
@@ -86,9 +87,7 @@ export const MobileNodeCard = memo(({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + Online status + Update indicator */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {node.name}
-          </span>
+          <SmartTruncate text={node.name} className="text-[13px] font-medium text-foreground" />
           <OnlineIndicator isOnline={node.isOnline} showLabel={false} onlineText={t('common.status.online')} offlineText={t('common.status.offline')} />
           {node.onlineSubscriptionCount > 0 && (
             <span className="inline-flex items-center gap-0.5 text-[10px] text-success font-medium shrink-0">

@@ -10,6 +10,7 @@
 import { ReactNode } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
 
@@ -137,8 +138,8 @@ export const AdminStatsCard = ({
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <dt className="truncate text-xs font-medium text-muted-foreground">
-            {title}
+          <dt className="text-xs font-medium text-muted-foreground">
+            <SmartTruncate text={title} className="text-xs font-medium text-muted-foreground" />
           </dt>
           <dd className="mt-1 flex items-baseline justify-between gap-x-2">
             <span className="text-xl font-semibold tracking-tight text-foreground tabular-nums lg:text-2xl">

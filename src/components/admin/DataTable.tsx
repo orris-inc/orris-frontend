@@ -36,6 +36,7 @@ import {
 import { TableRowProvider } from './TableHoverCard';
 import { Button } from '@/components/common/Button';
 import { createSelectionColumn } from './data-table-utils';
+import { measureRowHeight } from '@/hooks/useTextMeasure';
 
 // ============ Type Definitions ============
 
@@ -114,6 +115,10 @@ interface DataTableProps<TData> {
   virtualizeThreshold?: number; // Default: 50
   estimatedRowHeight?: number; // Default: 52
   maxHeight?: number | string; // Default: 600
+  /** Extract text values from a row for Pretext-based dynamic height measurement */
+  getRowTexts?: (row: TData) => string[];
+  /** CSS font string for text measurement (default: '13px Inter, system-ui, sans-serif') */
+  measureFont?: string;
   /** Show skeleton loading on first load instead of spinner */
   enableSkeletonLoading?: boolean;
   /** Number of skeleton rows to show */
@@ -220,6 +225,8 @@ export function DataTable<TData>({
   maxHeight = 600,
   enableSkeletonLoading = false,
   skeletonRowCount = 5,
+  getRowTexts,
+  measureFont = '13px Inter, system-ui, sans-serif',
 }: DataTableProps<TData>) {
   const { t } = useTranslation();
   // Responsive breakpoint
@@ -270,10 +277,25 @@ export function DataTable<TData>({
   // Enable virtualization for large datasets
   const shouldVirtualize = rows.length > virtualizeThreshold;
 
+  // Pretext-based dynamic row height estimation
+  const estimateRowSize = useCallback(
+    (index: number) => {
+      if (!getRowTexts) return estimatedRowHeight;
+      const row = rows[index];
+      if (!row) return estimatedRowHeight;
+      const texts = getRowTexts(row.original);
+      const containerWidth = tableContainerRef.current?.clientWidth ?? 800;
+      // Allocate ~60% of container width for text columns
+      const textColumnWidth = containerWidth * 0.6;
+      return measureRowHeight(texts, textColumnWidth, measureFont, 20, 20);
+    },
+    [getRowTexts, rows, estimatedRowHeight, measureFont]
+  );
+
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => estimatedRowHeight,
+    estimateSize: estimateRowSize,
     overscan: 5, // Render 5 extra rows above/below viewport
     enabled: shouldVirtualize,
   });

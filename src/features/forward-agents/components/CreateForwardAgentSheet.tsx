@@ -11,6 +11,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Loader2, ChevronDown, FolderTree, Check } from "lucide-react";
 import { useResourceGroups } from "@/features/resource-groups/hooks/useResourceGroups";
 import {
@@ -355,9 +356,7 @@ export const CreateForwardAgentSheet: React.FC<CreateForwardAgentSheetProps> =
                             )}>
                               {isSelected && <Check className="size-3.5" />}
                             </div>
-                            <span className="text-sm font-medium truncate flex-1">
-                              {group.name}
-                            </span>
+                            <SmartTruncate text={group.name} className="text-sm font-medium flex-1" />
                           </button>
                         );
                       })}

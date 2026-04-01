@@ -9,6 +9,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { ArrowUpRight, ArrowDownLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
@@ -138,9 +139,7 @@ export const MobileForwardRuleCard = ({
           >
             {ruleTypeConfig.shortLabel}
           </span>
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {rule.name}
-          </span>
+          <SmartTruncate text={rule.name} className="text-[13px] font-medium text-foreground" />
           <RunStatusIndicator status={runStatus} isPolling={isPolling} />
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">

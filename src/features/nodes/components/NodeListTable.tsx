@@ -27,6 +27,7 @@ import {
   Users,
 } from 'lucide-react';
 import { DataTable, DraggableDataTable, SystemStatusCell, TableHoverCardProvider, TableHoverCardList, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState, type OnChangeFn } from '@/components/admin';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeMobileList } from './NodeMobileList';
 import {
@@ -366,9 +367,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             )}
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <span className="font-medium text-foreground truncate whitespace-nowrap">
-                {node.name}
-              </span>
+              <SmartTruncate text={node.name} className="font-medium text-foreground whitespace-nowrap" />
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground/60 whitespace-nowrap">
                 <span className={`font-medium ${protocolConfig.color}`}>{protocolConfig.label}</span>
                 <span className="text-muted-foreground/30">·</span>
@@ -499,9 +498,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1 whitespace-nowrap cursor-default">
-                <span className="text-[11px] text-muted-foreground truncate max-w-[60px]">
-                  {firstTag}
-                </span>
+                <SmartTruncate text={firstTag} className="text-[11px] text-muted-foreground max-w-[60px]" />
                 {moreCount > 0 && (
                   <span className="text-[11px] text-muted-foreground/50">+{moreCount}</span>
                 )}
@@ -581,9 +578,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             contentClassName="w-64"
           >
             <div className="flex items-center gap-1 cursor-default">
-              <span className="text-[11px] text-muted-foreground truncate max-w-[80px]">
-                {firstGroup?.name || groupSids[0]}
-              </span>
+              <SmartTruncate text={firstGroup?.name || groupSids[0]} className="text-[11px] text-muted-foreground max-w-[80px]" />
               {remainingCount > 0 && (
                 <span className="text-[11px] text-muted-foreground/50">
                   +{remainingCount}
@@ -610,9 +605,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
             <TableHoverCardList columnKey="owner" items={ownerItems} contentClassName="w-64">
               <div className="flex items-center gap-1.5 cursor-default">
                 <User className="size-3.5 text-muted-foreground/60" strokeWidth={1.5} />
-                <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                  {node.owner.name || node.owner.email}
-                </span>
+                <SmartTruncate text={node.owner.name || node.owner.email} className="text-xs text-muted-foreground max-w-[80px]" />
               </div>
             </TableHoverCardList>
           );

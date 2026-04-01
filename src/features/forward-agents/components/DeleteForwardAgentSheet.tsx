@@ -19,6 +19,7 @@ import {
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type { ForwardAgent } from '@/api/forward';
 
 type DeleteForwardAgentSheetProps = DeleteSheetProps<ForwardAgent>;
@@ -85,7 +86,7 @@ export const DeleteForwardAgentSheet: React.FC<DeleteForwardAgentSheetProps> = (
                   <Cpu className="size-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{agent.name}</p>
+                  <SmartTruncate text={agent.name} className="font-medium" />
                   <p className="text-xs text-muted-foreground font-mono">
                     {agent.publicAddress || t('admin.forwardAgents.delete.noPublicAddress')}
                   </p>

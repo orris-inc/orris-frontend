@@ -49,6 +49,7 @@ import {
 } from '@/components/common/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/common/Tabs';
 import { ScrollArea } from '@/components/common/ScrollArea';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type { TimeGranularity } from '@/features/admin-traffic';
 
 // ============================================================================
@@ -570,7 +571,7 @@ function RankingRow({ item }: { item: TrafficRankingItem }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground truncate">{item.name}</p>
+          <SmartTruncate text={item.name} className="text-xs font-semibold text-foreground" />
         </div>
         <div className="flex items-center gap-2 text-[11px]">
           <span className="flex items-center gap-0.5">
@@ -610,7 +611,7 @@ function NodeRow({ item }: { item: NodeTrafficStatsItem }) {
           )} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground truncate">{item.nodeName}</p>
+          <SmartTruncate text={item.nodeName} className="text-xs font-semibold text-foreground" />
         </div>
         <div className="flex items-center gap-2 text-[11px]">
           <span className="flex items-center gap-0.5">

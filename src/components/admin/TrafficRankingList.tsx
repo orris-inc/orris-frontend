@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Trophy, ArrowUp, ArrowDown, Activity } from 'lucide-react';
 import { TrafficRankingItem, formatTrafficBytes } from '@/api/admin';
 import { AdminCard } from './AdminCard';
@@ -77,12 +78,8 @@ const RankingItem = ({ item }: { item: TrafficRankingItem }) => {
 
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-foreground truncate">
-          {item.name}
-        </p>
-        <p className="text-[11px] text-muted-foreground/60 truncate">
-          {item.id}
-        </p>
+        <SmartTruncate text={item.name} className="text-[13px] font-medium text-foreground" />
+        <SmartTruncate text={item.id} mono className="text-[11px] text-muted-foreground/60" font="11px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
       </div>
 
       {/* Traffic Stats */}

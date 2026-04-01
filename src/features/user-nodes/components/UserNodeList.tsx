@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/DropdownMenu';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
 import type { UserNode } from '@/api/node';
@@ -212,9 +213,7 @@ export const UserNodeList: React.FC<UserNodeListProps> = ({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {node.name}
-                    </h3>
+                    <SmartTruncate text={node.name} className="font-semibold text-foreground" />
                     <span className="text-xs text-muted-foreground font-mono">
                       {node.serverAddress}:{node.agentPort}
                     </span>

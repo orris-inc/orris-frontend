@@ -22,6 +22,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
@@ -137,9 +138,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
             contentClassName="w-72"
           >
             <div className="flex flex-col gap-0.5 cursor-default">
-              <span className="font-semibold text-foreground whitespace-nowrap truncate">
-                {group.name}
-              </span>
+              <SmartTruncate text={group.name} className="font-semibold text-foreground" />
               <code className="font-mono text-[11px] text-muted-foreground bg-muted/50 px-1 py-0.5 rounded w-fit">
                 {group.sid}
               </code>

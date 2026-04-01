@@ -9,6 +9,7 @@
  */
 
 import { useState, memo } from 'react';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatDateTime } from '@/shared/utils/date-utils';
 import { useTranslation } from 'react-i18next';
 import {
@@ -174,15 +175,15 @@ export const UserDetailSheet = ({
               <UserAvatar name={user.name} email={user.email} role={user.role} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <SheetTitle className="truncate">
-                    {user.name || user.email.split('@')[0]}
+                  <SheetTitle>
+                    <SmartTruncate text={user.name || user.email.split('@')[0]} />
                   </SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
                     {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
-                <SheetDescription className="truncate text-xs">
-                  {user.email}
+                <SheetDescription className="text-xs">
+                  <SmartTruncate text={user.email} />
                 </SheetDescription>
               </div>
             </div>

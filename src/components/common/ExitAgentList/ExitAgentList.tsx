@@ -49,7 +49,7 @@ export function ExitAgentList<T extends BaseAgent>({
   // Add new exit agent
   const handleAdd = (agentId: string) => {
     if (!agentId || exitAgents.some((ea) => ea.agentId === agentId)) return;
-    onChange([...exitAgents, { agentId, weight: 100 }]);
+    onChange([...exitAgents, { agentId, weight: 50 }]);
   };
 
   // Remove exit agent
@@ -86,7 +86,7 @@ export function ExitAgentList<T extends BaseAgent>({
   const getAgent = (id: string) => agents.find((a) => a.id === id);
 
   // Calculate total weight
-  const totalWeight = exitAgents.reduce((sum, ea) => sum + ea.weight, 0);
+  const totalWeight = exitAgents.reduce((sum, ea) => sum + (ea.weight ?? 50), 0);
 
   return (
     <div className="@container space-y-3">
@@ -107,7 +107,7 @@ export function ExitAgentList<T extends BaseAgent>({
             <div className="p-2 space-y-1">
               {exitAgents.map((ea, index) => {
                 const agent = getAgent(ea.agentId);
-                const percentage = totalWeight > 0 ? ((ea.weight / totalWeight) * 100).toFixed(1) : '0';
+                const percentage = totalWeight > 0 ? (((ea.weight ?? 50) / totalWeight) * 100).toFixed(1) : '0';
                 const details = agent && renderAgentDetails ? renderAgentDetails(agent) : undefined;
                 const isBackup = ea.weight === 0;
                 const isWeighted = loadBalanceStrategy === "weighted";

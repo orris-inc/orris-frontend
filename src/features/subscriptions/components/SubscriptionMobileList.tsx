@@ -45,6 +45,7 @@ import {
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Skeleton } from '@/components/common/Skeleton';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { cardStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
@@ -334,9 +335,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                     {isUserLoading ? (
                       <Skeleton className="h-4 w-24" />
                     ) : (
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {user?.name || user?.email || `User #${subscription.userId}`}
-                      </span>
+                      <SmartTruncate text={user?.name || user?.email || `User #${subscription.userId}`} className="font-medium text-sm text-foreground" />
                     )}
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                       {t(statusConfig.labelKey)}
@@ -345,7 +344,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
 
                   {/* Plan name */}
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-muted-foreground">
-                    <span className="truncate">{plan?.name || t('subscription.unknownPlan')}</span>
+                    <SmartTruncate text={plan?.name || t('subscription.unknownPlan')} />
                     <span className="text-muted-foreground/50">·</span>
                     <span className="flex items-center gap-0.5">
                       <Calendar className="size-3" />
@@ -398,7 +397,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                 {/* Subscription ID */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 flex-shrink-0">ID</span>
-                  <span className="text-xs font-mono text-muted-foreground truncate">{subscription.id}</span>
+                  <SmartTruncate text={subscription.id} className="text-xs text-muted-foreground" mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} />
                 </div>
 
                 {/* User info */}
@@ -409,7 +408,7 @@ export const SubscriptionMobileList: React.FC<SubscriptionMobileListProps> = ({
                   ) : (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
                       <User className="size-3 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{user?.email || `ID: ${subscription.userId}`}</span>
+                      <SmartTruncate text={user?.email || `ID: ${subscription.userId}`} />
                     </div>
                   )}
                 </div>

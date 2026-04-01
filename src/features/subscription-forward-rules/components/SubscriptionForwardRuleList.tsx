@@ -31,6 +31,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytesGB } from '@/shared/utils/format-utils';
 import type { ForwardRule, UserForwardAgent } from '@/api/forward';
 
@@ -80,7 +81,7 @@ const ChainNodesDisplay: React.FC<{
             </TooltipTrigger>
             <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
           </Tooltip>
-          <span className="truncate">{firstTwoNames}</span>
+          <SmartTruncate text={firstTwoNames} />
         </div>
         <CopyableAddress
           address={targetDisplay?.address || '-'}
@@ -100,7 +101,7 @@ const ChainNodesDisplay: React.FC<{
           </TooltipTrigger>
           <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
         </Tooltip>
-        <span className="truncate">{firstTwoNames} ...</span>
+        <SmartTruncate text={`${firstTwoNames} ...`} />
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-relay/10 text-relay hover:bg-relay/20 transition-colors">
@@ -126,11 +127,9 @@ const ChainNodesDisplay: React.FC<{
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{agentName}</div>
+                        <SmartTruncate text={agentName} className="text-sm font-medium" />
                         {agent?.publicAddress && (
-                          <div className="text-xs text-muted-foreground font-mono truncate">
-                            {agent.publicAddress}
-                          </div>
+                          <SmartTruncate text={agent.publicAddress} className="text-xs text-muted-foreground" mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} />
                         )}
                       </div>
                       {!isLast && <ArrowRight className="size-4 text-muted-foreground flex-shrink-0" />}
@@ -143,10 +142,8 @@ const ChainNodesDisplay: React.FC<{
                       <Server className="size-3.5 text-info" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{targetDisplay.name}</div>
-                      <div className="text-xs text-muted-foreground font-mono truncate">
-                        {targetDisplay.address}
-                      </div>
+                      <SmartTruncate text={targetDisplay.name} className="text-sm font-medium" />
+                      <SmartTruncate text={targetDisplay.address} className="text-xs text-muted-foreground" mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} />
                     </div>
                   </div>
                 )}
@@ -262,7 +259,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => (
           <div className="space-y-1 min-w-0">
-            <div className="font-medium truncate">{row.original.name}</div>
+            <SmartTruncate text={row.original.name} className="font-medium" />
             {row.original.remark && (
               <div className="text-xs text-muted-foreground line-clamp-1">
                 {row.original.remark}
@@ -292,7 +289,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                   </TooltipTrigger>
                   <TooltipContent>{t('userForwardRules.tooltip.entryAgent')}</TooltipContent>
                 </Tooltip>
-                <span className="truncate">{agentName}</span>
+                <SmartTruncate text={agentName} />
               </div>
               <CopyableAddress
                 address={entryAddress}
@@ -364,7 +361,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
                     <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
-                    <span className="truncate">{firstExitName}</span>
+                    <SmartTruncate text={firstExitName} />
                     {exitCount > 1 && (
                       <Popover>
                         <PopoverTrigger asChild>
@@ -383,7 +380,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                                   <div key={ea.agentId} className="flex items-center justify-between text-sm">
                                     <span className="flex items-center gap-1.5">
                                       <span className="text-muted-foreground">{index + 1}.</span>
-                                      <span className="truncate">{agentName}</span>
+                                      <SmartTruncate text={agentName} />
                                     </span>
                                     <span className="text-xs text-muted-foreground font-mono">
                                       {ea.weight}
@@ -411,7 +408,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
                     <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
-                    <span className="truncate">{exitName}</span>
+                    <SmartTruncate text={exitName} />
                   </div>
                   <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
                 </div>
@@ -443,7 +440,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
               <div className="space-y-0.5 min-w-0">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <ExitTypeIcon type="manual" className="text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">{target.name}</span>
+                  <SmartTruncate text={target.name} />
                 </div>
                 <CopyableAddress address={target.address} className="text-muted-foreground pl-5" />
               </div>

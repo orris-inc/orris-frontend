@@ -17,6 +17,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { AdminBadge } from '@/components/admin';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
@@ -71,15 +72,11 @@ export const MobileSubscriptionCard = ({
         {/* Row 1: User Name + Plan */}
         <div className="flex items-center gap-2 mb-1">
           <UserIcon className="size-3.5 text-muted-foreground shrink-0" />
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {userDisplayName}
-          </span>
+          <SmartTruncate text={userDisplayName} className="text-[13px] font-medium text-foreground" />
           <span className="text-muted-foreground/40">·</span>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <CreditCard className="size-3" />
-            <span className="truncate max-w-[100px]">
-              {subscription.plan?.name || t('subscription.unknownPlan')}
-            </span>
+            <SmartTruncate text={subscription.plan?.name || t('subscription.unknownPlan')} className="max-w-[100px]" />
           </div>
         </div>
 

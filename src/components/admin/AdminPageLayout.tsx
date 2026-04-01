@@ -5,6 +5,7 @@
 
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 
 interface AdminPageLayoutProps {
   title: string;
@@ -37,13 +38,19 @@ export const AdminPageLayout = ({
               <Icon className="size-5 text-muted-foreground/60 shrink-0" strokeWidth={1.5} />
             )}
             <div className="min-w-0">
-              <h1 className="text-lg font-semibold text-foreground truncate">
-                {title}
-              </h1>
+              <SmartTruncate
+                text={title}
+                className="text-lg font-semibold text-foreground"
+                font="18px Inter, system-ui, sans-serif"
+              />
               {description && (
-                <p className="text-[13px] text-muted-foreground mt-0.5 line-clamp-2">
-                  {description}
-                </p>
+                <div className="mt-0.5">
+                  <SmartTruncate
+                    text={description}
+                    className="text-[13px] text-muted-foreground"
+                    maxLines={2}
+                  />
+                </div>
               )}
             </div>
           </div>

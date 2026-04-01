@@ -18,6 +18,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 
 // ============================================================================
 // Types
@@ -154,12 +155,8 @@ export const UserMenu = ({
         >
           {/* User Info Header */}
           <div className="px-3 py-2.5">
-            <p className="text-[13px] font-medium text-foreground truncate">
-              {user?.displayName || 'User'}
-            </p>
-            <p className="text-xs text-muted-foreground/60 truncate">
-              {user?.email}
-            </p>
+            <SmartTruncate text={user?.displayName || 'User'} className="text-[13px] font-medium text-foreground" />
+            <SmartTruncate text={user?.email || ''} className="text-xs text-muted-foreground/60" />
           </div>
 
           <MenuDivider />

@@ -9,6 +9,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
 import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
@@ -131,9 +132,7 @@ export const MobileResourceGroupCard = ({
               {planTypeConfig.shortLabel}
             </span>
           )}
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {group.name}
-          </span>
+          <SmartTruncate text={group.name} className="text-[13px] font-medium text-foreground" />
         </div>
 
         {/* Row 2: Plan name */}

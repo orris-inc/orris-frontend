@@ -13,6 +13,7 @@
  */
 
 import { type ReactNode } from 'react';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ListSkeleton } from './Skeleton';
@@ -155,9 +156,13 @@ function StackedListRow({
         {avatar && <div className="shrink-0">{avatar}</div>}
         <div className="min-w-0 flex-auto">
           <div className="flex items-start gap-x-3">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {primary}
-            </p>
+            {typeof primary === 'string' ? (
+              <SmartTruncate text={primary} className="text-sm font-semibold text-foreground" />
+            ) : (
+              <p className="text-sm font-semibold text-foreground truncate">
+                {primary}
+              </p>
+            )}
             {badge}
           </div>
           {secondary && (

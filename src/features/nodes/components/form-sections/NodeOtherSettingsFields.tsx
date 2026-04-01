@@ -5,6 +5,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Input } from '@/components/common/Input';
 import { Label } from '@/components/common/Label';
 import { Badge } from '@/components/common/Badge';
@@ -163,7 +164,7 @@ export const NodeOtherSettingsFields: React.FC<NodeOtherSettingsFieldsProps> = (
                           {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
                         </Badge>
                       </div>
-                      {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
+                      {group.description && <SmartTruncate text={group.description} className="text-xs text-muted-foreground" />}
                     </div>
                   </label>
                 ))}
@@ -319,10 +320,10 @@ export const NodeOtherSettingsFields: React.FC<NodeOtherSettingsFieldsProps> = (
                                 {group.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
                               </Badge>
                             </div>
-                            {group.description && <p className="text-xs text-muted-foreground truncate">{group.description}</p>}
+                            {group.description && <SmartTruncate text={group.description} className="text-xs text-muted-foreground" />}
                           </>
                         ) : (
-                          <span className="text-sm font-medium truncate">{group.name}</span>
+                          <SmartTruncate text={group.name} className="text-sm font-medium" />
                         )}
                       </div>
                     </label>

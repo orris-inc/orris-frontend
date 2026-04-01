@@ -7,6 +7,7 @@
 
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Edit,
   Copy,
@@ -242,12 +243,8 @@ export const PlanCatalogCard = memo(({
         onClick={handleEdit}
         className="block w-full text-left mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg -m-1 p-1"
       >
-        <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-          {plan.name}
-        </h3>
-        <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
-          {plan.slug}
-        </p>
+        <SmartTruncate text={plan.name} className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors" />
+        <SmartTruncate text={plan.slug} mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} className="text-xs text-muted-foreground mt-0.5" />
       </button>
 
       {/* Row 3: Price hero */}

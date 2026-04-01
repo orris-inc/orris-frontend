@@ -6,6 +6,7 @@
 
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Edit,
   Trash2,
@@ -214,9 +215,10 @@ export const ForwardAgentMobileList: React.FC<ForwardAgentMobileListProps> = ({
             <div className="flex-1 min-w-0">
               {/* Agent name and status */}
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="font-medium text-sm text-foreground truncate">
-                  {agent.name}
-                </span>
+                <SmartTruncate
+                  text={agent.name}
+                  className="font-medium text-sm text-foreground"
+                />
                 <AdminBadge
                   variant={agent.status === 'enabled' ? 'success' : 'default'}
                   className="text-[10px] px-1.5 py-0 flex-shrink-0"

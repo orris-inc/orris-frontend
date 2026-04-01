@@ -39,6 +39,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type { Announcement, AnnouncementStatus, AnnouncementType } from '@/api/notification/types';
 
 // ============================================================================
@@ -113,12 +114,8 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
                 <TypeIcon className="size-4 text-muted-foreground" />
               </div>
               <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="font-medium text-foreground truncate">
-                  {announcement.title}
-                </span>
-                <span className="text-xs text-muted-foreground truncate">
-                  {t(`announcements.type.${announcement.type}`)}
-                </span>
+                <SmartTruncate text={announcement.title} className="font-medium text-foreground" />
+                <SmartTruncate text={t(`announcements.type.${announcement.type}`)} className="text-xs text-muted-foreground" />
               </div>
             </div>
           );

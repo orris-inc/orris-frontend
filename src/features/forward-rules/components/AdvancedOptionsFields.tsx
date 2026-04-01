@@ -21,6 +21,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/common/Collapsible';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { FolderTree, ChevronDown } from 'lucide-react';
 import { FormField } from './form-primitives';
 import type { IPVersion, AddressPreference } from '@/api/forward';
@@ -258,13 +259,9 @@ export const AdvancedOptionsFields: React.FC<AdvancedOptionsFieldsProps> = ({
                             onCheckedChange={() => onGroupToggle(group.sid)}
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
-                              {group.name}
-                            </p>
+                            <SmartTruncate text={group.name} className="text-sm font-medium" />
                             {plan && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {plan.name}
-                              </p>
+                              <SmartTruncate text={plan.name} className="text-xs text-muted-foreground" />
                             )}
                           </div>
                           {plan && (

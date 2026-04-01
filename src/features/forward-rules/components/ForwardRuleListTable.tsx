@@ -26,6 +26,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/common/Popover';
 import { CopyableAddressRow } from '@/components/common/CopyableAddress';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytesGB } from '@/shared/utils/format-utils';
 import { SYNC_STATUS_COLORS, RUN_STATUS_COLORS } from '@/shared/utils/status-colors';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse, RuleSyncStatus, RuleRunStatus } from '@/api/forward';
@@ -220,7 +221,7 @@ const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress,
         <PopoverTrigger asChild>
           <button className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-pointer hover:opacity-80 transition-opacity min-w-0`}>
             <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
-            <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{name}</span>
+            <SmartTruncate text={name} className="text-xs font-medium text-foreground max-w-[80px]" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2" align="start">
@@ -249,7 +250,7 @@ const FlowNode: React.FC<FlowNodeProps> = ({ type, name, address, tunnelAddress,
       <TooltipTrigger asChild>
         <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-default min-w-0`}>
           <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
-          <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{name}</span>
+          <SmartTruncate text={name} className="text-xs font-medium text-foreground max-w-[80px]" />
         </div>
       </TooltipTrigger>
       <TooltipContent side="bottom">
@@ -391,7 +392,7 @@ const LoadBalancedExitNodes: React.FC<LoadBalancedExitNodesProps> = ({ agents, t
       <PopoverTrigger asChild>
         <button className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${nodeConfig.bgColor} border ${nodeConfig.borderColor} cursor-pointer hover:opacity-80 transition-opacity min-w-0`}>
           <IconComponent className={`size-3 flex-shrink-0 ${nodeConfig.color}`} />
-          <span className="text-xs font-medium text-foreground truncate max-w-[80px]">{firstAgent.name}</span>
+          <SmartTruncate text={firstAgent.name} className="text-xs font-medium text-foreground max-w-[80px]" />
           {hasMultiple && (
             <span className="flex items-center gap-0.5 px-1 py-0 text-[9px] font-semibold rounded bg-warning/15 text-warning">
               LB {agents.length}
@@ -749,7 +750,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
                     <TooltipContent>{tunnelTypeConfig.label} {t('admin.forwardRules.tunnel')}</TooltipContent>
                   </Tooltip>
                 )}
-                <span className="font-semibold text-foreground truncate">{rule.name}</span>
+                <SmartTruncate text={rule.name} className="font-semibold text-foreground" />
               </div>
               <div className="flex items-center gap-1.5 text-xs">
                 <span className={`font-mono ${protocolConfig.color}`}>{protocolConfig.label}</span>
@@ -790,9 +791,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         }
         if (groups.length === 1) {
           return (
-            <span className="text-xs font-medium text-foreground truncate max-w-[120px] inline-block">
-              {groups[0].name}
-            </span>
+            <SmartTruncate text={groups[0].name} className="text-xs font-medium text-foreground max-w-[120px]" />
           );
         }
         return (

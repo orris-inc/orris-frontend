@@ -23,6 +23,7 @@ import {
   ContextMenuSeparator,
 } from '@/components/common/ContextMenu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { ACTIVE_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { SubscriptionPlan, PlanStatus, BillingCycle, PlanType } from '@/api/subscription/types';
 
@@ -204,16 +205,12 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
         return (
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-foreground truncate">
-                {plan.name}
-              </span>
+              <SmartTruncate text={plan.name} className="font-medium text-foreground" />
               <span className={`shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded ${typeConfig.className}`}>
                 {t(typeConfig.labelKey)}
               </span>
             </div>
-            <div className="text-[13px] text-muted-foreground mt-0.5 truncate">
-              {plan.slug}
-            </div>
+            <SmartTruncate text={plan.slug} className="text-[13px] text-muted-foreground mt-0.5" mono />
           </div>
         );
       },

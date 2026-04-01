@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Loader2,
   Users,
@@ -209,18 +210,14 @@ export const ViewPlanSubscriptionsSheet: React.FC<ViewPlanSubscriptionsSheetProp
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm truncate max-w-[120px]">
-                              {displayName}
-                            </span>
+                            <SmartTruncate text={displayName} className="font-medium text-sm max-w-[120px]" />
                             <span className={cn('px-1.5 py-0.5 rounded text-xs font-medium', statusConfig.color)}>
                               {t(statusConfig.labelKey)}
                             </span>
                           </div>
 
                           {user?.email && (
-                            <p className="text-xs text-muted-foreground truncate mt-0.5">
-                              {user.email}
-                            </p>
+                            <SmartTruncate text={user.email} className="text-xs text-muted-foreground mt-0.5" />
                           )}
 
                           <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">

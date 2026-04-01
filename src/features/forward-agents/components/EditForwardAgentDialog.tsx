@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/common/ScrollArea";
 import { Switch, SwitchThumb } from "@/components/common/Switch";
 import { ExpirationDatePicker } from "@/components/common/ExpirationDatePicker";
 import { cn } from "@/lib/utils";
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type {
   ForwardAgent,
   UpdateForwardAgentRequest,
@@ -262,9 +263,7 @@ export const EditForwardAgentDialog: React.FC<EditForwardAgentDialogProps> = ({
                                   checked={isSelected}
                                   onCheckedChange={() => form.handleGroupToggle(group.sid)}
                                 />
-                                <span className="text-sm font-medium truncate flex-1">
-                                  {group.name}
-                                </span>
+                                <SmartTruncate text={group.name} className="text-sm font-medium flex-1" />
                               </label>
                             );
                           })}

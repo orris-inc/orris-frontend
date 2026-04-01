@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Server, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { getBadgeClass } from '@/lib/ui-styles';
 import { listUserForwardAgents } from '@/api/forward';
 import type { UserForwardAgent } from '@/api/forward/types';
@@ -99,7 +100,7 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
             <div className="flex items-center justify-between gap-2 mb-1.5 @sm:mb-2">
               <div className="flex items-center gap-1.5 @sm:gap-2 min-w-0">
                 <Server className="size-3.5 @sm:size-4 text-muted-foreground shrink-0" />
-                <h4 className="text-sm @sm:text-base font-medium truncate">{agent.name}</h4>
+                <SmartTruncate text={agent.name} className="text-sm @sm:text-base font-medium" />
               </div>
               <span
                 className={cn(
@@ -113,13 +114,13 @@ export const SubscriptionNodeList: React.FC<SubscriptionNodeListProps> = ({
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {agent.publicAddress && (
-                <span className="truncate font-mono">{agent.publicAddress}</span>
+                <SmartTruncate text={agent.publicAddress} mono />
               )}
               {agent.publicAddress && agent.groups && agent.groups.length > 0 && (
                 <span className="text-border">|</span>
               )}
               {agent.groups && agent.groups.length > 0 && (
-                <span className="truncate">{agent.groups.map((g) => g.name).join(', ')}</span>
+                <SmartTruncate text={agent.groups.map((g) => g.name).join(', ')} />
               )}
             </div>
           </div>

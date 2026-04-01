@@ -9,6 +9,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Eye, Calendar, Megaphone, Wrench, Sparkles, Gift, FileText } from 'lucide-react';
 import { AdminBadge } from '@/components/admin';
 import { mobileListItemStyles } from '@/lib/ui-styles';
@@ -70,9 +71,7 @@ export const MobileAnnouncementCard = ({
         {/* Row 1: Title + Type */}
         <div className="flex items-center gap-2 mb-1">
           <TypeIcon className="size-3.5 text-muted-foreground shrink-0" />
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {announcement.title}
-          </span>
+          <SmartTruncate text={announcement.title} className="text-[13px] font-medium text-foreground" />
         </div>
 
         {/* Row 2: Type + Date + Views */}

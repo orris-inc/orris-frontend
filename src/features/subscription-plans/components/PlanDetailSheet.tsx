@@ -10,6 +10,7 @@
 
 import { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Package,
   Globe,
@@ -219,13 +220,13 @@ export const PlanDetailSheet = ({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <SheetTitle className="truncate">{plan.name}</SheetTitle>
+                  <SheetTitle><SmartTruncate text={plan.name} /></SheetTitle>
                   <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 shrink-0">
                     {t(statusConfig.labelKey)}
                   </AdminBadge>
                 </div>
-                <SheetDescription className="truncate font-mono text-xs">
-                  {plan.slug}
+                <SheetDescription className="font-mono text-xs">
+                  <SmartTruncate text={plan.slug} mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} />
                 </SheetDescription>
               </div>
             </div>

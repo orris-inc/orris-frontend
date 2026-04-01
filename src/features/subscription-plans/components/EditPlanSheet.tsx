@@ -6,6 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Pencil,
   Plus,
@@ -142,11 +143,11 @@ export const EditPlanSheet: React.FC<EditPlanSheetProps> = ({
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{t('admin.plans.table.planName')}</span>
-                <span className="text-xs font-medium truncate max-w-[100px]">{plan.name}</span>
+                <SmartTruncate text={plan.name} className="text-xs font-medium max-w-[100px]" />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">{t('admin.plans.form.slug')}</span>
-                <span className="text-xs font-mono truncate max-w-[80px]">{plan.slug}</span>
+                <SmartTruncate text={plan.slug} mono font='12px "SF Mono", ui-monospace, monospace' lineHeight={16} className="text-xs max-w-[80px]" />
               </div>
             </div>
           </div>

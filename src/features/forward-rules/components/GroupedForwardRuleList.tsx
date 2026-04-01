@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Bot } from 'lucide-react';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/common/Collapsible';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytesGB } from '@/shared/utils/format-utils';
 import { ForwardRuleListTable } from './ForwardRuleListTable';
 import type { ForwardRule, ForwardAgent, RuleOverallStatusResponse } from '@/api/forward';
@@ -202,7 +203,7 @@ export const GroupedForwardRuleList: React.FC<GroupedForwardRuleListProps> = ({
                     {group.label}
                   </span>
                 ) : (
-                  <span className="text-sm font-semibold text-foreground truncate">{group.label}</span>
+                  <SmartTruncate text={group.label} className="text-sm font-semibold text-foreground" />
                 )}
               </div>
               <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground">

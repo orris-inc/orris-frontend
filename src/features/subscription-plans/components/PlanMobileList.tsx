@@ -18,6 +18,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from '@/components/common/Accordion';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { AdminBadge } from '@/components/admin';
 import {
   DropdownMenu,
@@ -208,9 +209,10 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* Plan name and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {plan.name}
-                    </span>
+                    <SmartTruncate
+                      text={plan.name}
+                      className="font-medium text-sm text-foreground"
+                    />
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                       {t(statusConfig.labelKey)}
                     </AdminBadge>
@@ -328,7 +330,11 @@ export const PlanMobileList: React.FC<PlanMobileListProps> = ({
                 {plan.description && (
                   <div className="flex items-start gap-2">
                     <span className="text-[10px] text-muted-foreground dark:text-muted-foreground uppercase tracking-wide w-12 pt-0.5 flex-shrink-0">{t('common.fields.description')}</span>
-                    <span className="text-xs text-muted-foreground text-muted-foreground flex-1 line-clamp-2">{plan.description}</span>
+                    <SmartTruncate
+                      text={plan.description}
+                      className="text-xs text-muted-foreground flex-1"
+                      maxLines={2}
+                    />
                   </div>
                 )}
               </div>

@@ -55,6 +55,7 @@ import {
 import { ActionSheet } from '@/components/common/sheet/ActionSheet';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatDateTime, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { ENABLED_STATUS_CONFIG } from '@/shared/constants/status-config';
 import type { ForwardAgent, AgentSystemStatus, BlockedProtocol } from '@/api/forward';
@@ -534,7 +535,7 @@ export const ForwardAgentDetailSheet = ({
 
               {/* Title and config status */}
               <div className="flex-1 min-w-0">
-                <SheetTitle className="truncate">{agent.name}</SheetTitle>
+                <SheetTitle><SmartTruncate text={agent.name} /></SheetTitle>
                 <SheetDescription className="flex items-center gap-2 mt-0.5">
                   <span
                     className={cn(
@@ -654,9 +655,11 @@ export const ForwardAgentDetailSheet = ({
             {agent.remark && (
               <DetailSection title={t('common.fields.remark')}>
                 <div className="px-3 py-2.5">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
-                    {agent.remark}
-                  </p>
+                  <SmartTruncate
+                    text={agent.remark}
+                    className="text-sm text-muted-foreground"
+                    maxLines={3}
+                  />
                 </div>
               </DetailSection>
             )}

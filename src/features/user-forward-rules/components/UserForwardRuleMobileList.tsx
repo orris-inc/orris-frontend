@@ -40,6 +40,7 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { cn } from '@/lib/utils';
 import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytesGB } from '@/shared/utils/format-utils';
 import type { ForwardRule, UserForwardAgent } from '@/api/forward';
 
@@ -153,7 +154,7 @@ const MobileFlowNode: React.FC<{
       title={address ? `${label}: ${name}\n${address}` : `${label}: ${name}`}
     >
       <IconComponent className={`size-3 flex-shrink-0 ${config.color}`} />
-      <span className="text-xs font-medium text-foreground truncate max-w-[60px]">{name}</span>
+      <SmartTruncate text={name} className="text-xs font-medium text-foreground max-w-[60px]" />
     </div>
   );
 };
@@ -224,11 +225,9 @@ const ChainNodesDisplayMobile: React.FC<{
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{agentName}</div>
+                      <SmartTruncate text={agentName} className="text-sm font-medium" />
                       {agent?.publicAddress && (
-                        <div className="text-xs text-muted-foreground font-mono truncate">
-                          {agent.publicAddress}
-                        </div>
+                        <SmartTruncate text={agent.publicAddress} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                       )}
                     </div>
                     {!isLast && (
@@ -243,10 +242,8 @@ const ChainNodesDisplayMobile: React.FC<{
                     <Server className="size-3.5 text-info dark:text-info/60" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{targetDisplay.name}</div>
-                    <div className="text-xs text-muted-foreground font-mono truncate">
-                      {targetDisplay.address}
-                    </div>
+                    <SmartTruncate text={targetDisplay.name} className="text-sm font-medium" />
+                    <SmartTruncate text={targetDisplay.address} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                   </div>
                 </div>
               )}
@@ -497,8 +494,8 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
                   </TooltipTrigger>
                   <TooltipContent>{t(ruleTypeConfig.labelKey)}{t('admin.forwardRules.mode')}</TooltipContent>
                 </Tooltip>
-                <span className="font-medium text-sm text-foreground truncate flex-1">
-                  {rule.name}
+                <span className="flex-1 min-w-0">
+                  <SmartTruncate text={rule.name} className="font-medium text-sm text-foreground" />
                 </span>
                 {!isSelectMode && (
                   <Badge
@@ -514,13 +511,13 @@ export const UserForwardRuleMobileList: React.FC<UserForwardRuleMobileListProps>
               {/* Entry agent + address - compact inline */}
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Bot className="size-3.5 text-success flex-shrink-0" />
-                <span className="truncate max-w-[80px]">{agentName}</span>
+                <SmartTruncate text={agentName} className="max-w-[80px]" />
                 <span className="text-border">|</span>
                 {!isSelectMode && (
                   <CopyableAddress address={entryAddress} className="text-primary" />
                 )}
                 {isSelectMode && (
-                  <span className="font-mono text-xs truncate text-primary">{entryAddress}</span>
+                  <SmartTruncate text={entryAddress} className="text-xs text-primary" mono />
                 )}
               </div>
             </div>

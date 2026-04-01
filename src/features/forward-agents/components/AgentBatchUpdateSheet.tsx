@@ -23,6 +23,7 @@ import {
 } from '@/components/common/sheet/Sheet';
 import { cn } from '@/lib/utils';
 import { cardStyles } from '@/lib/ui-styles';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type {
   ForwardAgent,
   AgentBatchUpdateResponse,
@@ -137,7 +138,7 @@ export const AgentBatchUpdateSheet = ({
                         key={agent.id}
                         className="flex items-center justify-between px-3 py-2.5"
                       >
-                        <span className="text-sm font-medium truncate">{agent.name}</span>
+                        <SmartTruncate text={agent.name} className="text-sm font-medium" />
                         <span className="text-xs text-muted-foreground font-mono shrink-0">
                           v{agent.agentVersion || agent.systemStatus?.agentVersion}
                         </span>
@@ -195,7 +196,7 @@ export const AgentBatchUpdateSheet = ({
                         key={item.agentId}
                         className="flex items-center justify-between px-3 py-2"
                       >
-                        <span className="text-xs font-mono truncate">{item.agentId}</span>
+                        <SmartTruncate text={item.agentId} mono font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         <span className="text-xs text-success shrink-0">
                           → v{item.targetVersion}
                         </span>
@@ -219,7 +220,7 @@ export const AgentBatchUpdateSheet = ({
                         key={item.agentId}
                         className="flex items-center justify-between px-3 py-2"
                       >
-                        <span className="text-xs font-mono truncate">{item.agentId}</span>
+                        <SmartTruncate text={item.agentId} mono font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         <span className="text-xs text-destructive shrink-0">{item.reason}</span>
                       </div>
                     ))}
@@ -241,7 +242,7 @@ export const AgentBatchUpdateSheet = ({
                         key={item.agentId}
                         className="flex items-center justify-between px-3 py-2"
                       >
-                        <span className="text-xs font-mono truncate">{item.agentId}</span>
+                        <SmartTruncate text={item.agentId} mono font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         <span className="text-xs text-warning shrink-0">{item.reason}</span>
                       </div>
                     ))}

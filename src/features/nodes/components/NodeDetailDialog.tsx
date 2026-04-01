@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Dialog,
   DialogContent,
@@ -411,9 +412,7 @@ export const NodeDetailDialog: React.FC<NodeDetailDialogProps> = ({
                           <div className="space-y-0.5 font-mono text-sm">
                             {systemStatus.publicIpv4 && <p>{systemStatus.publicIpv4}</p>}
                             {systemStatus.publicIpv6 && (
-                              <p className="text-xs text-muted-foreground truncate" title={systemStatus.publicIpv6}>
-                                {systemStatus.publicIpv6}
-                              </p>
+                              <SmartTruncate text={systemStatus.publicIpv6} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                             )}
                           </div>
                         </div>

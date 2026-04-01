@@ -13,6 +13,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 
 // ============================================================================
 // Types
@@ -171,9 +172,7 @@ export const MobileListItem = ({
           {title}
         </span>
         {subtitle && (
-          <span className="block text-xs text-muted-foreground truncate">
-            {subtitle}
-          </span>
+          <SmartTruncate text={subtitle} className="text-xs text-muted-foreground" />
         )}
       </div>
 

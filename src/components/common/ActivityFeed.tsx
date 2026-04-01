@@ -24,6 +24,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatRelativeTime } from '@/shared/utils/date-utils';
 import type { Activity, ActivityType, ActivityIconConfig } from '@/types/activity.types';
 import type { LucideIcon } from 'lucide-react';
@@ -194,9 +195,13 @@ const ActivityItem = ({ activity, isLast }: ActivityItemProps) => {
               <span className="text-muted-foreground">{activity.title}</span>
             </p>
             {activity.description && (
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                {activity.description}
-              </p>
+              <div className="mt-1">
+                <SmartTruncate
+                  text={activity.description}
+                  className="text-sm text-muted-foreground"
+                  maxLines={2}
+                />
+              </div>
             )}
           </div>
 

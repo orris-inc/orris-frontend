@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import DOMPurify from 'dompurify';
 import { Eye, Calendar, Clock, Users, FileText, Megaphone, Wrench, Sparkles, Gift } from 'lucide-react';
 import {
@@ -76,7 +77,7 @@ export const AnnouncementDetailDialog: React.FC<AnnouncementDetailDialogProps> =
             <div className="p-2 rounded-xl bg-muted">
               <TypeIcon className="size-5 text-muted-foreground" />
             </div>
-            <span className="truncate">{announcement.title}</span>
+            <SmartTruncate text={announcement.title} />
           </DialogTitle>
         </DialogHeader>
 

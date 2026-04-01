@@ -1,3 +1,5 @@
+import { SmartTruncate } from '@/components/common/SmartTruncate';
+
 /**
  * ResourceGroupDetailSheet - Mobile resource group details with member management
  *
@@ -277,7 +279,7 @@ const MemberSection = <T extends MemberItem>({
                 <div key={item.id} className="flex items-center gap-3 px-3 py-2.5 min-h-[44px]">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{item.name}</span>
+                      <SmartTruncate text={item.name} className="text-sm font-medium" />
                       <span className={cn(
                         'shrink-0 text-[10px] px-1.5 py-0.5 rounded font-medium',
                         badge.active
@@ -287,9 +289,7 @@ const MemberSection = <T extends MemberItem>({
                         {badge.label}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
-                      {renderSubline ? renderSubline(item) : item.id}
-                    </p>
+                    <SmartTruncate text={renderSubline ? renderSubline(item) : item.id} mono className="text-xs text-muted-foreground mt-0.5" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                   </div>
                   <button
                     type="button"
@@ -478,7 +478,7 @@ export const ResourceGroupDetailSheet = ({
 
               {/* Title and status */}
               <div className="flex-1 min-w-0">
-                <SheetTitle className="truncate">{group.name}</SheetTitle>
+                <SheetTitle><SmartTruncate text={group.name} /></SheetTitle>
                 <SheetDescription className="flex items-center gap-2 mt-0.5">
                   <span className={cn('text-xs', statusConfig.colorClass)}>
                     {t(statusConfig.labelKey)}
@@ -523,7 +523,7 @@ export const ResourceGroupDetailSheet = ({
                       <CreditCard className="size-4 text-info" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{plan.name}</div>
+                      <SmartTruncate text={plan.name} className="text-sm font-medium" />
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="font-mono text-xs text-muted-foreground">{plan.slug}</span>
                         {planType && (

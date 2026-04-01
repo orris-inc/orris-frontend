@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import DOMPurify from 'dompurify';
 import {
   Eye,
@@ -106,7 +107,7 @@ export const AnnouncementDetailSheet = ({
             <div className="p-2 rounded-xl bg-muted shrink-0">
               <TypeIcon className="size-5 text-muted-foreground" />
             </div>
-            <span className="truncate">{announcement.title}</span>
+            <SmartTruncate text={announcement.title} />
           </SheetTitle>
         </SheetHeader>
 

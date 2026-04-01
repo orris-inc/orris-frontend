@@ -6,6 +6,7 @@
 
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { DraggableMobileList } from '@/components/admin/DraggableMobileList';
 import {
   Edit,
@@ -332,7 +333,7 @@ const FlowPathDisplayMobile: React.FC<{
                           <div className="w-4 h-4 rounded-full bg-success/10 border border-success/30 flex items-center justify-center z-10">
                             <Bot className="size-2.5 text-success" />
                           </div>
-                          <span className="text-[11px] font-medium truncate">{entryName}</span>
+                          <SmartTruncate text={entryName} className="text-[11px] font-medium" />
                           <span className="text-[9px] px-1 py-0.5 rounded bg-success/10 text-success font-medium">{t('admin.forwardRules.flowNode.entry')}</span>
                         </div>
                         {/* Relays */}
@@ -341,7 +342,7 @@ const FlowPathDisplayMobile: React.FC<{
                             <div className="w-4 h-4 rounded-full bg-relay/10 border border-relay/30 flex items-center justify-center text-[9px] font-bold text-relay z-10">
                               {index + 1}
                             </div>
-                            <span className="text-[11px] font-medium truncate">{relay.name}</span>
+                            <SmartTruncate text={relay.name} className="text-[11px] font-medium" />
                           </div>
                         ))}
                         {/* Target */}
@@ -350,7 +351,7 @@ const FlowPathDisplayMobile: React.FC<{
                             <div className="w-4 h-4 rounded-full bg-info/10 border border-info/30 flex items-center justify-center z-10">
                               <Server className="size-2.5 text-info" />
                             </div>
-                            <span className="text-[11px] font-medium truncate">{target.name}</span>
+                            <SmartTruncate text={target.name} className="text-[11px] font-medium" />
                             <span className="text-[9px] px-1 py-0.5 rounded bg-info/10 text-info font-medium">{t('admin.forwardRules.flowNode.target')}</span>
                           </div>
                         )}
@@ -589,9 +590,7 @@ export const ForwardRuleMobileList: React.FC<ForwardRuleMobileListProps> = ({
                         <TooltipContent>{tunnelTypeConfig.label}{t('admin.forwardRules.tunnel')}</TooltipContent>
                       </Tooltip>
                     )}
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {rule.name}
-                    </span>
+                    <SmartTruncate text={rule.name} className="font-medium text-sm text-foreground" />
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                       {t(statusConfig.labelKey)}
                     </AdminBadge>

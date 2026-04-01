@@ -257,10 +257,10 @@ const ForwardPath = ({
     name: getAgentName(ea.agentId),
     weight: ea.weight,
   })) || [];
-  const totalWeight = exitAgentsInfo.reduce((sum, a) => sum + a.weight, 0);
+  const totalWeight = exitAgentsInfo.reduce((sum, a) => sum + (a.weight ?? 50), 0);
   const exitAgentsWithPercent = exitAgentsInfo.map(a => ({
     ...a,
-    percent: totalWeight > 0 ? Math.round((a.weight / totalWeight) * 100) : 100,
+    percent: totalWeight > 0 ? Math.round(((a.weight ?? 50) / totalWeight) * 100) : 100,
   }));
 
   return (

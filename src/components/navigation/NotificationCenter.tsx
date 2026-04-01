@@ -29,6 +29,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Popover,
   PopoverTrigger,
@@ -222,14 +223,13 @@ const NotificationItem = ({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p
+          <SmartTruncate
+            text={notification.title}
             className={cn(
-              'text-sm font-medium truncate',
+              'text-sm font-medium',
               notification.read ? 'text-muted-foreground' : 'text-foreground'
             )}
-          >
-            {notification.title}
-          </p>
+          />
           {!notification.read && (
             <span
               className="shrink-0 size-2 rounded-full bg-primary mt-1.5"
@@ -237,9 +237,13 @@ const NotificationItem = ({
             />
           )}
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
-          {notification.message}
-        </p>
+        <div className="mt-0.5">
+          <SmartTruncate
+            text={notification.message}
+            className="text-sm text-muted-foreground"
+            maxLines={2}
+          />
+        </div>
         <div className="flex items-center gap-3 mt-1.5">
           <p className="text-xs text-muted-foreground/70">
             {formatRelativeTime(notification.createdAt.toISOString())}

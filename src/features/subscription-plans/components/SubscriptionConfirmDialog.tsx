@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
@@ -189,7 +190,7 @@ export const SubscriptionConfirmDialog: React.FC<SubscriptionConfirmDialogProps>
       {/* Plan summary */}
       <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
         <div className="min-w-0 flex-1">
-          <p className="font-medium truncate">{plan.name}</p>
+          <SmartTruncate text={plan.name} className="font-medium" />
           <p className="text-sm text-muted-foreground">
             {t('pricing.confirm.perCycle', { cycle: t(`billingCycle.${BILLING_CYCLE_I18N_KEY[currentBillingCycle]}`) })}
           </p>

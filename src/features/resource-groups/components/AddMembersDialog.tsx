@@ -5,6 +5,7 @@
 
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Search, Server, Cpu, Loader2, Check, Users, ArrowRightLeft } from 'lucide-react';
 import {
   Dialog,
@@ -237,10 +238,8 @@ export const AddMembersDialog: React.FC<AddMembersDialogProps> = ({
                         />
                         <Icon className="size-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{item.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono truncate">
-                            {item.id}
-                          </p>
+                          <SmartTruncate text={item.name} className="font-medium text-sm" />
+                          <SmartTruncate text={item.id} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         </div>
                         <Badge variant={isActive ? 'default' : 'secondary'} className="flex-shrink-0">
                           {isActive ? (type === 'nodes' ? t('common.status.enabled') : t('common.status.enabled')) : (type === 'nodes' ? t('common.status.disabled') : t('common.status.stopped'))}

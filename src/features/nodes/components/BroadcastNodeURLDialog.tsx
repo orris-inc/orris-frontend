@@ -9,6 +9,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Dialog,
   DialogContent,
@@ -290,19 +291,12 @@ export const BroadcastNodeURLDialog: React.FC<BroadcastNodeURLDialogProps> = ({
             <div className="rounded-lg border border-border bg-muted/50 divide-y divide-border">
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-muted-foreground">{t('admin.nodes.broadcast.newAddress')}</span>
-                <span
-                  className="font-mono text-sm truncate max-w-[220px] text-foreground"
-                  title={newUrl}
-                >
-                  {newUrl}
-                </span>
+                <SmartTruncate text={newUrl} mono className="text-sm max-w-[220px] text-foreground" />
               </div>
               {reason && (
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-muted-foreground">{t('admin.nodes.broadcast.reason')}</span>
-                  <span className="text-sm truncate max-w-[220px] text-foreground" title={reason}>
-                    {reason}
-                  </span>
+                  <SmartTruncate text={reason} className="text-sm max-w-[220px] text-foreground" />
                 </div>
               )}
             </div>

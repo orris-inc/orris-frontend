@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Edit,
   Trash2,
@@ -134,9 +135,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                 <div className="flex-1 min-w-0">
                   {/* User name/email and status */}
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {user.name || user.email}
-                    </span>
+                    <SmartTruncate text={user.name || user.email} className="font-medium text-sm text-foreground" />
                     <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                       {t(statusConfig.labelKey)}
                     </AdminBadge>
@@ -147,7 +146,7 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                     {user.name && (
                       <>
                         <Mail className="size-3 text-muted-foreground flex-shrink-0" />
-                        <span className="truncate">{user.email}</span>
+                        <SmartTruncate text={user.email} />
                         <span className="text-border">·</span>
                       </>
                     )}
@@ -197,13 +196,13 @@ export const UserMobileList: React.FC<UserMobileListProps> = ({
                 {/* ID */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">ID</span>
-                  <span className="text-xs font-mono text-muted-foreground truncate">{user.id}</span>
+                  <SmartTruncate text={user.id} className="text-xs text-muted-foreground" mono font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                 </div>
 
                 {/* Email (always show in details) */}
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide w-10 flex-shrink-0">{t('admin.users.fields.emailShort')}</span>
-                  <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                  <SmartTruncate text={user.email} className="text-xs text-muted-foreground" />
                 </div>
 
                 {/* Name */}

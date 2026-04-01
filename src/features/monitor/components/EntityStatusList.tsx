@@ -5,6 +5,7 @@
 
 import { memo, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Server, Cpu, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { cardStyles } from '@/lib/ui-styles';
 import { cn } from '@/lib/utils';
@@ -78,9 +79,7 @@ const EntityCard = memo(({ entity }: { entity: EntityStatus }) => {
             {/* Name and status */}
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground truncate">
-                  {entity.name || entity.id}
-                </span>
+                <SmartTruncate text={entity.name || entity.id} className="text-sm font-medium text-foreground" />
                 <Badge
                   variant={entity.isOnline ? 'default' : 'secondary'}
                   className="text-[10px] px-1.5 py-0 h-4 shrink-0"

@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Code, FormInput, Plus, Trash2, Pencil, ChevronDown, Route } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
@@ -592,7 +593,7 @@ const CustomOutboundEntry: React.FC<{
             <Badge variant="secondary" className="shrink-0 text-[11px]">
               {entry.type}
             </Badge>
-            <span className="text-sm text-muted-foreground truncate">{entry.server}:{entry.serverPort}</span>
+            <SmartTruncate text={`${entry.server}:${entry.serverPort}`} mono className="text-sm text-muted-foreground" />
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
@@ -742,7 +743,7 @@ const RuleSetEntryItem: React.FC<{
                 {entry.format}
               </Badge>
             )}
-            <span className="text-sm text-muted-foreground truncate">{entry.url || '—'}</span>
+            <SmartTruncate text={entry.url || '—'} className="text-sm text-muted-foreground" />
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button

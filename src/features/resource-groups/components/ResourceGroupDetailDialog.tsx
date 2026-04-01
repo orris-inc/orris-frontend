@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Server,
   Cpu,
@@ -496,8 +497,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         />
                         <Server className="size-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{node.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono truncate">{node.id}</p>
+                          <SmartTruncate text={node.name} className="font-medium text-sm" />
+                          <SmartTruncate text={node.id} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         </div>
                         <Badge variant={node.status === 'active' ? 'default' : 'secondary'}>
                           {node.status === 'active' ? t('common.status.enabled') : t('common.status.disabled')}
@@ -594,8 +595,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         />
                         <Cpu className="size-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{agent.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono truncate">{agent.id}</p>
+                          <SmartTruncate text={agent.name} className="font-medium text-sm" />
+                          <SmartTruncate text={agent.id} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         </div>
                         <Badge variant={agent.status === 'enabled' ? 'default' : 'secondary'}>
                           {agent.status === 'enabled' ? t('common.status.enabled') : t('common.status.disabled')}
@@ -692,10 +693,8 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                         />
                         <ArrowRightLeft className="size-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{rule.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono truncate">
-                            {rule.protocol.toUpperCase()}:{rule.listenPort} · {rule.id}
-                          </p>
+                          <SmartTruncate text={rule.name} className="font-medium text-sm" />
+                          <SmartTruncate text={`${rule.protocol.toUpperCase()}:${rule.listenPort} · ${rule.id}`} mono className="text-xs text-muted-foreground" font="12px 'SF Mono', ui-monospace, monospace" lineHeight={16} />
                         </div>
                         <Badge variant={rule.status === 'enabled' ? 'default' : 'secondary'}>
                           {rule.status === 'enabled' ? t('common.status.enabled') : t('common.status.stopped')}

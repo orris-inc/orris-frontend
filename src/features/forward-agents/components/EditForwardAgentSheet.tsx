@@ -22,6 +22,7 @@ import { MobileFormInput } from '@/components/common/mobile-form';
 import { ExpirationDatePicker } from '@/components/common/ExpirationDatePicker';
 import { useResourceGroups } from '@/features/resource-groups/hooks/useResourceGroups';
 import { cn } from '@/lib/utils';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import type { ForwardAgent, UpdateForwardAgentRequest } from '@/api/forward';
 import {
   useEditForwardAgentForm,
@@ -207,9 +208,7 @@ export const EditForwardAgentSheet: React.FC<EditForwardAgentSheetProps> = ({
                       )}>
                         {isSelected && <Check className="size-3.5" />}
                       </div>
-                      <span className="text-sm font-medium truncate flex-1">
-                        {group.name}
-                      </span>
+                      <SmartTruncate text={group.name} className="text-sm font-medium flex-1" />
                     </button>
                   );
                 })}

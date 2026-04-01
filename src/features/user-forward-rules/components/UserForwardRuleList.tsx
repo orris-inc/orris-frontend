@@ -7,6 +7,7 @@ import { useMemo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Edit, Trash2, Power, PowerOff, MoreHorizontal, Bot, Server, Settings, ArrowRight } from 'lucide-react';
 import { CopyableAddress } from '@/components/common/CopyableAddress';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytes } from '@/shared/utils/format-utils';
 import { DataTable, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState } from '@/components/admin';
 import type { OnChangeFn } from '@tanstack/react-table';
@@ -82,7 +83,7 @@ const ChainNodesDisplay: React.FC<{
             </TooltipTrigger>
             <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
           </Tooltip>
-          <span className="truncate">{firstTwoNames}</span>
+          <SmartTruncate text={firstTwoNames} />
         </div>
         <CopyableAddress address={targetDisplay?.address || '-'} className="text-muted-foreground pl-5" />
       </div>
@@ -99,7 +100,7 @@ const ChainNodesDisplay: React.FC<{
           </TooltipTrigger>
           <TooltipContent>{t('userForwardRules.tooltip.viaForwardAgent')}</TooltipContent>
         </Tooltip>
-        <span className="truncate">{firstTwoNames} ...</span>
+        <SmartTruncate text={`${firstTwoNames} ...`} />
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-relay/10 text-relay hover:bg-relay/20 transition-colors">
@@ -282,7 +283,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
         meta: { priority: 1 } as ResponsiveColumnMeta,
         cell: ({ row }) => (
           <div className="space-y-1 min-w-0">
-            <div className="font-medium truncate">{row.original.name}</div>
+            <SmartTruncate text={row.original.name} className="font-medium" />
             {row.original.remark && (
               <div className="text-xs text-muted-foreground line-clamp-1">
                 {row.original.remark}
@@ -310,7 +311,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
                   </TooltipTrigger>
                   <TooltipContent>{t('userForwardRules.tooltip.entryAgent')}</TooltipContent>
                 </Tooltip>
-                <span className="truncate">{agentName}</span>
+                <SmartTruncate text={agentName} />
               </div>
               <CopyableAddress address={entryAddress} className="text-info pl-5" />
             </div>
@@ -378,7 +379,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
                   <div className="space-y-0.5 min-w-0">
                     <div className="flex items-center gap-1.5 text-sm">
                       <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
-                      <span className="truncate">{firstName}</span>
+                      <SmartTruncate text={firstName} />
                     </div>
                     <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
                   </div>
@@ -390,7 +391,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
                     <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
-                    <span className="truncate">{firstName}</span>
+                    <SmartTruncate text={firstName} />
                     <Popover>
                       <PopoverTrigger asChild>
                         <button className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium rounded bg-relay/10 text-relay hover:bg-relay/20 transition-colors">
@@ -437,7 +438,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
                 <div className="space-y-0.5 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm">
                     <ExitTypeIcon type="agent" className="text-relay flex-shrink-0" />
-                    <span className="truncate">{exitName}</span>
+                    <SmartTruncate text={exitName} />
                   </div>
                   <CopyableAddress address={targetAddress} className="text-muted-foreground pl-5" />
                 </div>
@@ -464,7 +465,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
               <div className="space-y-0.5 min-w-0">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <ExitTypeIcon type="manual" className="text-muted-foreground flex-shrink-0" />
-                  <span className="truncate">{target.name}</span>
+                  <SmartTruncate text={target.name} />
                 </div>
                 <CopyableAddress address={target.address} className="text-muted-foreground pl-5" />
               </div>

@@ -19,6 +19,7 @@ import {
 } from '@/components/common/sheet';
 import { Button } from '@/components/common/Button';
 import { TruncatedId } from '@/components/admin';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatDate } from '@/shared/utils/date-utils';
 import { cn } from '@/lib/utils';
 import type { Subscription, SubscriptionStatus } from '@/api/subscription/types';
@@ -110,9 +111,7 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
                 <span className="text-xs text-muted-foreground">{t('common.role.user')}</span>
                 <div className="flex items-center gap-1.5 text-sm">
                   <User className="size-3.5 text-muted-foreground" />
-                  <span className="truncate max-w-[150px]">
-                    {user ? (user.name || user.email) : `ID: ${subscription.userId}`}
-                  </span>
+                  <SmartTruncate text={user ? (user.name || user.email) : `ID: ${subscription.userId}`} className="max-w-[150px]" />
                 </div>
               </div>
               {subscription.plan && (
@@ -120,7 +119,7 @@ export const DeleteSubscriptionSheet: React.FC<DeleteSubscriptionSheetProps> = (
                   <span className="text-xs text-muted-foreground">{t('tableColumns.plan')}</span>
                   <div className="flex items-center gap-1.5 text-sm">
                     <CreditCard className="size-3.5 text-muted-foreground" />
-                    <span className="truncate max-w-[150px]">{subscription.plan.name}</span>
+                    <SmartTruncate text={subscription.plan.name} className="max-w-[150px]" />
                   </div>
                 </div>
               )}

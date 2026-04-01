@@ -6,6 +6,7 @@
 
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Edit,
   Trash2,
@@ -267,9 +268,10 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
             <div className="flex-1 min-w-0">
               {/* Node name and status */}
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="font-medium text-sm text-foreground truncate">
-                  {node.name}
-                </span>
+                <SmartTruncate
+                  text={node.name}
+                  className="font-medium text-sm text-foreground"
+                />
                 <AdminBadge variant={statusConfig.variant} className="text-[10px] px-1.5 py-0 flex-shrink-0">
                   <StatusIcon className="size-2.5 mr-0.5" />
                   {t(statusConfig.labelKey)}
@@ -520,7 +522,7 @@ export const NodeMobileList: React.FC<NodeMobileListProps> = ({
                   {node.owner ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <User className="size-3 text-muted-foreground/60" strokeWidth={1.5} />
-                      <span className="truncate">{node.owner.name || node.owner.email}</span>
+                      <SmartTruncate text={node.owner.name || node.owner.email} />
                     </div>
                   ) : (
                     <div className="flex items-center gap-1 text-xs">

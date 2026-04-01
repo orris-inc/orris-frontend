@@ -9,6 +9,7 @@
 
 import { useTranslation } from 'react-i18next';
 import { Mail, Shield, Crown } from 'lucide-react';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { AdminBadge } from '@/components/admin';
 import { cn } from '@/lib/utils';
 import { mobileListItemStyles } from '@/lib/ui-styles';
@@ -95,9 +96,10 @@ export const MobileUserCard = ({ user, onCardPress }: MobileUserCardProps) => {
       <div className="flex-1 min-w-0">
         {/* Name and Status */}
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-medium text-foreground truncate text-[13px]">
-            {user.name || user.email.split('@')[0]}
-          </span>
+          <SmartTruncate
+            text={user.name || user.email.split('@')[0]}
+            className="font-medium text-foreground text-[13px]"
+          />
           <AdminBadge
             variant={statusConfig.variant}
             className="text-[10px] shrink-0"
@@ -109,7 +111,7 @@ export const MobileUserCard = ({ user, onCardPress }: MobileUserCardProps) => {
         {/* Email and Role */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Mail className="size-3 shrink-0" />
-          <span className="truncate">{user.email}</span>
+          <SmartTruncate text={user.email} />
         </div>
       </div>
 

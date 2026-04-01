@@ -8,6 +8,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Server, Cpu, HardDrive, Activity, ArrowDown, ArrowUp, Clock, Wifi, Globe, Network } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBitRate, formatBytes, formatRelativeTime } from '@/shared/utils/format-utils';
 import { getResourceBgClass, getResourceTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
@@ -178,11 +179,9 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
 
               {/* Name and ID */}
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold text-foreground truncate">
-                  {entity.name || entity.id}
-                </h3>
+                <SmartTruncate text={entity.name || entity.id} className="text-sm font-semibold text-foreground" />
                 {entity.name && (
-                  <p className="text-[10px] @sm:text-xs text-muted-foreground truncate">{entity.id}</p>
+                  <SmartTruncate text={entity.id} className="text-[10px] @sm:text-xs text-muted-foreground" mono />
                 )}
               </div>
 
@@ -293,9 +292,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
             {/* Name and ID */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-foreground truncate">
-                  {entity.name || entity.id}
-                </h3>
+                <SmartTruncate text={entity.name || entity.id} className="text-sm font-semibold text-foreground" />
                 {isOnline && (
                   <div className="hidden @sm:flex items-center gap-1 text-success shrink-0">
                     <Wifi className="size-3" />
@@ -303,9 +300,7 @@ export const EntityDetailCard = memo(({ entity, compact = false }: EntityDetailC
                   </div>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground truncate font-mono">
-                {entity.id}
-              </p>
+              <SmartTruncate text={entity.id} className="text-[10px] text-muted-foreground" mono />
             </div>
 
             {/* Status badge */}

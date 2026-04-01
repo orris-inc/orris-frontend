@@ -4,6 +4,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Badge } from '@/components/common/Badge';
 import { Card } from '@/components/common/Card';
 import type { DnsConfig, DnsRule } from '@/api/node';
@@ -125,7 +126,7 @@ export const DnsConfigDisplay: React.FC<DnsConfigDisplayProps> = ({ config }) =>
                       {conditions.length > 0 ? (
                         <div className="text-sm text-foreground space-y-0.5">
                           {conditions.map((condition, i) => (
-                            <div key={i} className="truncate">{condition}</div>
+                            <SmartTruncate key={i} text={condition} className="text-sm" />
                           ))}
                         </div>
                       ) : (

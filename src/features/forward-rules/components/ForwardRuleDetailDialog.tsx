@@ -8,6 +8,7 @@
 
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Dialog,
   DialogContent,
@@ -125,7 +126,7 @@ const StatCard: React.FC<{
       <Icon className="size-4" />
     </div>
     <div className="min-w-0 flex-1">
-      <p className="text-xs text-muted-foreground truncate">{label}</p>
+      <SmartTruncate text={label} className="text-xs text-muted-foreground" />
       <p className="text-sm font-semibold truncate">{value}</p>
       {subValue && <p className="text-xs text-muted-foreground">{subValue}</p>}
     </div>
@@ -137,7 +138,7 @@ interface ExitAgentInfo {
   id: string;
   name: string;
   address?: string;
-  weight: number;
+  weight?: number;
 }
 
 // Load balance strategy labels
@@ -176,10 +177,10 @@ const FlowPath: React.FC<{
   };
 
   // Calculate weight percentages for exit agents
-  const totalWeight = exitAgents?.reduce((sum, a) => sum + a.weight, 0) || 0;
+  const totalWeight = exitAgents?.reduce((sum, a) => sum + (a.weight ?? 50), 0) || 0;
   const exitAgentsWithPercent = exitAgents?.map(a => ({
     ...a,
-    percent: totalWeight > 0 ? Math.round((a.weight / totalWeight) * 100) : 100,
+    percent: totalWeight > 0 ? Math.round(((a.weight ?? 50) / totalWeight) * 100) : 100,
   }));
 
   // Check if this is a load balancing exit node
@@ -217,7 +218,7 @@ const FlowPath: React.FC<{
             {/* Node info */}
             <div className="flex flex-col items-center min-w-[60px] max-w-[100px]">
               <div className="flex items-center gap-1">
-                <span className="text-[11px] font-medium text-center truncate leading-tight">{node.name}</span>
+                <SmartTruncate text={node.name} className="text-[11px] font-medium text-center leading-tight" />
                 {node.badge && (
                   <span className="px-1 py-0 text-[9px] font-semibold rounded bg-warning/10 text-warning shrink-0">
                     {node.badge}
@@ -225,9 +226,7 @@ const FlowPath: React.FC<{
                 )}
               </div>
               {displayAddress && (
-                <span className="text-[10px] text-muted-foreground font-mono truncate w-full text-center" title={fullAddress}>
-                  {displayAddress}
-                </span>
+                <SmartTruncate text={displayAddress} mono className="text-[10px] text-muted-foreground w-full text-center" font="10px 'SF Mono', ui-monospace, monospace" lineHeight={14} tooltipContent={fullAddress} />
               )}
             </div>
           </div>
@@ -270,7 +269,7 @@ const FlowPath: React.FC<{
                                   )}
                                 </div>
                                 {agent.address && (
-                                  <div className="text-[10px] text-muted-foreground font-mono truncate">{agent.address}</div>
+                                  <SmartTruncate text={agent.address} mono className="text-[10px] text-muted-foreground" font="10px 'SF Mono', ui-monospace, monospace" lineHeight={14} />
                                 )}
                               </div>
                             </div>
@@ -373,7 +372,7 @@ const AgentStatusRow: React.FC<{ status: AgentRuleSyncStatus }> = ({ status }) =
           <Bot className="size-3.5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">
-          <span className="text-sm font-medium truncate">{status.agentName}</span>
+          <SmartTruncate text={status.agentName} className="text-sm font-medium" />
           {status.position === 0 && (
             <span className="ml-2 px-1.5 py-0.5 text-[10px] font-medium rounded bg-success/10 text-success">
               {t('admin.forwardRules.flowNode.entry')}

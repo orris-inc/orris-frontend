@@ -8,6 +8,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Loader2,
   CheckCircle2,
@@ -293,9 +294,7 @@ export const TelegramSettingsForm = ({
               ) : (
                 <>
                   <XCircle className="size-4" />
-                  <span className="truncate max-w-[200px]">
-                    {testResult.error}
-                  </span>
+                  <SmartTruncate text={testResult.error ?? ''} className="max-w-[200px]" />
                 </>
               )}
             </div>

@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Badge } from '@/components/common/Badge';
 import { RouteRuleEditor } from './RouteRuleEditor';
 import {
@@ -242,9 +243,7 @@ export const RouteRulesList: React.FC<RouteRulesListProps> = ({
                       {outboundInfo.label}
                     </Badge>
                     {!isExpanded && (
-                      <span className="text-xs text-muted-foreground truncate">
-                        {getRuleSummary(rule, t)}
-                      </span>
+                      <SmartTruncate text={getRuleSummary(rule, t)} className="text-xs text-muted-foreground" />
                     )}
                   </div>
 

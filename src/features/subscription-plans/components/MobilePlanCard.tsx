@@ -9,6 +9,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Globe,
   Lock,
@@ -100,9 +101,7 @@ export const MobilePlanCard = ({
       <div className="flex-1 min-w-0">
         {/* Row 1: Name + Price */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[13px] font-medium text-foreground truncate">
-            {plan.name}
-          </span>
+          <SmartTruncate text={plan.name} className="text-[13px] font-medium text-foreground" />
           <span className="font-mono text-[13px] font-medium text-primary shrink-0">
             {getPriceDisplay(plan)}
           </span>

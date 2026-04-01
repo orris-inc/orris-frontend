@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   Radio,
   Loader2,
@@ -194,16 +195,12 @@ export const BroadcastURLSheet: React.FC<BroadcastURLSheetProps> = ({
               <div className={cn(cardStyles, 'divide-y')}>
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.newAddress')}</span>
-                  <span className="font-mono text-sm truncate max-w-[180px]" title={newUrl}>
-                    {newUrl}
-                  </span>
+                  <SmartTruncate text={newUrl} mono className="text-sm max-w-[180px]" />
                 </div>
                 {reason && (
                   <div className="flex items-center justify-between px-4 py-3">
                     <span className="text-sm text-muted-foreground">{t('admin.forwardAgents.broadcast.reason')}</span>
-                    <span className="text-sm truncate max-w-[180px]" title={reason}>
-                      {reason}
-                    </span>
+                    <SmartTruncate text={reason} className="text-sm max-w-[180px]" />
                   </div>
                 )}
               </div>

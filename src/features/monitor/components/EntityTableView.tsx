@@ -4,8 +4,9 @@
  * Compact, sortable, and responsive design
  */
 
-import { memo, useMemo, useState, useRef } from 'react';
+import { memo, useMemo, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SmartTruncate } from '@/components/common/SmartTruncate';
 import {
   useReactTable,
   getCoreRowModel,
@@ -24,6 +25,7 @@ import { getResourceBgClass, getResourceMutedTextClass } from '../utils';
 import type { EntityStatus } from '../hooks/useMonitorData';
 import type { NodeSystemStatus } from '@/api/node';
 import type { AgentSystemStatus } from '@/api/forward';
+import { measureRowHeight } from '@/hooks/useTextMeasure';
 
 interface EntityTableViewProps {
   entities: EntityStatus[];
@@ -80,8 +82,10 @@ const formatUptime = (seconds?: number): string => {
   return `<1h`;
 };
 
-// Row height constant for virtualization
-const ROW_HEIGHT = 52;
+// Default row height for virtualization fallback
+const DEFAULT_ROW_HEIGHT = 52;
+const MEASURE_FONT = '14px Inter, system-ui, sans-serif';
+const MEASURE_FONT_MONO = '10px "SF Mono", ui-monospace, monospace';
 
 export const EntityTableView = memo(({
   entities,
@@ -123,13 +127,9 @@ export const EntityTableView = memo(({
       size: 180,
       cell: ({ row }) => (
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">
-            {row.original.name || row.original.id}
-          </p>
+          <SmartTruncate text={row.original.name || row.original.id} className="text-sm font-medium text-foreground" />
           {row.original.name && (
-            <p className="text-[10px] text-muted-foreground truncate font-mono">
-              {row.original.id}
-            </p>
+            <SmartTruncate text={row.original.id} mono className="text-[10px] text-muted-foreground" font="10px 'SF Mono', ui-monospace, monospace" lineHeight={14} />
           )}
         </div>
       ),
@@ -267,11 +267,27 @@ export const EntityTableView = memo(({
 
   const { rows } = table.getRowModel();
 
+  // Pretext-based dynamic row height estimation for name column
+  const estimateRowSize = useCallback(
+    (index: number) => {
+      const row = rows[index];
+      if (!row) return DEFAULT_ROW_HEIGHT;
+      const entity = row.original;
+      const containerWidth = tableContainerRef.current?.clientWidth ?? 800;
+      // Name column is ~180px wide
+      const nameColWidth = Math.min(180, containerWidth * 0.25);
+      const texts = [entity.name || entity.id];
+      if (entity.name) texts.push(entity.id);
+      return measureRowHeight(texts, nameColWidth, entity.name ? MEASURE_FONT : MEASURE_FONT_MONO, 20, 20);
+    },
+    [rows]
+  );
+
   // Initialize virtualizer for large datasets
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: estimateRowSize,
     overscan: 10,
     enabled: shouldVirtualize,
   });
