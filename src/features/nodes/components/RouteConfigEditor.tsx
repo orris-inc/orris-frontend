@@ -3,7 +3,7 @@
  * Main editor with visual form mode and JSON advanced mode
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Code, FormInput, Plus, Trash2, Pencil, ChevronDown, Route } from 'lucide-react';
@@ -562,14 +562,42 @@ const CustomOutboundEntry: React.FC<{
   idPrefix: string;
 }> = ({ entry, isEditing, onEdit, onChange, onDelete, disabled, idPrefix }) => {
   const { t } = useTranslation();
-  const [settingsText, setSettingsText] = useState(
-    entry.settings ? JSON.stringify(entry.settings, null, 2) : ''
-  );
 
-  const handleSettingsChange = (text: string) => {
-    setSettingsText(text);
+  // Local state for text inputs — only flush to parent on blur
+  const [local, setLocal] = useState({
+    tag: entry.tag,
+    server: entry.server,
+    serverPort: String(entry.serverPort),
+    settingsText: entry.settings ? JSON.stringify(entry.settings, null, 2) : '',
+  });
+
+  // Sync from parent when entry changes externally (e.g. switching editing index)
+  useEffect(() => {
+    setLocal({
+      tag: entry.tag,
+      server: entry.server,
+      serverPort: String(entry.serverPort),
+      settingsText: entry.settings ? JSON.stringify(entry.settings, null, 2) : '',
+    });
+  }, [entry.tag, entry.server, entry.serverPort, entry.settings]);
+
+  const flushTag = useCallback(() => {
+    if (local.tag !== entry.tag) onChange({ ...entry, tag: local.tag });
+  }, [local.tag, entry, onChange]);
+
+  const flushServer = useCallback(() => {
+    if (local.server !== entry.server) onChange({ ...entry, server: local.server });
+  }, [local.server, entry, onChange]);
+
+  const flushPort = useCallback(() => {
+    const port = parseInt(local.serverPort, 10) || 0;
+    if (port !== entry.serverPort) onChange({ ...entry, serverPort: port });
+  }, [local.serverPort, entry, onChange]);
+
+  const flushSettings = useCallback(() => {
+    const text = local.settingsText;
     if (!text.trim()) {
-      onChange({ ...entry, settings: undefined });
+      if (entry.settings) onChange({ ...entry, settings: undefined });
       return;
     }
     try {
@@ -578,9 +606,9 @@ const CustomOutboundEntry: React.FC<{
         onChange({ ...entry, settings: parsed });
       }
     } catch {
-      // Keep text in state but don't update entry until valid
+      // Invalid JSON — keep local text, don't flush
     }
-  };
+  }, [local.settingsText, entry, onChange]);
 
   if (!isEditing) {
     return (
@@ -629,8 +657,9 @@ const CustomOutboundEntry: React.FC<{
           </Label>
           <Input
             id={`${idPrefix}-tag`}
-            value={entry.tag}
-            onChange={(e) => onChange({ ...entry, tag: e.target.value })}
+            value={local.tag}
+            onChange={(e) => setLocal((prev) => ({ ...prev, tag: e.target.value }))}
+            onBlur={flushTag}
             disabled={disabled}
             className="text-sm"
           />
@@ -669,8 +698,9 @@ const CustomOutboundEntry: React.FC<{
           </Label>
           <Input
             id={`${idPrefix}-server`}
-            value={entry.server}
-            onChange={(e) => onChange({ ...entry, server: e.target.value })}
+            value={local.server}
+            onChange={(e) => setLocal((prev) => ({ ...prev, server: e.target.value }))}
+            onBlur={flushServer}
             placeholder="example.com"
             disabled={disabled}
             className="text-sm"
@@ -683,10 +713,9 @@ const CustomOutboundEntry: React.FC<{
           <Input
             id={`${idPrefix}-port`}
             type="number"
-            value={entry.serverPort}
-            onChange={(e) =>
-              onChange({ ...entry, serverPort: parseInt(e.target.value, 10) || 0 })
-            }
+            value={local.serverPort}
+            onChange={(e) => setLocal((prev) => ({ ...prev, serverPort: e.target.value }))}
+            onBlur={flushPort}
             disabled={disabled}
             className="text-sm"
           />
@@ -698,8 +727,9 @@ const CustomOutboundEntry: React.FC<{
         </Label>
         <Textarea
           id={`${idPrefix}-settings`}
-          value={settingsText}
-          onChange={(e) => handleSettingsChange(e.target.value)}
+          value={local.settingsText}
+          onChange={(e) => setLocal((prev) => ({ ...prev, settingsText: e.target.value }))}
+          onBlur={flushSettings}
           placeholder='{ "password": "...", "method": "aes-256-gcm" }'
           rows={3}
           className="font-mono text-xs"
@@ -729,6 +759,32 @@ const RuleSetEntryItem: React.FC<{
   idPrefix: string;
 }> = ({ entry, isEditing, onEdit, onChange, onDelete, disabled, idPrefix }) => {
   const { t } = useTranslation();
+
+  // Local state for text inputs — flush to parent on blur
+  const [local, setLocal] = useState({
+    tag: entry.tag,
+    url: entry.url,
+    downloadDetour: entry.downloadDetour || '',
+    updateInterval: entry.updateInterval || '',
+  });
+
+  useEffect(() => {
+    setLocal({
+      tag: entry.tag,
+      url: entry.url,
+      downloadDetour: entry.downloadDetour || '',
+      updateInterval: entry.updateInterval || '',
+    });
+  }, [entry.tag, entry.url, entry.downloadDetour, entry.updateInterval]);
+
+  const flush = useCallback((field: 'tag' | 'url' | 'downloadDetour' | 'updateInterval') => {
+    const value = local[field];
+    if (field === 'downloadDetour' || field === 'updateInterval') {
+      onChange({ ...entry, [field]: value || undefined });
+    } else {
+      onChange({ ...entry, [field]: value });
+    }
+  }, [local, entry, onChange]);
 
   if (!isEditing) {
     return (
@@ -779,8 +835,9 @@ const RuleSetEntryItem: React.FC<{
           </Label>
           <Input
             id={`${idPrefix}-tag`}
-            value={entry.tag}
-            onChange={(e) => onChange({ ...entry, tag: e.target.value })}
+            value={local.tag}
+            onChange={(e) => setLocal((prev) => ({ ...prev, tag: e.target.value }))}
+            onBlur={() => flush('tag')}
             placeholder="geoip-cn"
             disabled={disabled}
             className="text-sm"
@@ -817,8 +874,9 @@ const RuleSetEntryItem: React.FC<{
         </Label>
         <Input
           id={`${idPrefix}-url`}
-          value={entry.url}
-          onChange={(e) => onChange({ ...entry, url: e.target.value })}
+          value={local.url}
+          onChange={(e) => setLocal((prev) => ({ ...prev, url: e.target.value }))}
+          onBlur={() => flush('url')}
           placeholder="https://example.com/rule-set.srs"
           disabled={disabled}
           className="text-sm"
@@ -834,8 +892,9 @@ const RuleSetEntryItem: React.FC<{
           </Label>
           <Input
             id={`${idPrefix}-detour`}
-            value={entry.downloadDetour || ''}
-            onChange={(e) => onChange({ ...entry, downloadDetour: e.target.value || undefined })}
+            value={local.downloadDetour}
+            onChange={(e) => setLocal((prev) => ({ ...prev, downloadDetour: e.target.value }))}
+            onBlur={() => flush('downloadDetour')}
             placeholder="proxy"
             disabled={disabled}
             className="text-sm"
@@ -850,8 +909,9 @@ const RuleSetEntryItem: React.FC<{
           </Label>
           <Input
             id={`${idPrefix}-interval`}
-            value={entry.updateInterval || ''}
-            onChange={(e) => onChange({ ...entry, updateInterval: e.target.value || undefined })}
+            value={local.updateInterval}
+            onChange={(e) => setLocal((prev) => ({ ...prev, updateInterval: e.target.value }))}
+            onBlur={() => flush('updateInterval')}
             placeholder="1d"
             disabled={disabled}
             className="text-sm"

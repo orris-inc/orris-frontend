@@ -7,6 +7,7 @@ import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { hasStringChanged } from '@/shared/utils/form-utils';
 import { pluginOptsToString, stringToPluginOpts, arePluginOptsEqual } from '../utils/plugin-utils';
+import { validateRouteConfig } from '../utils/route-rule-utils';
 import type {
   Node,
   UpdateNodeRequest,
@@ -451,6 +452,12 @@ export function useEditNodeForm() {
     // Cost label
     if (formData.costLabel !== node.costLabel) {
       updates.costLabel = formData.costLabel || "";
+    }
+
+    // Route config validation
+    const routeError = validateRouteConfig(formData.route);
+    if (routeError) {
+      newErrors.route = t(routeError);
     }
 
     return { updates, errors: newErrors };

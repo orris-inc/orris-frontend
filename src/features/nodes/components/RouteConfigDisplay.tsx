@@ -4,7 +4,6 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { Badge } from '@/components/common/Badge';
 import { Card } from '@/components/common/Card';
 import {
@@ -164,7 +163,7 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
                       {conditions.length > 0 ? (
                         <div className="text-sm text-foreground space-y-0.5">
                           {conditions.map((condition, i) => (
-                            <SmartTruncate key={i} text={condition} />
+                            <p key={i} className="truncate" title={condition}>{condition}</p>
                           ))}
                         </div>
                       ) : (
@@ -216,7 +215,7 @@ export const RouteConfigDisplay: React.FC<RouteConfigDisplayProps> = ({
                 {rs.format && rs.format !== 'binary' && (
                   <Badge variant="secondary" className="text-[11px]">{rs.format}</Badge>
                 )}
-                <SmartTruncate text={rs.url} className="text-muted-foreground" />
+                <span className="text-muted-foreground truncate" title={rs.url}>{rs.url}</span>
                 {rs.updateInterval && (
                   <span className="text-muted-foreground text-xs">({rs.updateInterval})</span>
                 )}

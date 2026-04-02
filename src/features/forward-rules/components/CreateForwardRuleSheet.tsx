@@ -637,6 +637,9 @@ export const CreateForwardRuleSheet: React.FC<CreateForwardRuleSheetProps> = ({
                 idPrefix="create-sheet-route"
                 nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
               />
+              {form.errors.route && (
+                <p className="text-sm text-destructive">{form.errors.route}</p>
+              )}
             </>
           )}
 

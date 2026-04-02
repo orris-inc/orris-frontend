@@ -1229,6 +1229,13 @@
           "sourcePort": "Source Port",
           "network": "Network",
           "ruleSet": "Rule Set"
+        },
+        "validation": {
+          "customOutboundTagRequired": "Custom outbound tag is required",
+          "customOutboundServerRequired": "Custom outbound server address is required",
+          "customOutboundPortInvalid": "Custom outbound port must be between 1 and 65535",
+          "ruleSetTagRequired": "Rule set tag is required",
+          "ruleSetUrlRequired": "Rule set URL is required"
         }
       },
       "dns": {

@@ -126,7 +126,7 @@ const StatCard: React.FC<{
       <Icon className="size-4" />
     </div>
     <div className="min-w-0 flex-1">
-      <SmartTruncate text={label} className="text-xs text-muted-foreground" />
+      <p className="text-xs text-muted-foreground truncate">{label}</p>
       <p className="text-sm font-semibold truncate">{value}</p>
       {subValue && <p className="text-xs text-muted-foreground">{subValue}</p>}
     </div>
@@ -218,7 +218,7 @@ const FlowPath: React.FC<{
             {/* Node info */}
             <div className="flex flex-col items-center min-w-[60px] max-w-[100px]">
               <div className="flex items-center gap-1">
-                <SmartTruncate text={node.name} className="text-[11px] font-medium text-center leading-tight" />
+                <span className="text-[11px] font-medium text-center leading-tight truncate">{node.name}</span>
                 {node.badge && (
                   <span className="px-1 py-0 text-[9px] font-semibold rounded bg-warning/10 text-warning shrink-0">
                     {node.badge}
@@ -226,7 +226,7 @@ const FlowPath: React.FC<{
                 )}
               </div>
               {displayAddress && (
-                <SmartTruncate text={displayAddress} mono className="text-[10px] text-muted-foreground w-full text-center" font="10px 'SF Mono', ui-monospace, monospace" lineHeight={14} tooltipContent={fullAddress} />
+                <span className="text-[10px] font-mono text-muted-foreground w-full text-center truncate" title={fullAddress}>{displayAddress}</span>
               )}
             </div>
           </div>
@@ -269,7 +269,7 @@ const FlowPath: React.FC<{
                                   )}
                                 </div>
                                 {agent.address && (
-                                  <SmartTruncate text={agent.address} mono className="text-[10px] text-muted-foreground" font="10px 'SF Mono', ui-monospace, monospace" lineHeight={14} />
+                                  <span className="text-[10px] font-mono text-muted-foreground truncate" title={agent.address}>{agent.address}</span>
                                 )}
                               </div>
                             </div>

@@ -561,6 +561,9 @@ export const CreateNodeSheet: React.FC<CreateNodeSheetProps> = ({
           {/* Step 5: Route Config */}
           <StepSection step={STEPS[4]} title={t(STEPS[4].titleKey)} badge={formData.route ? t('admin.nodes.form.configured') : null} isOpen={openSections.has('route')} isCompleted={completedSteps.has('route')} onToggle={() => toggleSection('route')}>
             <RouteConfigEditor value={formData.route} onChange={handleRouteChange} idPrefix="create-node-sheet-route" nodes={nodes} />
+            {errors.route && (
+              <p className="text-sm text-destructive mt-2">{errors.route}</p>
+            )}
           </StepSection>
 
           {/* Step 6: DNS Config */}

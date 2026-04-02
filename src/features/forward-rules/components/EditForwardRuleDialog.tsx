@@ -488,6 +488,9 @@ export const EditForwardRuleDialog: React.FC<EditForwardRuleDialogProps> = ({
                     idPrefix="edit-rule-route"
                     nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
                   />
+                  {form.errors.route && (
+                    <p className="text-sm text-destructive mt-2">{form.errors.route}</p>
+                  )}
                 </div>
               </FormSection>
             )}

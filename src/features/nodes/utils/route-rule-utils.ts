@@ -3,7 +3,7 @@
  * Extracted for Fast Refresh compatibility
  */
 
-import type { OutboundType, CustomOutbound } from '@/api/node';
+import type { OutboundType, CustomOutbound, RouteConfig } from '@/api/node';
 
 /** Simple node info for outbound selection */
 export interface OutboundNodeOption {
@@ -55,4 +55,41 @@ export const getOutboundLabel = (
     return t('admin.nodes.route.outbound.node', { name: node.name });
   }
   return node ? `Node: ${node.name}` : outbound;
+};
+
+/**
+ * Validate RouteConfig before submission.
+ * Returns an error message key if invalid, or null if valid.
+ */
+export const validateRouteConfig = (
+  route: RouteConfig | undefined
+): string | null => {
+  if (!route) return null;
+
+  if (route.customOutbounds) {
+    for (const co of route.customOutbounds) {
+      if (!co.tag || !co.tag.trim()) {
+        return 'admin.nodes.route.validation.customOutboundTagRequired';
+      }
+      if (!co.server || !co.server.trim()) {
+        return 'admin.nodes.route.validation.customOutboundServerRequired';
+      }
+      if (!co.serverPort || co.serverPort < 1 || co.serverPort > 65535) {
+        return 'admin.nodes.route.validation.customOutboundPortInvalid';
+      }
+    }
+  }
+
+  if (route.ruleSetEntries) {
+    for (const rs of route.ruleSetEntries) {
+      if (!rs.tag || !rs.tag.trim()) {
+        return 'admin.nodes.route.validation.ruleSetTagRequired';
+      }
+      if (!rs.url || !rs.url.trim()) {
+        return 'admin.nodes.route.validation.ruleSetUrlRequired';
+      }
+    }
+  }
+
+  return null;
 };

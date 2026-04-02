@@ -19,6 +19,7 @@ import type {
   AddressPreference,
 } from '@/api/forward';
 import type { Node, RouteConfig } from '@/api/node';
+import { validateRouteConfig } from '@/features/nodes/utils/route-rule-utils';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -486,6 +487,12 @@ export function useCreateForwardRuleForm({
           newErrors.targetNodeId = t('admin.forwardRules.validation.selectTargetNode');
         }
       }
+    }
+
+    // Route config validation
+    const routeError = validateRouteConfig(formData.route);
+    if (routeError) {
+      newErrors.route = t(routeError);
     }
 
     setErrors(newErrors);

@@ -1229,6 +1229,13 @@
           "sourcePort": "源端口",
           "network": "网络",
           "ruleSet": "规则集"
+        },
+        "validation": {
+          "customOutboundTagRequired": "自定义出站标签不能为空",
+          "customOutboundServerRequired": "自定义出站服务器地址不能为空",
+          "customOutboundPortInvalid": "自定义出站端口必须在 1-65535 之间",
+          "ruleSetTagRequired": "规则集标签不能为空",
+          "ruleSetUrlRequired": "规则集 URL 不能为空"
         }
       },
       "dns": {

@@ -3,6 +3,7 @@
  * Edit a single routing rule with all matching conditions
  */
 
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Label } from '@/components/common/Label';
 import { Textarea } from '@/components/common/Textarea';
@@ -101,6 +102,33 @@ const getDefaultExpandedSections = (rule: RouteRule): SectionId[] => {
   return sections;
 };
 
+/** Text field names that use local state for performance */
+type TextFieldKey =
+  | 'domain' | 'domainSuffix' | 'domainKeyword' | 'domainRegex'
+  | 'ipCidr' | 'sourceIpCidr'
+  | 'geoip' | 'geosite'
+  | 'port' | 'sourcePort'
+  | 'protocol' | 'network' | 'ruleSet';
+
+const PORT_FIELDS: readonly TextFieldKey[] = ['port', 'sourcePort'];
+
+/** Build local text state from rule */
+const buildLocalText = (rule: RouteRule): Record<TextFieldKey, string> => ({
+  domain: formatArrayDisplay(rule.domain),
+  domainSuffix: formatArrayDisplay(rule.domainSuffix),
+  domainKeyword: formatArrayDisplay(rule.domainKeyword),
+  domainRegex: formatArrayDisplay(rule.domainRegex),
+  ipCidr: formatArrayDisplay(rule.ipCidr),
+  sourceIpCidr: formatArrayDisplay(rule.sourceIpCidr),
+  geoip: formatArrayDisplay(rule.geoip),
+  geosite: formatArrayDisplay(rule.geosite),
+  port: formatPortDisplay(rule.port),
+  sourcePort: formatPortDisplay(rule.sourcePort),
+  protocol: formatArrayDisplay(rule.protocol),
+  network: formatArrayDisplay(rule.network),
+  ruleSet: formatArrayDisplay(rule.ruleSet),
+});
+
 export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
   rule,
   onChange,
@@ -111,8 +139,30 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
   customOutbounds,
 }) => {
   const { t } = useTranslation();
-  // Filter out current node from available options
   const availableNodes = nodes.filter((n) => n.id !== currentNodeId);
+
+  // Local text state — edits happen here, flushed to parent on blur
+  const [localText, setLocalText] = useState(() => buildLocalText(rule));
+
+  // Sync from parent when rule reference changes (e.g. reorder)
+  useEffect(() => {
+    setLocalText(buildLocalText(rule));
+  }, [rule]);
+
+  const handleLocalChange = useCallback((field: TextFieldKey, value: string) => {
+    setLocalText((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const flushField = useCallback((field: TextFieldKey) => {
+    const value = localText[field];
+    if (PORT_FIELDS.includes(field)) {
+      const arr = parsePortInput(value);
+      onChange({ ...rule, [field]: arr.length > 0 ? arr : undefined });
+    } else {
+      const arr = parseArrayInput(value);
+      onChange({ ...rule, [field]: arr.length > 0 ? arr : undefined });
+    }
+  }, [localText, rule, onChange]);
 
   // Check if section has content for badge display
   const hasDomainContent = Boolean(
@@ -132,28 +182,6 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
       rule.network?.length
   );
   const hasRuleSetContent = Boolean(rule.ruleSet?.length);
-
-  const handleArrayFieldChange = (
-    field: keyof RouteRule,
-    value: string
-  ): void => {
-    const arr = parseArrayInput(value);
-    onChange({
-      ...rule,
-      [field]: arr.length > 0 ? arr : undefined,
-    });
-  };
-
-  const handlePortFieldChange = (
-    field: 'port' | 'sourcePort',
-    value: string
-  ): void => {
-    const arr = parsePortInput(value);
-    onChange({
-      ...rule,
-      [field]: arr.length > 0 ? arr : undefined,
-    });
-  };
 
   return (
     <div className="space-y-4">
@@ -233,10 +261,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-domain`}>{t('admin.nodes.route.domain.exact')}</Label>
                 <Textarea
                   id={`${idPrefix}-domain`}
-                  value={formatArrayDisplay(rule.domain)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('domain', e.target.value)
-                  }
+                  value={localText.domain}
+                  onChange={(e) => handleLocalChange('domain', e.target.value)}
+                  onBlur={() => flushField('domain')}
                   placeholder="example.com&#10;www.example.com"
                   rows={2}
                   disabled={disabled}
@@ -250,10 +277,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-domainSuffix`}>{t('admin.nodes.route.domain.suffix')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainSuffix`}
-                  value={formatArrayDisplay(rule.domainSuffix)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('domainSuffix', e.target.value)
-                  }
+                  value={localText.domainSuffix}
+                  onChange={(e) => handleLocalChange('domainSuffix', e.target.value)}
+                  onBlur={() => flushField('domainSuffix')}
                   placeholder=".cn&#10;.google.com"
                   rows={2}
                   disabled={disabled}
@@ -267,10 +293,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-domainKeyword`}>{t('admin.nodes.route.domain.keyword')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainKeyword`}
-                  value={formatArrayDisplay(rule.domainKeyword)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('domainKeyword', e.target.value)
-                  }
+                  value={localText.domainKeyword}
+                  onChange={(e) => handleLocalChange('domainKeyword', e.target.value)}
+                  onBlur={() => flushField('domainKeyword')}
                   placeholder="google&#10;facebook"
                   rows={2}
                   disabled={disabled}
@@ -284,10 +309,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-domainRegex`}>{t('admin.nodes.route.domain.regex')}</Label>
                 <Textarea
                   id={`${idPrefix}-domainRegex`}
-                  value={formatArrayDisplay(rule.domainRegex)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('domainRegex', e.target.value)
-                  }
+                  value={localText.domainRegex}
+                  onChange={(e) => handleLocalChange('domainRegex', e.target.value)}
+                  onBlur={() => flushField('domainRegex')}
                   placeholder="^ad\\..*$&#10;.*\\.ads\\..*"
                   rows={2}
                   disabled={disabled}
@@ -318,10 +342,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-ipCidr`}>{t('admin.nodes.route.ip.targetCidr')}</Label>
                 <Textarea
                   id={`${idPrefix}-ipCidr`}
-                  value={formatArrayDisplay(rule.ipCidr)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('ipCidr', e.target.value)
-                  }
+                  value={localText.ipCidr}
+                  onChange={(e) => handleLocalChange('ipCidr', e.target.value)}
+                  onBlur={() => flushField('ipCidr')}
                   placeholder="192.168.0.0/16&#10;10.0.0.0/8"
                   rows={2}
                   disabled={disabled}
@@ -335,10 +358,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-sourceIpCidr`}>{t('admin.nodes.route.ip.sourceCidr')}</Label>
                 <Textarea
                   id={`${idPrefix}-sourceIpCidr`}
-                  value={formatArrayDisplay(rule.sourceIpCidr)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('sourceIpCidr', e.target.value)
-                  }
+                  value={localText.sourceIpCidr}
+                  onChange={(e) => handleLocalChange('sourceIpCidr', e.target.value)}
+                  onBlur={() => flushField('sourceIpCidr')}
                   placeholder="192.168.1.0/24"
                   rows={2}
                   disabled={disabled}
@@ -386,10 +408,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-geoip`}>GeoIP</Label>
                 <Textarea
                   id={`${idPrefix}-geoip`}
-                  value={formatArrayDisplay(rule.geoip)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('geoip', e.target.value)
-                  }
+                  value={localText.geoip}
+                  onChange={(e) => handleLocalChange('geoip', e.target.value)}
+                  onBlur={() => flushField('geoip')}
                   placeholder="cn&#10;us&#10;private"
                   rows={2}
                   disabled={disabled}
@@ -403,10 +424,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-geosite`}>GeoSite</Label>
                 <Textarea
                   id={`${idPrefix}-geosite`}
-                  value={formatArrayDisplay(rule.geosite)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('geosite', e.target.value)
-                  }
+                  value={localText.geosite}
+                  onChange={(e) => handleLocalChange('geosite', e.target.value)}
+                  onBlur={() => flushField('geosite')}
                   placeholder="cn&#10;google&#10;telegram"
                   rows={2}
                   disabled={disabled}
@@ -441,10 +461,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   <Label htmlFor={`${idPrefix}-port`}>{t('admin.nodes.route.port.target')}</Label>
                   <Textarea
                     id={`${idPrefix}-port`}
-                    value={formatPortDisplay(rule.port)}
-                    onChange={(e) =>
-                      handlePortFieldChange('port', e.target.value)
-                    }
+                    value={localText.port}
+                    onChange={(e) => handleLocalChange('port', e.target.value)}
+                    onBlur={() => flushField('port')}
                     placeholder="80, 443, 8080"
                     rows={1}
                     disabled={disabled}
@@ -455,10 +474,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                   <Label htmlFor={`${idPrefix}-sourcePort`}>{t('admin.nodes.route.port.source')}</Label>
                   <Textarea
                     id={`${idPrefix}-sourcePort`}
-                    value={formatPortDisplay(rule.sourcePort)}
-                    onChange={(e) =>
-                      handlePortFieldChange('sourcePort', e.target.value)
-                    }
+                    value={localText.sourcePort}
+                    onChange={(e) => handleLocalChange('sourcePort', e.target.value)}
+                    onBlur={() => flushField('sourcePort')}
                     placeholder="1024, 2048"
                     rows={1}
                     disabled={disabled}
@@ -470,10 +488,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-protocol`}>{t('common.protocol')}</Label>
                 <Textarea
                   id={`${idPrefix}-protocol`}
-                  value={formatArrayDisplay(rule.protocol)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('protocol', e.target.value)
-                  }
+                  value={localText.protocol}
+                  onChange={(e) => handleLocalChange('protocol', e.target.value)}
+                  onBlur={() => flushField('protocol')}
                   placeholder="http&#10;tls&#10;quic"
                   rows={2}
                   disabled={disabled}
@@ -487,10 +504,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
                 <Label htmlFor={`${idPrefix}-network`}>{t('admin.nodes.route.network.label')}</Label>
                 <Textarea
                   id={`${idPrefix}-network`}
-                  value={formatArrayDisplay(rule.network)}
-                  onChange={(e) =>
-                    handleArrayFieldChange('network', e.target.value)
-                  }
+                  value={localText.network}
+                  onChange={(e) => handleLocalChange('network', e.target.value)}
+                  onBlur={() => flushField('network')}
                   placeholder="tcp&#10;udp"
                   rows={1}
                   disabled={disabled}
@@ -520,10 +536,9 @@ export const RouteRuleEditor: React.FC<RouteRuleEditorProps> = ({
               <Label htmlFor={`${idPrefix}-ruleSet`}>{t('admin.nodes.route.ruleSet.label')}</Label>
               <Textarea
                 id={`${idPrefix}-ruleSet`}
-                value={formatArrayDisplay(rule.ruleSet)}
-                onChange={(e) =>
-                  handleArrayFieldChange('ruleSet', e.target.value)
-                }
+                value={localText.ruleSet}
+                onChange={(e) => handleLocalChange('ruleSet', e.target.value)}
+                onBlur={() => flushField('ruleSet')}
                 placeholder="geoip-cn&#10;geosite-cn"
                 rows={2}
                 disabled={disabled}

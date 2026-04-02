@@ -771,6 +771,9 @@ export const CreateNodeDialog: React.FC<CreateNodeDialogProps> = ({
                 idPrefix="create-node-route"
                 nodes={nodes}
               />
+              {errors.route && (
+                <p className="text-sm text-destructive mt-2">{errors.route}</p>
+              )}
             </CollapsibleSection>
 
             {/* DNS Configuration */}

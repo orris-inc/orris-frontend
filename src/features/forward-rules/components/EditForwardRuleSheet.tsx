@@ -508,12 +508,17 @@ export const EditForwardRuleSheet: React.FC<EditForwardRuleSheetProps> = ({
 
           {/* Route Config (non-external types) */}
           {!isExternal && (
-            <RouteConfigEditor
-              value={form.formData.route}
-              onChange={form.handleRouteChange}
-              idPrefix="edit-sheet-route"
-              nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
-            />
+            <>
+              <RouteConfigEditor
+                value={form.formData.route}
+                onChange={form.handleRouteChange}
+                idPrefix="edit-sheet-route"
+                nodes={nodes.map((n) => ({ id: n.id, name: n.name }))}
+              />
+              {form.errors.route && (
+                <p className="text-sm text-destructive">{form.errors.route}</p>
+              )}
+            </>
           )}
 
           {/* Advanced Options Toggle */}

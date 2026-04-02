@@ -553,6 +553,9 @@ export const EditNodeSheet: React.FC<EditNodeSheetProps> = ({
               nodes={nodes}
               currentNodeId={node?.id}
             />
+            {errors.route && (
+              <p className="text-sm text-destructive mt-2">{errors.route}</p>
+            )}
           </MobileSection>
 
           {/* DNS Config */}

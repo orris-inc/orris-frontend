@@ -524,6 +524,9 @@ export const CreateForwardRuleDialog: React.FC<CreateForwardRuleDialogProps> = (
                     idPrefix="create-rule-route"
                     nodes={nodes?.map((n) => ({ id: n.id, name: n.name })) || []}
                   />
+                  {form.errors.route && (
+                    <p className="text-sm text-destructive mt-2">{form.errors.route}</p>
+                  )}
                 </div>
               </FormSection>
             )}

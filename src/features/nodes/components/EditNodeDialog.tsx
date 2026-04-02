@@ -670,6 +670,9 @@ export const EditNodeDialog: React.FC<EditNodeDialogProps> = ({
                   nodes={nodes}
                   currentNodeId={node?.id}
                 />
+                {errors.route && (
+                  <p className="text-sm text-destructive mt-2">{errors.route}</p>
+                )}
               </AccordionContent>
             </AccordionItem>
 

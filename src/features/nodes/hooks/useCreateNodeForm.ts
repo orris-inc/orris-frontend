@@ -10,6 +10,7 @@ import type {
   RouteConfig,
   DnsConfig,
 } from '@/api/node';
+import { validateRouteConfig } from '../utils/route-rule-utils';
 
 // Extended form data type with UI-only fields
 export type CreateNodeFormData = CreateNodeRequest & {
@@ -223,6 +224,12 @@ export function useCreateNodeForm(_options?: UseCreateNodeFormOptions) {
 
     if (formData.protocol === 'shadowsocks' && !formData.encryptionMethod) {
       newErrors.encryptionMethod = t('admin.nodes.form.validation.encryptionRequired');
+    }
+
+    // Route config validation
+    const routeError = validateRouteConfig(formData.route);
+    if (routeError) {
+      newErrors.route = t(routeError);
     }
 
     setErrors(newErrors);
