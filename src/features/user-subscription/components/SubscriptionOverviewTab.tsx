@@ -4,9 +4,7 @@
  * Modern Bento Grid design with improved visual hierarchy
  */
 
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
 import {
   Clock,
   Upload,
@@ -22,7 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getBadgeClass, getButtonClass } from "@/lib/ui-styles";
 import type { Subscription } from "@/api/subscription/types";
-import { getTrafficStats } from "@/api/subscription";
 import { SubscriptionLinkSelector } from "@/components/subscription";
 import { SubscriptionTrafficChart } from "./SubscriptionTrafficChart";
 
@@ -241,39 +238,24 @@ export const SubscriptionOverviewTab: React.FC<
     totalDays !== null && daysRemaining !== null ? totalDays - daysRemaining : 0;
   const periodProgress =
     totalDays !== null && totalDays > 0 ? (daysUsed / totalDays) * 100 : 0;
-  // Use subscription-level authoritative traffic data
+  // Authoritative current-cycle data, all sourced from the subscription itself.
   const trafficLimit = subscription.dataLimitBytes ?? 0;
   const trafficUsedBytes = subscription.dataUsedBytes ?? 0;
-
-  // Query traffic stats for current billing period (upload/download breakdown)
-  const { data: trafficStats } = useQuery({
-    queryKey: [
-      "subscriptionTraffic",
-      subscription.id,
-      subscription.currentPeriodStart,
-    ],
-    queryFn: () => {
-      const from = subscription.currentPeriodStart;
-      const to = subscription.currentPeriodEnd || new Date().toISOString();
-      return getTrafficStats(subscription.id, { from, to });
-    },
-    enabled: !!subscription.id && !!subscription.currentPeriodStart,
-  });
-
-  // Traffic breakdown from stats API (for upload/download display)
-  const trafficBreakdown = useMemo(() => {
-    if (!trafficStats?.summary) {
-      return { upload: 0, download: 0 };
-    }
-    return {
-      upload: trafficStats.summary.totalUpload,
-      download: trafficStats.summary.totalDownload,
-    };
-  }, [trafficStats?.summary]);
+  const trafficBreakdown = {
+    upload: subscription.currentCycleUploadBytes ?? 0,
+    download: subscription.currentCycleDownloadBytes ?? 0,
+  };
 
   // Calculate traffic usage percentage using authoritative data
   const trafficPercentage =
     trafficLimit > 0 ? (trafficUsedBytes / trafficLimit) * 100 : 0;
+
+  // Show the cycle window in the details card so users can see which
+  // window the upload/download/total figures are aggregated over.
+  const trafficCycleLabel =
+    subscription.currentTrafficCycleStart && subscription.currentTrafficCycleEnd
+      ? `${formatDate(subscription.currentTrafficCycleStart)} ~ ${formatDate(subscription.currentTrafficCycleEnd)}`
+      : null;
 
   // Format traffic for progress bar label
   const formatTrafficLabel = (used: number, limit: number) => {
@@ -539,11 +521,23 @@ export const SubscriptionOverviewTab: React.FC<
 
       {/* Traffic Details Card */}
       <div className="p-3 @sm:p-4 rounded-xl bg-card ring-1 ring-border">
-        <div className="flex items-center gap-2 @sm:gap-2.5 mb-2 @sm:mb-3">
-          <div className="p-1 @sm:p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
-            <Gauge className="size-3 @sm:size-3.5 text-primary" />
+        <div className="flex items-start justify-between gap-2 mb-2 @sm:mb-3">
+          <div className="flex items-center gap-2 @sm:gap-2.5">
+            <div className="p-1 @sm:p-1.5 rounded-md bg-primary/10 ring-1 ring-primary/20">
+              <Gauge className="size-3 @sm:size-3.5 text-primary" />
+            </div>
+            <h3 className="text-xs @sm:text-sm font-semibold">{t("userSubscription.trafficDetails")}</h3>
           </div>
-          <h3 className="text-xs @sm:text-sm font-semibold">{t("userSubscription.trafficDetails")}</h3>
+          {trafficCycleLabel && (
+            <div className="flex flex-col items-end text-right shrink-0">
+              <span className="text-[10px] @sm:text-xs text-muted-foreground">
+                {t("userSubscription.trafficCyclePeriod")}
+              </span>
+              <span className="text-[10px] @sm:text-xs font-medium tabular-nums">
+                {trafficCycleLabel}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Traffic Stats Grid - 3 columns on all screens */}

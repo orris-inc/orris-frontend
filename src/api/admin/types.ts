@@ -667,7 +667,8 @@ export interface SetupStatusResponse {
   missingSettings: string[];
 }
 
-// ========== Admin Subscription Management Types (Added 2025-01-14, Updated 2026-02-28) ==========
+// ========== Admin Subscription Management Types (Added 2025-01-14, Updated 2026-04-29) ==========
+// 2026-04-29: Added currentTrafficCycleStart/End and currentCycleUpload/DownloadBytes to AdminSubscriptionDTO
 // 2026-02-28: Added dataUsedBytes, dataLimitBytes to AdminSubscriptionDTO; Added AdminUpdateSubscriptionRequest
 // 2026-01-29: Removed apiRateLimit, maxUsers, maxProjects from SubscriptionPlanDTO
 
@@ -815,18 +816,30 @@ export interface AdminSubscriptionDTO {
   endDate: string;
   /** Whether auto-renewal is enabled */
   autoRenew: boolean;
-  /** Current billing period start */
+  /** Current billing period start (used by billing/renewal flows) */
   currentPeriodStart: string;
   /** Current billing period end */
   currentPeriodEnd: string;
+  /**
+   * Current traffic cycle start (calendar_month or billing_cycle, depending on plan).
+   * Pair with dataUsedBytes and currentCycleUpload/DownloadBytes; differs from
+   * currentPeriodStart for calendar_month plans. Added: 2026-04-29.
+   */
+  currentTrafficCycleStart: string;
+  /** Current traffic cycle end. See currentTrafficCycleStart. Added: 2026-04-29. */
+  currentTrafficCycleEnd: string;
   /** Whether subscription is expired */
   isExpired: boolean;
   /** Whether subscription is active and can be used */
   isActive: boolean;
-  /** Current traffic used in bytes */
+  /** Total traffic used in current cycle (= upload + download, plus admin adjustment) */
   dataUsedBytes: number;
   /** Traffic limit in bytes (0=unlimited) */
   dataLimitBytes: number;
+  /** Upload traffic in current cycle (raw, no adjustment). Added: 2026-04-29. */
+  currentCycleUploadBytes: number;
+  /** Download traffic in current cycle (raw, no adjustment). Added: 2026-04-29. */
+  currentCycleDownloadBytes: number;
   /** Current online device count */
   onlineDeviceCount: number;
   /** Max concurrent devices (0=unlimited) */

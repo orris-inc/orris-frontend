@@ -6,7 +6,7 @@
  */
 
 import { useTranslation } from 'react-i18next';
-import { Calendar, ChevronRight, Clock, Activity } from 'lucide-react';
+import { Calendar, ChevronRight, Clock, Activity, Infinity as InfinityIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getBadgeClass } from '@/lib/ui-styles';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
@@ -192,33 +192,53 @@ export const SubscriptionEntryCard = ({
         </span>
       </div>
 
-      {/* Traffic Usage Section */}
-      {isActive && trafficLimit > 0 && (
+      {/* Traffic Usage Section — keeps card heights consistent across capped/unlimited plans */}
+      {isActive && (
         <div className={cn(compact ? 'hidden sm:block mb-2' : 'mb-2 sm:mb-3')}>
           <div className="flex items-center justify-between mb-1 sm:mb-1.5">
             <span className="text-[10px] sm:text-xs text-muted-foreground">
               {t('user.dashboard.stats.totalTraffic')}
             </span>
-            <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
-              {usagePercent.toFixed(0)}%
-            </span>
+            {trafficLimit > 0 ? (
+              <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
+                {usagePercent.toFixed(0)}%
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-0.5 text-[10px] sm:text-xs text-muted-foreground">
+                <InfinityIcon className="size-3 sm:size-3.5" strokeWidth={2} />
+                <span>{t('common.unlimited')}</span>
+              </span>
+            )}
           </div>
-          <div className="h-1.5 sm:h-2 rounded-full bg-muted overflow-hidden">
+          {trafficLimit > 0 ? (
+            <div className="h-1.5 sm:h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-300',
+                  getProgressColor(usagePercent)
+                )}
+                style={{ width: `${Math.min(usagePercent, 100)}%` }}
+              />
+            </div>
+          ) : (
             <div
-              className={cn(
-                'h-full rounded-full transition-all duration-300',
-                getProgressColor(usagePercent)
-              )}
-              style={{ width: `${Math.min(usagePercent, 100)}%` }}
+              className="h-1.5 sm:h-2 rounded-full"
+              style={{
+                backgroundImage:
+                  'repeating-linear-gradient(45deg, var(--color-muted) 0 4px, transparent 4px 8px)',
+              }}
+              aria-hidden="true"
             />
-          </div>
+          )}
           <div className="flex items-center justify-between mt-1 sm:mt-1.5">
             <span className="text-xs sm:text-sm font-medium tabular-nums text-foreground">
               {usedFormatted.value} <span className="text-muted-foreground">{usedFormatted.unit}</span>
             </span>
-            <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
-              / {limitFormatted.value} {limitFormatted.unit}
-            </span>
+            {trafficLimit > 0 && (
+              <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground">
+                / {limitFormatted.value} {limitFormatted.unit}
+              </span>
+            )}
           </div>
         </div>
       )}

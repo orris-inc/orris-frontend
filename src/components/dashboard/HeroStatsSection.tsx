@@ -198,10 +198,16 @@ export const HeroStatsSection = ({
     );
   }
 
-  // Multiple subscriptions view
+  // Multiple subscriptions view — three stats inline on desktop, 2-up grid on mobile
   const nearestDays = stats.nearestExpiry
     ? getDaysUntil(stats.nearestExpiry.currentPeriodEnd)
     : null;
+  const nearestPlanName =
+    stats.nearestExpiry?.plan?.name ?? t('user.dashboard.subscription.unknownPlan');
+  const nearestSubtitle =
+    nearestDays !== null
+      ? `${nearestPlanName} · ${t('common.time.days', { count: nearestDays })}`
+      : nearestPlanName;
 
   return (
     <section
@@ -212,7 +218,7 @@ export const HeroStatsSection = ({
         className
       )}
     >
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {/* Active Subscriptions Count */}
         <HeroStatCard
           icon={Activity}
@@ -231,43 +237,16 @@ export const HeroStatsSection = ({
           subtitle={t('user.dashboard.hero.thisMonth')}
         />
 
-        {/* Nearest Expiry - Full width row */}
+        {/* Nearest Expiry — same shape as the other two */}
         {stats.nearestExpiry && nearestDays !== null && (
-          <div
-            className={cn(
-              cardStyles,
-              'col-span-2 bg-card/80 backdrop-blur-sm',
-              'p-3 sm:p-4',
-              'flex items-center gap-3'
-            )}
-          >
-            <div
-              className={cn(
-                'flex items-center justify-center rounded-lg p-1.5 ring-1',
-                nearestDays <= 7
-                  ? 'bg-warning/10 ring-warning/20'
-                  : 'bg-success/10 ring-success/20'
-              )}
-            >
-              <Clock
-                className={cn(
-                  'size-3.5 lg:size-4',
-                  nearestDays <= 7 ? 'text-warning' : 'text-success'
-                )}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {t('user.dashboard.hero.nearestExpiry')}
-              </p>
-              <p className="text-sm sm:text-base font-medium text-foreground truncate">
-                {stats.nearestExpiry.plan?.name ?? t('user.dashboard.subscription.unknownPlan')}{' '}
-                <span className="text-muted-foreground">
-                  · {t('common.time.days', { count: nearestDays })}
-                </span>
-              </p>
-            </div>
-          </div>
+          <HeroStatCard
+            className="col-span-2 lg:col-span-1"
+            icon={Clock}
+            iconVariant={nearestDays <= 7 ? 'warning' : 'success'}
+            title={t('user.dashboard.hero.nearestExpiry')}
+            value={t('common.time.days', { count: nearestDays })}
+            subtitle={nearestSubtitle}
+          />
         )}
       </div>
     </section>

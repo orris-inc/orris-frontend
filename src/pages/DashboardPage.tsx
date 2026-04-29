@@ -16,7 +16,6 @@ import {
   Loader2,
   Activity,
   Sparkles,
-  ChevronRight,
   ChevronDown,
   AlertTriangle,
   Clock,
@@ -42,7 +41,6 @@ import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';
 import {
   SectionHeader,
   EmptyState,
-  QuickActionLink,
 } from '@/components/common/bento';
 
 /**
@@ -316,42 +314,7 @@ export const DashboardPage = () => {
                 title={t('user.dashboard.mySubscriptions')}
                 count={activeSubscriptions.length}
                 secondaryCount={subscriptions.length}
-                action={
-                  <ViewTransitionLink
-                    to="/dashboard/pricing"
-                    className={cn(
-                      'text-sm text-primary hover:text-primary/80 transition-colors',
-                      'flex items-center gap-1 touch-target'
-                    )}
-                  >
-                    {t('user.dashboard.viewAllPlans')}
-                    <ChevronRight className="size-4" />
-                  </ViewTransitionLink>
-                }
               />
-
-              {!isLoading && groupedSubscriptions && subscriptions.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground mb-3">
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/60 px-2 py-0.5">
-                    <span className="size-1 rounded-full bg-success" />
-                    <span className="tabular-nums">
-                      {t('user.dashboard.groups.active')} {groupedSubscriptions.active.length}
-                    </span>
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/60 px-2 py-0.5">
-                    <span className="size-1 rounded-full bg-warning" />
-                    <span className="tabular-nums">
-                      {t('user.dashboard.groups.attention')} {groupedSubscriptions.attention.length}
-                    </span>
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/60 px-2 py-0.5">
-                    <span className="size-1 rounded-full bg-muted-foreground" />
-                    <span className="tabular-nums">
-                      {t('user.dashboard.groups.history')} {groupedSubscriptions.history.length}
-                    </span>
-                  </span>
-                </div>
-              )}
 
               {/* Loading State */}
               {isLoading && (
@@ -494,33 +457,29 @@ export const DashboardPage = () => {
           </main>
 
           <aside className="lg:col-span-4 space-y-6">
-            {/* Announcements Card */}
-            <section className="rounded-lg ring-1 ring-border bg-card p-4 sm:p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Bell className="size-4 text-muted-foreground" />
-                <h3 className="text-sm font-medium text-foreground">
+            {/* Announcements Card — collapses to a single line when empty */}
+            {isAnnouncementsLoading ? (
+              <section className="flex items-center gap-2 rounded-lg ring-1 ring-border bg-card p-3">
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   {t('user.dashboard.announcements.title')}
-                </h3>
-              </div>
-
-              {/* Loading State */}
-              {isAnnouncementsLoading && (
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                </span>
+              </section>
+            ) : announcements.length === 0 ? (
+              <section className="flex items-center gap-2 rounded-lg ring-1 ring-border bg-card p-3">
+                <Bell className="size-4 text-muted-foreground/60" />
+                <span className="text-sm text-muted-foreground">
+                  {t('user.dashboard.announcements.empty')}
+                </span>
+              </section>
+            ) : (
+              <section className="rounded-lg ring-1 ring-border bg-card p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bell className="size-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium text-foreground">
+                    {t('user.dashboard.announcements.title')}
+                  </h3>
                 </div>
-              )}
-
-              {/* Empty State */}
-              {!isAnnouncementsLoading && announcements.length === 0 && (
-                <div className="py-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {t('user.dashboard.announcements.empty')}
-                  </p>
-                </div>
-              )}
-
-              {/* Announcements List */}
-              {!isAnnouncementsLoading && announcements.length > 0 && (
                 <div className="space-y-3">
                   {announcements.map((announcement: Announcement) => {
                     const Icon = getAnnouncementIcon(announcement.type);
@@ -534,7 +493,6 @@ export const DashboardPage = () => {
                           isUnread && 'bg-muted/30'
                         )}
                       >
-                        {/* Unread indicator */}
                         {isUnread && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-primary rounded-full" />
                         )}
@@ -558,26 +516,6 @@ export const DashboardPage = () => {
                     );
                   })}
                 </div>
-              )}
-            </section>
-
-            {/* Quick Actions - Mobile-first full width */}
-            {!isLoading && subscriptions.length > 0 && (
-              <section className="grid grid-cols-1 gap-3">
-                <QuickActionLink
-                  to="/dashboard/pricing"
-                  icon={Sparkles}
-                  title={t('user.dashboard.quickActions.upgrade')}
-                  description={t('user.dashboard.quickActions.upgradeDesc')}
-                  variant="primary"
-                />
-                <QuickActionLink
-                  to="/dashboard/pricing"
-                  icon={CreditCard}
-                  title={t('user.dashboard.quickActions.viewPlans')}
-                  description={t('user.dashboard.quickActions.viewPlansDesc')}
-                  variant="success"
-                />
               </section>
             )}
           </aside>

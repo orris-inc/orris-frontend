@@ -2921,6 +2921,8 @@
     "used": "已使用",
     "totalQuota": "总配额",
     "trafficDetails": "流量详情",
+    "trafficCyclePeriod": "本流量周期",
+    "trafficCycleHint": "上传 / 下载 / 总计 均按当前流量周期统计",
     "total": "总计",
     "subscriptionLink": "订阅链接",
     "selectFormatAndCopy": "选择格式并复制到客户端",

@@ -26,7 +26,7 @@ import {
   type SubscriptionForwardUsage,
   type UserForwardAgent,
 } from '@/api/forward';
-import { getSubscription, getTrafficStats } from '@/api/subscription';
+import { getSubscription } from '@/api/subscription';
 
 // Export types for external use
 export type { SubscriptionForwardUsage };
@@ -243,11 +243,12 @@ interface PlanLimits {
 }
 
 /**
- * Get subscription forward rule quota and usage
- * Combines data from subscription details, rule list, and traffic stats
+ * Get subscription forward rule quota and usage.
+ * Traffic usage is read directly from `subscription.dataUsedBytes` (current
+ * traffic cycle, authoritative). No separate traffic-stats request is needed.
  */
 export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = true) => {
-  // Query subscription details for plan limits and period info
+  // Query subscription details for plan limits and current-cycle usage
   const subscriptionQuery = useQuery({
     queryKey: [...subscriptionForwardRulesQueryKeys.all, 'subscription', subscriptionId] as const,
     queryFn: () => getSubscription(subscriptionId),
@@ -263,41 +264,24 @@ export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = tr
     staleTime: STALE_TIME,
   });
 
-  // Query traffic stats for current billing period
-  const trafficQuery = useQuery({
-    queryKey: [...subscriptionForwardRulesQueryKeys.all, 'traffic', subscriptionId, subscriptionQuery.data?.currentPeriodStart] as const,
-    queryFn: async () => {
-      const subscription = subscriptionQuery.data;
-      if (!subscription) return null;
-
-      const from = subscription.currentPeriodStart;
-      const to = subscription.currentPeriodEnd || new Date().toISOString();
-
-      return getTrafficStats(subscriptionId, { from, to });
-    },
-    enabled: enabled && !!subscriptionId && !!subscriptionQuery.data && !!subscriptionQuery.data.currentPeriodStart,
-    staleTime: STALE_TIME,
-  });
-
   // Combine data into SubscriptionForwardUsage format
   const usage = useMemo<SubscriptionForwardUsage | null>(() => {
     const subscription = subscriptionQuery.data;
     if (!subscription) return null;
 
     const limits = subscription.plan?.limits as PlanLimits | undefined;
-    const trafficStats = trafficQuery.data;
 
     return {
       ruleCount: rulesQuery.data?.total ?? 0,
       ruleLimit: limits?.forwardRuleLimit ?? 0,
-      trafficUsed: trafficStats?.summary?.total ?? 0,
+      trafficUsed: subscription.dataUsedBytes ?? 0,
       trafficLimit: limits?.trafficLimit ?? 0,
       allowedTypes: limits?.allowedForwardTypes ?? ['direct', 'entry', 'chain', 'direct_chain'],
     };
-  }, [subscriptionQuery.data, rulesQuery.data?.total, trafficQuery.data]);
+  }, [subscriptionQuery.data, rulesQuery.data?.total]);
 
-  const isLoading = subscriptionQuery.isLoading || rulesQuery.isLoading || trafficQuery.isLoading;
-  const error = subscriptionQuery.error || rulesQuery.error || trafficQuery.error;
+  const isLoading = subscriptionQuery.isLoading || rulesQuery.isLoading;
+  const error = subscriptionQuery.error || rulesQuery.error;
 
   return {
     usage,
@@ -306,7 +290,6 @@ export const useSubscriptionForwardUsage = (subscriptionId: string, enabled = tr
     refetch: () => {
       subscriptionQuery.refetch();
       rulesQuery.refetch();
-      trafficQuery.refetch();
     },
   };
 };

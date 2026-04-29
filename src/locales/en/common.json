@@ -2921,6 +2921,8 @@
     "used": "Used",
     "totalQuota": "Total quota",
     "trafficDetails": "Traffic Details",
+    "trafficCyclePeriod": "Current traffic cycle",
+    "trafficCycleHint": "Upload / Download / Total are all aggregated over the current traffic cycle",
     "total": "Total",
     "subscriptionLink": "Subscription Link",
     "selectFormatAndCopy": "Select format and copy to client",
