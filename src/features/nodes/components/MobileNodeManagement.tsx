@@ -50,6 +50,8 @@ export interface MobileNodeManagementProps {
   isBatchUpdating?: boolean;
   // Drag sort
   onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
+  // Detail sheet extra actions
+  onGetInstallScript?: (node: Node) => void;
 }
 
 type StatusFilter = 'all' | 'online' | 'offline' | NodeStatus;
@@ -98,6 +100,7 @@ export const MobileNodeManagement = ({
   onBatchUpdate,
   isBatchUpdating = false,
   onDragEnd,
+  onGetInstallScript,
 }: MobileNodeManagementProps) => {
   const { t } = useTranslation();
 
@@ -224,6 +227,7 @@ export const MobileNodeManagement = ({
         onDelete={onDelete}
         onActivate={onActivate}
         onDeactivate={onDeactivate}
+        onGetInstallScript={onGetInstallScript}
       />
     </div>
   );

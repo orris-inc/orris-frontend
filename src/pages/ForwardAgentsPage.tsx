@@ -36,6 +36,7 @@ import { EditForwardAgentSheet } from '@/features/forward-agents/components/Edit
 import { DeleteForwardAgentSheet } from '@/features/forward-agents/components/DeleteForwardAgentSheet';
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
+import { InstallScriptSheet } from '@/features/forward-agents/components/InstallScriptSheet';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
 import { AgentBatchUpdateSheet } from '@/features/forward-agents/components/AgentBatchUpdateSheet';
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
@@ -503,7 +504,7 @@ export function ForwardAgentsPage() {
           }}
         />
 
-        <InstallScriptDialog
+        <InstallScriptSheet
           open={activeDialog === 'installScript'}
           installCommandData={installCommandData}
           agentName={selectedAgent?.name}

@@ -29,6 +29,7 @@ import {
   Network,
   ArrowUpCircle,
   Tag,
+  Terminal,
   Clock,
   Wifi,
   WifiOff,
@@ -69,6 +70,7 @@ export interface NodeDetailSheetProps {
   onDelete: (node: Node) => void;
   onActivate: (node: Node) => void;
   onDeactivate: (node: Node) => void;
+  onGetInstallScript?: (node: Node) => void;
 }
 
 // ============================================================================
@@ -418,6 +420,7 @@ export const NodeDetailSheet = ({
   onDelete,
   onActivate,
   onDeactivate,
+  onGetInstallScript,
 }: NodeDetailSheetProps) => {
   const { t } = useTranslation();
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
@@ -700,6 +703,22 @@ export const NodeDetailSheet = ({
 
           {/* Footer Actions - Compact button group */}
           <SheetFooter>
+            {onGetInstallScript && (
+              <button
+                type="button"
+                onClick={() => onGetInstallScript(node)}
+                className={cn(
+                  'flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg w-full',
+                  'border border-border bg-background',
+                  'text-[13px] font-medium text-foreground',
+                  'active:opacity-80 active:scale-[0.99] transition-all'
+                )}
+              >
+                <Terminal className="size-4" />
+                {t('admin.nodes.table.menu.installScript')}
+              </button>
+            )}
             <div className="flex gap-2">
               <button
                 type="button"

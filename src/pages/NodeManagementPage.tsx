@@ -49,6 +49,9 @@ const NodeDetailDialog = lazy(() =>
 const NodeInstallScriptDialog = lazy(() =>
   import('@/features/nodes/components/NodeInstallScriptDialog').then((m) => ({ default: m.NodeInstallScriptDialog }))
 );
+const NodeInstallScriptSheet = lazy(() =>
+  import('@/features/nodes/components/NodeInstallScriptSheet').then((m) => ({ default: m.NodeInstallScriptSheet }))
+);
 const BatchUpdateDialog = lazy(() =>
   import('@/features/nodes/components/BatchUpdateDialog').then((m) => ({ default: m.BatchUpdateDialog }))
 );
@@ -387,6 +390,7 @@ export function NodeManagementPage() {
             onBatchUpdate={() => openDialog('batchUpdate')}
             isBatchUpdating={isBatchUpdating}
             onDragEnd={handleDragEnd}
+            onGetInstallScript={handleInstallScript}
           />
         </div>
 
@@ -426,6 +430,20 @@ export function NodeManagementPage() {
               onBatchUpdate={(updateAll) => handleBatchUpdate({ updateAll })}
               isUpdating={isBatchUpdating}
               result={batchUpdateResult}
+            />
+          </Suspense>
+        )}
+
+        {activeDialog === 'installScript' && (
+          <Suspense fallback={null}>
+            <NodeInstallScriptSheet
+              open
+              installScriptData={installScriptData}
+              nodeName={installScriptNodeName}
+              onClose={() => {
+                closeDialog();
+                setInstallScriptData(null);
+              }}
             />
           </Suspense>
         )}

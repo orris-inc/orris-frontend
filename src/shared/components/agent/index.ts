@@ -8,6 +8,8 @@ export {
   type InstallScriptData,
 } from './InstallScriptDialog';
 
+export { InstallScriptSheet } from './InstallScriptSheet';
+
 export { BatchInstallScriptDialog } from './BatchInstallScriptDialog';
 
 export {

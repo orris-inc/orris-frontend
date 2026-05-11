@@ -489,17 +489,6 @@ export const ForwardAgentDetailSheet = ({
           },
         ]
       : []),
-    ...(onGetInstallScript
-      ? [
-          {
-            label: t('admin.forwardAgents.detail.getInstallScript'),
-            icon: <Terminal className="size-5" />,
-            onPress: async () => {
-              onGetInstallScript(agent);
-            },
-          },
-        ]
-      : []),
     {
       label: t('admin.forwardAgents.detail.deleteAgent'),
       icon: <Trash2 className="size-5" />,
@@ -702,6 +691,22 @@ export const ForwardAgentDetailSheet = ({
 
           {/* Footer Actions - Compact button group */}
           <SheetFooter>
+            {onGetInstallScript && (
+              <button
+                type="button"
+                onClick={() => onGetInstallScript(agent)}
+                className={cn(
+                  'flex items-center justify-center gap-1.5',
+                  'h-11 rounded-lg w-full',
+                  'border border-border bg-background',
+                  'text-[13px] font-medium text-foreground',
+                  'active:opacity-80 active:scale-[0.99] transition-all'
+                )}
+              >
+                <Terminal className="size-4" />
+                {t('admin.forwardAgents.detail.getInstallScript')}
+              </button>
+            )}
             <div className="flex gap-2">
               {/* Update button - shown when update available */}
               {onTriggerUpdate && canUpdate && (
