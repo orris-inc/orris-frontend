@@ -1101,6 +1101,7 @@ export interface InstallCommandResponse {
 export interface GetInstallScriptParams {
   token?: string; // Optional: If not provided, uses agent's stored token
   serverUrl?: string; // Optional: Override default server URL
+  name?: string; // Optional: Instance name for multi-instance install (1-64 chars of [A-Za-z0-9._-]). Empty means default single-instance.
 }
 
 // ========== User Forward Usage Types ==========

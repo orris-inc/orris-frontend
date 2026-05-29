@@ -745,19 +745,27 @@ export const probeRule = async (
  * @param id Agent ID
  * @param params.token Optional: API token. If not provided, uses agent's stored token
  * @param params.serverUrl Optional: Override default server URL
+ * @param params.name Optional: Instance name for multi-instance install. Empty means default single-instance.
  * @returns Install command that can be executed on target server
  *
  * Usage:
  * 1. Call getInstallCommand() to get the install command
  * 2. Copy and execute the installCommand on target server
  *
- * Example response:
+ * Example response (default install):
  * {
- *   installCommand: "curl -fsSL https://...install.sh | sudo bash -s -- --server https://... --token fwd_xxx",
+ *   installCommand: "curl -fsSL https://...install.sh | sudo bash -s -- -s 'https://...' -t 'fwd_xxx'",
  *   uninstallCommand: "curl -fsSL https://...install.sh | sudo bash -s -- uninstall",
  *   scriptUrl: "https://raw.githubusercontent.com/orris-inc/orris-client/main/scripts/install.sh",
  *   serverUrl: "https://api.example.com",
  *   token: "fwd_xxx"
+ * }
+ *
+ * Example response (named instance, params.name="agent-b"):
+ * {
+ *   installCommand: "curl -fsSL https://...install.sh | sudo bash -s -- -s 'https://...' -t 'fwd_xxx' -n 'agent-b' -W 0 -T 0",
+ *   uninstallCommand: "curl -fsSL https://...install.sh | sudo bash -s -- uninstall -n 'agent-b'",
+ *   ...
  * }
  */
 export const getInstallCommand = async (

@@ -2057,7 +2057,13 @@
         "clickToExpand": "点击展开",
         "clickToCollapse": "点击收起",
         "apiUrl": "服务器地址",
-        "recommended": "推荐"
+        "recommended": "推荐",
+        "instanceName": "实例名称",
+        "instanceNameHint": "留空使用默认单实例；填写名称可在同一台服务器上运行多个 Agent 实例。",
+        "instanceNamePlaceholder": "例如 agent-b",
+        "instanceNameInvalid": "1-64 个字符，仅支持字母、数字及 . _ -",
+        "regenerate": "生成",
+        "regenerating": "生成中…"
       },
       "emptyState": "暂无转发Agent数据"
     },

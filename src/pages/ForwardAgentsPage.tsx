@@ -37,6 +37,7 @@ import { DeleteForwardAgentSheet } from '@/features/forward-agents/components/De
 import { ForwardAgentDetailDialog } from '@/features/forward-agents/components/ForwardAgentDetailDialog';
 import { InstallScriptDialog } from '@/features/forward-agents/components/InstallScriptDialog';
 import { InstallScriptSheet } from '@/features/forward-agents/components/InstallScriptSheet';
+import type { MultiInstanceConfig } from '@/shared/components/agent';
 import { AgentBatchUpdateDialog } from '@/features/forward-agents/components/AgentBatchUpdateDialog';
 import { AgentBatchUpdateSheet } from '@/features/forward-agents/components/AgentBatchUpdateSheet';
 import { BroadcastURLDialog } from '@/features/forward-agents/components/BroadcastURLDialog';
@@ -107,6 +108,7 @@ export function ForwardAgentsPage() {
     setGeneratedToken,
     installCommandData,
     setInstallCommandData,
+    isLoadingInstallCommand,
     batchUpdateResult,
     setBatchUpdateResult,
     handlePageChange,
@@ -128,6 +130,7 @@ export function ForwardAgentsPage() {
   const [checkingAgentId, setCheckingAgentId] = useState<string | number | null>(null);
   const [updatingAgentId, setUpdatingAgentId] = useState<string | number | null>(null);
   const [dragSortEnabled, setDragSortEnabled] = useState(false);
+  const [installInstanceName, setInstallInstanceName] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Computed values
@@ -254,12 +257,28 @@ export function ForwardAgentsPage() {
   const handleInstallScript = useCallback(
     async (agent: ForwardAgent) => {
       setSelectedAgent(agent);
+      setInstallInstanceName('');
       const command = await handleGetInstallCommand(agent.id);
       if (command) {
         openDialog('installScript', agent);
       }
     },
     [handleGetInstallCommand, openDialog]
+  );
+
+  // Multi-instance install: regenerate the command with the entered name
+  const installMultiInstance = useMemo<MultiInstanceConfig>(
+    () => ({
+      name: installInstanceName,
+      onNameChange: setInstallInstanceName,
+      onApply: () => {
+        if (selectedAgent) {
+          void handleGetInstallCommand(selectedAgent.id, installInstanceName);
+        }
+      },
+      regenerating: isLoadingInstallCommand,
+    }),
+    [installInstanceName, selectedAgent, handleGetInstallCommand, isLoadingInstallCommand]
   );
 
   const handleCheckUpdate = useCallback(
@@ -508,9 +527,11 @@ export function ForwardAgentsPage() {
           open={activeDialog === 'installScript'}
           installCommandData={installCommandData}
           agentName={selectedAgent?.name}
+          multiInstance={installMultiInstance}
           onClose={() => {
             closeDialog();
             setInstallCommandData(null);
+            setInstallInstanceName('');
           }}
         />
       </AdminLayout>
@@ -673,9 +694,11 @@ export function ForwardAgentsPage() {
         open={activeDialog === 'installScript'}
         installCommandData={installCommandData}
         agentName={selectedAgent?.name}
+        multiInstance={installMultiInstance}
         onClose={() => {
           closeDialog();
           setInstallCommandData(null);
+          setInstallInstanceName('');
         }}
       />
 

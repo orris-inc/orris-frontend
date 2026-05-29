@@ -6,6 +6,7 @@
 export {
   InstallScriptDialog,
   type InstallScriptData,
+  type MultiInstanceConfig,
 } from './InstallScriptDialog';
 
 export { InstallScriptSheet } from './InstallScriptSheet';

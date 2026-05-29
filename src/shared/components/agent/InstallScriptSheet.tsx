@@ -27,7 +27,11 @@ import {
   SheetFooter,
 } from '@/components/common/sheet/Sheet';
 import { cn } from '@/lib/utils';
-import type { InstallScriptData } from './InstallScriptDialog';
+import {
+  InstanceNameField,
+  type InstallScriptData,
+  type MultiInstanceConfig,
+} from './InstallScriptDialog';
 
 interface InstallScriptSheetProps {
   open: boolean;
@@ -35,6 +39,8 @@ interface InstallScriptSheetProps {
   data: InstallScriptData | null;
   entityName?: string;
   i18nNamespace: 'admin.forwardAgents.installScript' | 'admin.nodes.installScript';
+  /** Enables the multi-instance name field when provided */
+  multiInstance?: MultiInstanceConfig;
 }
 
 const CopyChip = ({
@@ -110,6 +116,7 @@ export const InstallScriptSheet: React.FC<InstallScriptSheetProps> = ({
   data,
   entityName,
   i18nNamespace,
+  multiInstance,
 }) => {
   const { t } = useTranslation();
   const installCopy = useCopyToClipboard();
@@ -174,6 +181,14 @@ export const InstallScriptSheet: React.FC<InstallScriptSheetProps> = ({
         </SheetHeader>
 
         <SheetBody className="space-y-4 pb-4">
+          {/* Instance name (multi-instance install) */}
+          {multiInstance && (
+            <InstanceNameField
+              config={multiInstance}
+              i18nNamespace={i18nNamespace}
+            />
+          )}
+
           {/* Primary install command */}
           {data.installCommand && (
             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">

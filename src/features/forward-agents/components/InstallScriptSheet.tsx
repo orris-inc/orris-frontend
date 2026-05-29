@@ -6,6 +6,7 @@
 import {
   InstallScriptSheet as BaseInstallScriptSheet,
   type InstallScriptData,
+  type MultiInstanceConfig,
 } from '@/shared/components/agent';
 import type { InstallCommandResponse } from '@/api/forward';
 
@@ -13,6 +14,8 @@ interface InstallScriptSheetProps {
   open: boolean;
   installCommandData: InstallCommandResponse | null;
   agentName?: string;
+  /** Enables the multi-instance name field */
+  multiInstance?: MultiInstanceConfig;
   onClose: () => void;
 }
 
@@ -33,6 +36,7 @@ export const InstallScriptSheet: React.FC<InstallScriptSheetProps> = ({
   open,
   installCommandData,
   agentName,
+  multiInstance,
   onClose,
 }) => {
   return (
@@ -42,6 +46,7 @@ export const InstallScriptSheet: React.FC<InstallScriptSheetProps> = ({
       data={transformData(installCommandData)}
       entityName={agentName}
       i18nNamespace="admin.forwardAgents.installScript"
+      multiInstance={multiInstance}
     />
   );
 };

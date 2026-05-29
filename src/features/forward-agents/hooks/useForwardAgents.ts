@@ -396,10 +396,17 @@ export const useForwardAgentsPage = () => {
     return token;
   };
 
-  const handleGetInstallCommand = async (id: number | string) => {
+  const handleGetInstallCommand = async (
+    id: number | string,
+    name?: string
+  ) => {
     setIsLoadingInstallCommand(true);
     try {
-      const command = await getInstallCommand(id);
+      const trimmed = name?.trim();
+      const command = await getInstallCommand(
+        id,
+        trimmed ? { name: trimmed } : undefined
+      );
       setInstallCommandData(command);
       return command;
     } catch (error) {

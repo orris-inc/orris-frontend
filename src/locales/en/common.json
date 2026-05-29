@@ -2057,7 +2057,13 @@
         "clickToExpand": "Click to expand",
         "clickToCollapse": "Click to collapse",
         "apiUrl": "Server URL",
-        "recommended": "Recommended"
+        "recommended": "Recommended",
+        "instanceName": "Instance Name",
+        "instanceNameHint": "Leave empty for a default single instance, or set a name to run multiple agents on the same server.",
+        "instanceNamePlaceholder": "e.g. agent-b",
+        "instanceNameInvalid": "1-64 characters, letters, digits, and . _ - only",
+        "regenerate": "Generate",
+        "regenerating": "Generating…"
       },
       "emptyState": "No forward agent data"
     },

@@ -17,6 +17,8 @@ import {
   DialogTitle,
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
+import { cn } from '@/lib/utils';
+import { inputStyles, labelStyles } from '@/lib/ui-styles';
 
 /**
  * Common install script data structure
@@ -30,6 +32,28 @@ export interface InstallScriptData {
   token?: string;
 }
 
+/**
+ * Allowed characters for a multi-instance name (mirrors backend validation).
+ * Empty input is treated as the default single-instance install.
+ */
+export const INSTANCE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
+
+/**
+ * Multi-instance install configuration.
+ * When provided, an instance-name field is rendered so a single server can
+ * host several named agent instances.
+ */
+export interface MultiInstanceConfig {
+  /** Current instance-name input value (empty = default single instance) */
+  name: string;
+  /** Update the instance-name input */
+  onNameChange: (name: string) => void;
+  /** Regenerate the install command using the current name */
+  onApply: () => void;
+  /** Whether the install command is currently being regenerated */
+  regenerating?: boolean;
+}
+
 interface InstallScriptDialogProps {
   open: boolean;
   onClose: () => void;
@@ -39,6 +63,8 @@ interface InstallScriptDialogProps {
   entityName?: string;
   /** i18n namespace for translations */
   i18nNamespace: 'admin.forwardAgents.installScript' | 'admin.nodes.installScript';
+  /** Enables the multi-instance name field when provided */
+  multiInstance?: MultiInstanceConfig;
 }
 
 /**
@@ -94,12 +120,73 @@ const CodeBlock = ({
   );
 };
 
+/**
+ * Instance-name field for multi-instance install.
+ * Shared by the desktop dialog and the mobile sheet.
+ */
+export const InstanceNameField = ({
+  config,
+  i18nNamespace,
+}: {
+  config: MultiInstanceConfig;
+  i18nNamespace: InstallScriptDialogProps['i18nNamespace'];
+}) => {
+  const { t } = useTranslation();
+  const trimmed = config.name.trim();
+  const invalid = trimmed.length > 0 && !INSTANCE_NAME_PATTERN.test(trimmed);
+  const canApply = !config.regenerating && !invalid;
+
+  return (
+    <div className="rounded-lg border border-border/60 p-3 sm:p-4">
+      <label className={cn(labelStyles, 'block')}>
+        {t(`${i18nNamespace}.instanceName`)}
+      </label>
+      <p className="text-xs text-muted-foreground mt-1 mb-2">
+        {t(`${i18nNamespace}.instanceNameHint`)}
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={config.name}
+          onChange={(e) => config.onNameChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && canApply) {
+              e.preventDefault();
+              config.onApply();
+            }
+          }}
+          placeholder={t(`${i18nNamespace}.instanceNamePlaceholder`)}
+          maxLength={64}
+          aria-invalid={invalid}
+          className={cn(inputStyles, 'h-9 text-sm')}
+        />
+        <Button
+          type="button"
+          onClick={config.onApply}
+          disabled={!canApply}
+          className="h-9 shrink-0"
+        >
+          {config.regenerating
+            ? t(`${i18nNamespace}.regenerating`)
+            : t(`${i18nNamespace}.regenerate`)}
+        </Button>
+      </div>
+      {invalid && (
+        <p className="text-xs text-destructive mt-1.5">
+          {t(`${i18nNamespace}.instanceNameInvalid`)}
+        </p>
+      )}
+    </div>
+  );
+};
+
 export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
   open,
   onClose,
   data,
   entityName,
   i18nNamespace,
+  multiInstance,
 }) => {
   const { t } = useTranslation();
   const installCopy = useCopyToClipboard();
@@ -152,6 +239,14 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
 
         <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
           <div className="space-y-4">
+            {/* Instance name (multi-instance install) */}
+            {multiInstance && (
+              <InstanceNameField
+                config={multiInstance}
+                i18nNamespace={i18nNamespace}
+              />
+            )}
+
             {/* Install command (primary) */}
             {data.installCommand && (
               <div className="border border-primary/20 rounded-lg p-4 bg-primary/5">

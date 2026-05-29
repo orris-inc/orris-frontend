@@ -6,6 +6,7 @@
 import {
   InstallScriptDialog as BaseInstallScriptDialog,
   type InstallScriptData,
+  type MultiInstanceConfig,
 } from '@/shared/components/agent';
 import type { InstallCommandResponse } from '@/api/forward';
 
@@ -13,6 +14,8 @@ interface InstallScriptDialogProps {
   open: boolean;
   installCommandData: InstallCommandResponse | null;
   agentName?: string;
+  /** Enables the multi-instance name field */
+  multiInstance?: MultiInstanceConfig;
   onClose: () => void;
 }
 
@@ -36,6 +39,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
   open,
   installCommandData,
   agentName,
+  multiInstance,
   onClose,
 }) => {
   return (
@@ -45,6 +49,7 @@ export const InstallScriptDialog: React.FC<InstallScriptDialogProps> = ({
       data={transformData(installCommandData)}
       entityName={agentName}
       i18nNamespace="admin.forwardAgents.installScript"
+      multiInstance={multiInstance}
     />
   );
 };
