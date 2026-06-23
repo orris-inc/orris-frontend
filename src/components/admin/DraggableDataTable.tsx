@@ -301,6 +301,8 @@ interface DraggableDataTableProps<TData> {
   // Context menu
   contextMenuContent?: (row: TData) => React.ReactNode;
   enableContextMenu?: boolean;
+  /** Stripe-style elevated surface: wraps table + pagination in one soft-shadowed card */
+  elevated?: boolean;
 }
 
 export function DraggableDataTable<TData>({
@@ -322,6 +324,7 @@ export function DraggableDataTable<TData>({
   onDragEnd,
   contextMenuContent,
   enableContextMenu = false,
+  elevated = false,
 }: DraggableDataTableProps<TData>) {
   const { t } = useTranslation();
   const { current: currentBreakpoint } = useBreakpoint();
@@ -464,8 +467,11 @@ export function DraggableDataTable<TData>({
   const rows = table.getRowModel().rows;
 
   const tableContent = (
-    <div className="relative">
-      <div ref={tableContainerRef} className="overflow-x-auto rounded-lg border border-border/60">
+    <div className={cn('relative', elevated && 'surface-elevated rounded-lg overflow-hidden')}>
+      <div
+        ref={tableContainerRef}
+        className={cn('overflow-x-auto', !elevated && 'rounded-lg border border-border/60')}
+      >
         <table className="min-w-full text-[13px] border-separate border-spacing-0">
           <thead className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (

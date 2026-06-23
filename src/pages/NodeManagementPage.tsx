@@ -20,7 +20,7 @@ import {
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { Button } from '@/components/common/Button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Tooltip';
-import { StatsPill, PageToolbar } from '@/components/admin';
+import { StatsPill, PageToolbar, FloatingActionBar } from '@/components/admin';
 import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
@@ -510,35 +510,45 @@ export function NodeManagementPage() {
           dragSortDisabled={isReordering}
         />
 
-        {/* Batch Action Bar */}
+        {/* Batch Action Bar — Stripe-style floating bottom-center */}
         {selectedCount > 0 && (
-          <div className="flex items-center justify-between gap-3 px-3 py-2 bg-muted/50 border border-border/60 rounded-lg animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center gap-2 text-[13px]">
-              <span className="text-muted-foreground">{t('common.selected', { count: selectedCount })}</span>
+          <FloatingActionBar>
+            <div className="flex items-center gap-2 text-[13px] pl-1">
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-foreground/10 text-foreground text-xs font-medium tabular-nums">
+                {selectedCount}
+              </span>
+              <span className="text-muted-foreground">{t('admin.nodes.nodesUnit')}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBatchInstallScriptClick}
-                disabled={isGettingBatchInstallScript}
-                className="h-8 px-2.5 gap-1.5 text-[13px] border-border/60"
-              >
-                <Terminal className="size-3.5" />
-                {t('admin.nodes.table.actions.batchInstallScript')}
-              </Button>
-              <div className="w-px h-5 bg-border/60 mx-1" />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setRowSelection({})}
-                className="h-8 px-2.5 gap-1.5 text-[13px] text-muted-foreground"
-              >
-                <X className="size-3.5" />
-                {t('common.actions.cancel')}
-              </Button>
-            </div>
-          </div>
+
+            <div className="w-px h-5 bg-border/60" />
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBatchInstallScriptClick}
+              disabled={isGettingBatchInstallScript}
+              className="h-8 px-2.5 gap-1.5 text-[13px] border-border/60"
+            >
+              <Terminal className="size-3.5" />
+              {t('admin.nodes.table.actions.batchInstallScript')}
+            </Button>
+
+            <div className="w-px h-5 bg-border/60" />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setRowSelection({})}
+                  className="size-8 text-muted-foreground/70 hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('common.actions.cancel')}</TooltipContent>
+            </Tooltip>
+          </FloatingActionBar>
         )}
 
         {/* Node Table */}

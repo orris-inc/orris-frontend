@@ -32,7 +32,7 @@ export const AdminCard = ({ children, className, noPadding, variant = 'default' 
 
   const variants = {
     default: '', // Transparent container
-    bordered: 'ring-1 ring-border/60 rounded-lg overflow-hidden',
+    bordered: 'ring-1 ring-border/60 rounded-lg overflow-hidden shadow-[var(--surface-shadow)]',
   };
 
   return (

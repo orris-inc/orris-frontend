@@ -182,7 +182,7 @@ export const AdminTablePagination = ({
   total,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = [10, 20, 50],
+  pageSizeOptions = [10, 20, 50, 100],
   loading,
   onPrefetchPage,
 }: AdminTablePaginationProps) => {

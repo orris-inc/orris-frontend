@@ -255,19 +255,35 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
         maxSize: 40,
         meta: { priority: 1 } as ResponsiveColumnMeta,
         header: ({ table }) => (
-          <Checkbox
-            checked={table.getIsAllPageRowsSelected()}
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
-          />
+          // Enlarge hit area to fill the whole header cell
+          <div
+            className="flex items-center justify-center -mx-3 -my-2.5 px-3 py-2.5 cursor-pointer"
+            onClick={() => table.toggleAllPageRowsSelected(!table.getIsAllPageRowsSelected())}
+          >
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+              className="pointer-events-none"
+            />
+          </div>
         ),
         cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Select row"
-          />
+          // Enlarge hit area to fill the whole cell so clicking anywhere in the column toggles
+          <div
+            className="flex items-center justify-center -mx-3 -my-2.5 px-3 py-2.5 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              row.toggleSelected(!row.getIsSelected());
+            }}
+          >
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+              className="pointer-events-none"
+            />
+          </div>
         ),
         enableSorting: false,
         enableHiding: false,
@@ -571,6 +587,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
   return (
     <>
       <DataTable
+        elevated
         columns={columns}
         data={rules}
         loading={isLoading}

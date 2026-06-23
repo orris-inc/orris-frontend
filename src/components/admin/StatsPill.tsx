@@ -52,7 +52,7 @@ export function StatsPill({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ring-1 text-[13px] font-medium tabular-nums',
+        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg ring-1 text-[13px] font-medium tabular-nums shadow-[var(--surface-shadow)]',
         variantStyles[variant],
         className,
       )}

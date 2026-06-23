@@ -48,7 +48,7 @@ export const labelStyles = 'text-[13px] font-medium leading-none peer-disabled:c
 /**
  * Card 样式
  */
-export const cardStyles = 'rounded-lg ring-1 ring-border/60 bg-card text-card-foreground';
+export const cardStyles = 'rounded-lg ring-1 ring-border/60 bg-card text-card-foreground shadow-[var(--surface-shadow)]';
 export const cardHeaderStyles = 'flex flex-col space-y-1.5 p-6';
 export const cardTitleStyles = 'text-2xl font-semibold leading-none tracking-tight';
 export const cardDescriptionStyles = 'text-sm text-muted-foreground';

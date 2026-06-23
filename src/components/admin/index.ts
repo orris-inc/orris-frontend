@@ -4,6 +4,7 @@
  */
 
 export { AdminPageLayout } from './AdminPageLayout';
+export { FloatingActionBar } from './FloatingActionBar';
 export { AdminCard, AdminCardHeader, AdminCardContent, type AdminCardProps } from './AdminCard';
 export { PageHeader, type PageHeaderProps, type PageHeaderMeta, type PageHeaderTab, type PageHeaderBreadcrumb, type PageHeaderBadge, type PageHeaderBadgeVariant } from './PageHeader';
 export { SectionHeading, type SectionHeadingProps } from './SectionHeading';

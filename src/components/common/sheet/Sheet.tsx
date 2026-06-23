@@ -157,7 +157,7 @@ export const SheetContent = ({
           // Shape
           'rounded-t-2xl',
           // Background
-          'bg-background border-t border-border',
+          'bg-background border-t border-border shadow-[var(--surface-shadow-lg)]',
           // Layout
           'flex flex-col',
           // Safe area for iOS (JS will override when keyboard is visible)

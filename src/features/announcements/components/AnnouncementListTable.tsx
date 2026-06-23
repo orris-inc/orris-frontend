@@ -331,6 +331,7 @@ export const AnnouncementListTable: React.FC<AnnouncementListTableProps> = ({
 
   return (
     <DataTable
+      elevated
       columns={columns}
       data={announcements}
       loading={loading}

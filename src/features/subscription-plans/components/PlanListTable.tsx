@@ -354,6 +354,7 @@ export const PlanListTable: React.FC<PlanListTableProps> = ({
   return (
     <TableHoverCardProvider>
       <DataTable
+        elevated
         columns={columns}
         data={plans}
         loading={loading}

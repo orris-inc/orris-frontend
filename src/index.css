@@ -210,6 +210,15 @@
   --shadow-glass-elevated: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.12);
   --shadow-glass-elevated-dark: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.5);
 
+  /* Surface - Stripe-style soft layered elevation for solid (non-glass) surfaces */
+  --shadow-surface: 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+  --shadow-surface-dark: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 0 rgba(0, 0, 0, 0.25);
+  --shadow-surface-md: 0 2px 5px -1px rgba(0, 0, 0, 0.06), 0 1px 3px -1px rgba(0, 0, 0, 0.04);
+  --shadow-surface-md-dark: 0 4px 12px -2px rgba(0, 0, 0, 0.45), 0 1px 3px -1px rgba(0, 0, 0, 0.3);
+  /* Floating overlay elevation (e.g. bulk-action bar) — stronger, Stripe/Linear style */
+  --shadow-surface-lg: 0 12px 32px -8px rgba(0, 0, 0, 0.18), 0 4px 12px -4px rgba(0, 0, 0, 0.12);
+  --shadow-surface-lg-dark: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 6px 16px -4px rgba(0, 0, 0, 0.45);
+
   /* Glass inset highlights */
   --glass-highlight-top: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8);
   --glass-highlight-full: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.8), inset 0 -0.5px 0 0 rgba(255, 255, 255, 0.3);
@@ -431,18 +440,27 @@
     color-scheme: light dark;
     --glass-shadow: var(--shadow-glass);
     --glass-shadow-elevated: var(--shadow-glass-elevated);
+    --surface-shadow: var(--shadow-surface);
+    --surface-shadow-md: var(--shadow-surface-md);
+    --surface-shadow-lg: var(--shadow-surface-lg);
   }
 
   .dark {
     color-scheme: dark;
     --glass-shadow: var(--shadow-glass-dark);
     --glass-shadow-elevated: var(--shadow-glass-elevated-dark);
+    --surface-shadow: var(--shadow-surface-dark);
+    --surface-shadow-md: var(--shadow-surface-md-dark);
+    --surface-shadow-lg: var(--shadow-surface-lg-dark);
   }
 
   .light {
     color-scheme: light;
     --glass-shadow: var(--shadow-glass);
     --glass-shadow-elevated: var(--shadow-glass-elevated);
+    --surface-shadow: var(--shadow-surface);
+    --surface-shadow-md: var(--shadow-surface-md);
+    --surface-shadow-lg: var(--shadow-surface-lg);
   }
 
   /* Global border color */
@@ -752,6 +770,28 @@
 @utility card-contained {
   max-width: 100%;
   overflow: hidden;
+}
+
+/* ========== Stripe-style Solid Surfaces ========== */
+/* Solid (opaque) surfaces with soft layered elevation — the Stripe look.
+   Use instead of glass when a clean, high-clarity card is wanted. */
+@utility surface {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--surface-shadow);
+}
+
+@utility surface-elevated {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--surface-shadow-md);
+}
+
+/* Floating overlay surface — for bottom-anchored bulk-action bars, command menus, etc. */
+@utility surface-floating {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--surface-shadow-lg);
 }
 
 /* ========== iOS 26 Liquid Glass Effects ========== */

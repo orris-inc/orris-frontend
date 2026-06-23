@@ -220,7 +220,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
         >
           {/* Navigation Bar - CSS-first responsive */}
           <header className={mobileFixedHeaderStyles.header}>
-            <div className={mobileFixedHeaderStyles.headerInner}>
+            <div className={cn(mobileFixedHeaderStyles.headerInner, 'w-full max-w-[1600px] mx-auto')}>
               {/* Left section - menu button (mobile only) */}
               <div className="w-11 flex-shrink-0 md:hidden">
                 <button
@@ -324,7 +324,8 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             className={mobileFixedHeaderStyles.mainSmall}
             data-view-transition="content"
           >
-            <div className="min-w-0">
+            {/* Stripe-style: cap content width and center on wide screens */}
+            <div className="min-w-0 w-full max-w-[1600px] mx-auto">
               {children}
             </div>
           </main>

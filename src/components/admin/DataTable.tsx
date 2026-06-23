@@ -123,6 +123,8 @@ interface DataTableProps<TData> {
   enableSkeletonLoading?: boolean;
   /** Number of skeleton rows to show */
   skeletonRowCount?: number;
+  /** Stripe-style elevated surface: wraps table + pagination in one soft-shadowed card */
+  elevated?: boolean;
 }
 
 // ============ Breakpoint Priority ============
@@ -227,6 +229,7 @@ export function DataTable<TData>({
   skeletonRowCount = 5,
   getRowTexts,
   measureFont = '13px Inter, system-ui, sans-serif',
+  elevated = false,
 }: DataTableProps<TData>) {
   const { t } = useTranslation();
   // Responsive breakpoint
@@ -545,7 +548,10 @@ export function DataTable<TData>({
   };
 
   return (
-    <div className="flex flex-col @container">
+    <div className={cn(
+      'flex flex-col @container',
+      elevated && 'surface-elevated rounded-lg overflow-hidden'
+    )}>
       {/* Table Container with scroll indicators */}
       <div className="relative">
         {/* Left scroll fade indicator */}
@@ -563,7 +569,8 @@ export function DataTable<TData>({
         <div
           ref={tableContainerRef}
           className={cn(
-            'overflow-x-auto border border-border/60 rounded-lg',
+            'overflow-x-auto',
+            !elevated && 'border border-border/60 rounded-lg',
             shouldVirtualize && 'overflow-y-auto'
           )}
           style={shouldVirtualize ? { maxHeight } : undefined}

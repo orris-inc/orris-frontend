@@ -278,6 +278,7 @@ export const UserListTable: React.FC<UserListTableProps> = ({
   return (
     <TableHoverCardProvider>
       <DataTable
+        elevated
         columns={columns}
         data={users}
         loading={loading}

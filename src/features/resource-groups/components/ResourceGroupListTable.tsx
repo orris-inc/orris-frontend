@@ -236,6 +236,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   return (
     <TableHoverCardProvider>
       <DataTable
+        elevated
         columns={columns}
         data={resourceGroups}
         loading={loading}

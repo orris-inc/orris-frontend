@@ -541,6 +541,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
   return (
     <>
       <DataTable
+        elevated
         columns={columns}
         data={rules}
         loading={isLoading}

@@ -557,6 +557,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
     return (
       <TableHoverCardProvider>
         <DraggableDataTable
+          elevated
           columns={columns}
           data={deferredAgents}
           loading={loading}
@@ -579,6 +580,7 @@ export const ForwardAgentListTable: React.FC<ForwardAgentListTableProps> = ({
   return (
     <TableHoverCardProvider>
       <DataTable
+        elevated
         columns={columns}
         data={deferredAgents}
         loading={loading}

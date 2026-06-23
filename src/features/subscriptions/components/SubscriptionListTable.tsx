@@ -485,6 +485,7 @@ export const SubscriptionListTable: React.FC<SubscriptionListTableProps> = ({
   return (
     <TableHoverCardProvider>
       <DataTable
+        elevated
         columns={columns}
         data={subscriptions}
         loading={loading}

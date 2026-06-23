@@ -695,6 +695,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
           onDragEnd={onDragEnd}
           enableContextMenu={true}
           contextMenuContent={renderContextMenuActions}
+          elevated
         />
       </TableHoverCardProvider>
     );
@@ -718,6 +719,7 @@ export const NodeListTable: React.FC<NodeListTableProps> = ({
         enableRowSelection={enableRowSelection}
         rowSelection={rowSelection}
         onRowSelectionChange={onRowSelectionChange}
+        elevated
       />
     </TableHoverCardProvider>
   );
