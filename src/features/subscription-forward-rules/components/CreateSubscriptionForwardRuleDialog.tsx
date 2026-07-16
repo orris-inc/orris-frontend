@@ -15,8 +15,9 @@ import {
   DialogFooter,
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
-import { Textarea } from '@/components/common/Textarea';
+// Buffered variants commit on blur/Enter instead of per keystroke, avoiding a
+// full-form re-render on every character in this large form.
+import { BufferedInput as Input, BufferedTextarea as Textarea } from '@/components/common/BufferedInput';
 import { Label } from '@/components/common/Label';
 import {
   Select,

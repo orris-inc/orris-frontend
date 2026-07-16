@@ -425,11 +425,11 @@ const LoadBalancedExitNodes: React.FC<LoadBalancedExitNodesProps> = ({ agents, t
 interface FlowPathDisplayProps {
   rule: ForwardRule;
   agentsMap: Record<string, ForwardAgent>;
-  nodes: Node[];
+  nodesMap: Map<string, Node>;
   t: (key: string) => string;
 }
 
-const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, nodes, t }) => {
+const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, nodesMap, t }) => {
   // Get entry agent info
   const entryAgent = agentsMap[rule.agentId];
   const entryName = entryAgent?.name || `ID: ${rule.agentId.slice(0, 8)}`;
@@ -439,7 +439,7 @@ const FlowPathDisplay: React.FC<FlowPathDisplayProps> = ({ rule, agentsMap, node
   // Get target display info
   const getTargetDisplay = () => {
     if (rule.targetNodeId) {
-      const targetNode = nodes.find((n) => n.id === rule.targetNodeId);
+      const targetNode = nodesMap.get(rule.targetNodeId);
       const nodeName = targetNode?.name || `ID: ${rule.targetNodeId.slice(0, 8)}`;
       const nodePort = targetNode?.subscriptionPort || targetNode?.agentPort;
       let address: string | undefined;
@@ -585,6 +585,12 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
   const { t } = useTranslation();
   // Detect mobile screen
   const { isMobile } = useBreakpoint();
+  // O(1) node lookup for FlowPathDisplay — avoids an O(rules × nodes) find on every render
+  const nodesMap = useMemo(() => {
+    const map = new Map<string, Node>();
+    for (const n of nodes) map.set(n.id, n);
+    return map;
+  }, [nodes]);
   // Forward rule context menu content
   const renderContextMenuActions = useCallback((rule: ForwardRule) => {
     const isProbing = probingRuleId === rule.id;
@@ -715,9 +721,12 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
     enableHiding: false,
   }), []);
 
+  // Presence of row selection, not its value — used to gate the select column.
+  const hasRowSelection = rowSelection !== undefined;
+
   const columns = useMemo<ColumnDef<ForwardRule, unknown>[]>(() => [
     // Conditionally add select column at the beginning
-    ...(enableSelection && rowSelection !== undefined && onRowSelectionChange ? [selectColumn] : []),
+    ...(enableSelection && hasRowSelection && onRowSelectionChange ? [selectColumn] : []),
     {
       accessorKey: 'name',
       header: t('admin.forwardRules.columns.ruleName'),
@@ -785,7 +794,7 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
       size: 270,
       meta: { priority: 1 } as ResponsiveColumnMeta,
       cell: ({ row }) => (
-        <FlowPathDisplay rule={row.original} agentsMap={agentsMap} nodes={nodes} t={t} />
+        <FlowPathDisplay rule={row.original} agentsMap={agentsMap} nodesMap={nodesMap} t={t} />
       ),
     },
     {
@@ -1077,7 +1086,10 @@ export const ForwardRuleListTable: React.FC<ForwardRuleListTableProps> = ({
         );
       },
     },
-  ], [agentsMap, resourceGroupsMap, nodes, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions, enableSelection, rowSelection, onRowSelectionChange, selectColumn, t]);
+    // Note: depend on `rowSelection !== undefined` (presence) instead of the value.
+    // The select column reads selection state from the table instance (row.getIsSelected),
+    // so rebuilding columns on every selection change would re-render the whole table.
+  ], [agentsMap, resourceGroupsMap, nodesMap, polledStatusMap, pollingRuleIds, onDisable, onEnable, onViewDetail, onEdit, onProbe, probingRuleId, renderDropdownMenuActions, enableSelection, hasRowSelection, onRowSelectionChange, selectColumn, t]);
 
   // Render mobile card list on small screens
   if (isMobile) {

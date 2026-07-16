@@ -66,7 +66,8 @@ interface UseForwardAgentsOptions {
 export const useForwardAgents = (options: UseForwardAgentsOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true } = options;
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   const params: ListForwardAgentsParams = {
@@ -369,7 +370,7 @@ export const useForwardAgentsPage = () => {
   const [installCommandData, setInstallCommandData] = useState<InstallCommandResponse | null>(null);
   const [isLoadingInstallCommand, setIsLoadingInstallCommand] = useState(false);
   const [batchUpdateResult, setBatchUpdateResult] = useState<AgentBatchUpdateResponse | null>(null);
-  const { showError } = useNotificationStore();
+  const showError = useNotificationStore((s) => s.showError);
 
   const forwardAgentsQuery = useForwardAgents({ page, pageSize, filters });
 
@@ -471,7 +472,8 @@ export const useAgentVersion = (id: number | string | null, enabled: boolean = t
 
 // Trigger agent update mutation
 export const useTriggerAgentUpdate = () => {
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   return useMutation({
@@ -487,7 +489,8 @@ export const useTriggerAgentUpdate = () => {
 
 // Broadcast API URL change to all connected agents
 export const useBroadcastAPIURL = () => {
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   return useMutation({
@@ -505,7 +508,8 @@ export const useBroadcastAPIURL = () => {
 
 // Notify single agent of API URL change
 export const useNotifyAgentAPIURL = () => {
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   return useMutation({

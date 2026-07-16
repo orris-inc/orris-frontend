@@ -5,7 +5,7 @@
  * Supports responsive column hiding and virtualization for large datasets
  */
 
-import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useReactTable,
@@ -16,6 +16,7 @@ import {
   type SortingState,
   type RowSelectionState,
   type OnChangeFn,
+  type Row,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Loader2, ChevronUp, ChevronDown, ChevronsUpDown, HelpCircle, type LucideIcon } from 'lucide-react';
@@ -196,8 +197,114 @@ const SkeletonRow = ({ colCount }: { colCount: number }) => (
   </tr>
 );
 
-// ============ Selection Column Definition ============
+// ============ Memoized Table Row ============
 
+interface StickyOffsets {
+  leftOffsets: Record<string, number>;
+  rightOffsets: Record<string, number>;
+  hasSticky: boolean;
+}
+
+interface DataTableRowProps<TData> {
+  row: Row<TData>;
+  /** Passed explicitly (not read via row.getIsSelected in the comparator, which reads live state). */
+  isSelected: boolean;
+  /** Column identity — changes when columns are rebuilt, forcing all rows to re-render. */
+  visibleColumns: ColumnDef<TData, unknown>[];
+  stickyOffsets: StickyOffsets;
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
+  onRowClick?: (row: TData) => void;
+  enableContextMenu?: boolean;
+  contextMenuContent?: (row: TData) => React.ReactNode;
+}
+
+/**
+ * Single table row, memoized so an update to one row's data (e.g. an SSE cache update)
+ * only re-renders that row instead of the whole table. Skips re-render while the row's
+ * data reference, selection, columns, and scroll/sticky state are unchanged.
+ */
+function DataTableRowComponent<TData>({
+  row,
+  isSelected,
+  stickyOffsets,
+  canScrollLeft,
+  canScrollRight,
+  onRowClick,
+  enableContextMenu,
+  contextMenuContent,
+}: DataTableRowProps<TData>) {
+  const rowContent = (
+    <tr
+      onClick={() => onRowClick?.(row.original)}
+      className={cn(
+        onRowClick && 'cursor-pointer hover:bg-muted/50 transition-colors duration-200',
+        isSelected && 'bg-primary/5'
+      )}
+    >
+      {row.getVisibleCells().map((cell) => {
+        const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
+        const colId = cell.column.id;
+        const isLeftSticky = meta?.sticky === 'left';
+        const isRightSticky = meta?.sticky === 'right';
+        const leftOffset = stickyOffsets.leftOffsets[colId];
+        const rightOffset = stickyOffsets.rightOffsets[colId];
+
+        return (
+          <td
+            key={cell.id}
+            role="gridcell"
+            className={cn(
+              'px-3 py-2.5 text-[13px]',
+              meta?.numeric && 'text-right tabular-nums',
+              meta?.align === 'right' && 'text-right',
+              meta?.align === 'center' && 'text-center',
+              // Sticky column styles
+              (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
+              isLeftSticky && canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
+              isRightSticky && canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.1)]'
+            )}
+            style={{
+              ...(isLeftSticky && leftOffset !== undefined ? { left: leftOffset } : {}),
+              ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
+            }}
+          >
+            <TableRowProvider rowId={row.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableRowProvider>
+          </td>
+        );
+      })}
+    </tr>
+  );
+
+  if (enableContextMenu && contextMenuContent) {
+    return (
+      <ContextMenu>
+        <ContextMenuTrigger asChild>{rowContent}</ContextMenuTrigger>
+        <ContextMenuPortal>
+          <ContextMenuContent>{contextMenuContent(row.original)}</ContextMenuContent>
+        </ContextMenuPortal>
+      </ContextMenu>
+    );
+  }
+
+  return rowContent;
+}
+
+const DataTableRow = memo(
+  DataTableRowComponent,
+  (prev, next) =>
+    prev.row.original === next.row.original &&
+    prev.isSelected === next.isSelected &&
+    prev.visibleColumns === next.visibleColumns &&
+    prev.stickyOffsets === next.stickyOffsets &&
+    prev.canScrollLeft === next.canScrollLeft &&
+    prev.canScrollRight === next.canScrollRight &&
+    prev.onRowClick === next.onRowClick &&
+    prev.enableContextMenu === next.enableContextMenu &&
+    prev.contextMenuContent === next.contextMenuContent
+) as typeof DataTableRowComponent;
 
 // ============ DataTable Component ============
 
@@ -369,68 +476,21 @@ export function DataTable<TData>({
     return { leftOffsets, rightOffsets, hasSticky: leftAccum > 0 || rightAccum > 0 };
   }, [visibleColumns]);
 
-  // Render a single row (shared between virtualized and non-virtualized modes)
-  const renderRow = (row: (typeof rows)[number], style?: React.CSSProperties) => {
-    const rowContent = (
-      <tr
-        key={row.id}
-        onClick={() => onRowClick?.(row.original)}
-        style={style}
-        className={cn(
-          onRowClick && 'cursor-pointer hover:bg-muted/50 transition-colors duration-200',
-          row.getIsSelected() && 'bg-primary/5'
-        )}
-      >
-        {row.getVisibleCells().map((cell) => {
-          const meta = cell.column.columnDef.meta as ResponsiveColumnMeta | undefined;
-          const colId = cell.column.id;
-          const isLeftSticky = meta?.sticky === 'left';
-          const isRightSticky = meta?.sticky === 'right';
-          const leftOffset = stickyOffsets.leftOffsets[colId];
-          const rightOffset = stickyOffsets.rightOffsets[colId];
-
-          return (
-            <td
-              key={cell.id}
-              role="gridcell"
-              className={cn(
-                'px-3 py-2.5 text-[13px]',
-                meta?.numeric && 'text-right tabular-nums',
-                meta?.align === 'right' && 'text-right',
-                meta?.align === 'center' && 'text-center',
-                // Sticky column styles
-                (isLeftSticky || isRightSticky) && 'sticky z-10 bg-card',
-                isLeftSticky && scrollState.canScrollLeft && 'shadow-[2px_0_8px_-2px_rgba(0,0,0,0.1)]',
-                isRightSticky && scrollState.canScrollRight && 'shadow-[-2px_0_8px_-2px_rgba(0,0,0,0.1)]'
-              )}
-              style={{
-                ...(isLeftSticky && leftOffset !== undefined ? { left: leftOffset } : {}),
-                ...(isRightSticky && rightOffset !== undefined ? { right: rightOffset } : {}),
-              }}
-            >
-              <TableRowProvider rowId={row.id}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableRowProvider>
-            </td>
-          );
-        })}
-      </tr>
-    );
-
-    // Wrap with ContextMenu if enabled
-    if (enableContextMenu && contextMenuContent) {
-      return (
-        <ContextMenu key={row.id}>
-          <ContextMenuTrigger asChild>{rowContent}</ContextMenuTrigger>
-          <ContextMenuPortal>
-            <ContextMenuContent>{contextMenuContent(row.original)}</ContextMenuContent>
-          </ContextMenuPortal>
-        </ContextMenu>
-      );
-    }
-
-    return rowContent;
-  };
+  // Render a single row via the memoized row component (shared between virtualized and non-virtualized modes)
+  const renderRow = (row: (typeof rows)[number]) => (
+    <DataTableRow
+      key={row.id}
+      row={row}
+      isSelected={row.getIsSelected()}
+      visibleColumns={visibleColumns}
+      stickyOffsets={stickyOffsets}
+      canScrollLeft={scrollState.canScrollLeft}
+      canScrollRight={scrollState.canScrollRight}
+      onRowClick={onRowClick}
+      enableContextMenu={enableContextMenu}
+      contextMenuContent={contextMenuContent}
+    />
+  );
 
   // Render table body content
   const renderTableBody = () => {

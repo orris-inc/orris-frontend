@@ -10,8 +10,8 @@ import { App } from './app/App';
 import '@radix-ui/themes/styles.css';
 import './index.css';
 
-// Initialize i18n before app renders
-import './lib/i18n';
+// Lazy-loaded i18n: preload the active language before rendering
+import { initI18n } from './lib/i18n';
 
 // Register Service Worker for PWA support
 import { registerServiceWorker } from './lib/service-worker';
@@ -24,9 +24,15 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-// React 19 rendering
-createRoot(rootElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+// Render once the active language is loaded (falls back to keys if it fails)
+initI18n()
+  .catch((error) => {
+    console.error('Failed to initialize i18n', error);
+  })
+  .finally(() => {
+    createRoot(rootElement).render(
+      <StrictMode>
+        <App />
+      </StrictMode>
+    );
+  });

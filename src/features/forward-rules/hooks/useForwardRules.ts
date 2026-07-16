@@ -55,7 +55,8 @@ interface UseForwardRulesOptions {
 export const useForwardRules = (options: UseForwardRulesOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserRules } = options;
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   // Build query parameters

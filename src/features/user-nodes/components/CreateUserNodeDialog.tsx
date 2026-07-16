@@ -13,7 +13,9 @@ import {
   DialogFooter,
 } from '@/components/common/Dialog';
 import { Button } from '@/components/common/Button';
-import { Input } from '@/components/common/Input';
+// Buffered input: commits to the form object on blur/Enter instead of every
+// keystroke, so typing does not re-render this large form on each character.
+import { BufferedInput as Input } from '@/components/common/BufferedInput';
 import { Label } from '@/components/common/Label';
 import {
   Select,

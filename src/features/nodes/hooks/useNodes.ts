@@ -74,7 +74,8 @@ interface UseNodesOptions {
 export const useNodes = (options: UseNodesOptions = {}) => {
   const { page = 1, pageSize = 20, filters = {}, enabled = true, includeUserNodes, sortBy, sortOrder } = options;
   const queryClient = useQueryClient();
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   // Build query parameters
@@ -554,7 +555,8 @@ export const useNodesPage = () => {
 
 // Broadcast API URL change to all connected nodes
 export const useBroadcastNodeAPIURL = () => {
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   return useMutation({
@@ -572,7 +574,8 @@ export const useBroadcastNodeAPIURL = () => {
 
 // Notify a single node of API URL change
 export const useNotifyNodeAPIURL = () => {
-  const { showSuccess, showError } = useNotificationStore();
+  const showSuccess = useNotificationStore((s) => s.showSuccess);
+  const showError = useNotificationStore((s) => s.showError);
   const { t } = useTranslation();
 
   return useMutation({
