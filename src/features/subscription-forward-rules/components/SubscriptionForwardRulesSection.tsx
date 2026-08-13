@@ -48,6 +48,7 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
     isDisabling,
     handlePageChange,
     handlePageSizeChange,
+    handleDragEnd,
   } = useSubscriptionForwardRulesSection(subscriptionId);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -171,6 +172,8 @@ export const SubscriptionForwardRulesSection: React.FC<SubscriptionForwardRulesS
         onEnabling={isEnabling}
         onDisabling={isDisabling}
         onDeleting={isDeleting}
+        enableDragSort={true}
+        onDragEnd={handleDragEnd}
       />
 
       {/* Create rule dialog */}

@@ -4,7 +4,7 @@
  */
 
 import { useMemo } from 'react';
-import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { useLocation, Link as RouterLink } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { getNavigationItemBySegment } from '../../config/navigation';
 import { usePermissions } from '../../features/auth/hooks/usePermissions';

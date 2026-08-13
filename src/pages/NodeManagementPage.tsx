@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { StatsPill, PageToolbar, FloatingActionBar } from '@/components/admin';
 import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
+import { computeSortOrderUpdates } from '@/shared/utils/sort-order-utils';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { NodeListTable } from '@/features/nodes/components/NodeListTable';
 import { NodeFilters } from '@/features/nodes/components/NodeFilters';
@@ -349,13 +350,13 @@ export function NodeManagementPage() {
       const [movedNode] = reorderedNodes.splice(oldIndex, 1);
       reorderedNodes.splice(newIndex, 0, movedNode);
 
-      const updates: { id: string; sortOrder: number }[] = [];
-      reorderedNodes.forEach((node, index) => {
-        const newSortOrder = index + 1;
-        if (node.sortOrder !== newSortOrder) {
-          updates.push({ id: node.id, sortOrder: newSortOrder });
-        }
-      });
+      // sortOrder is one sequence shared with forward rules, so reuse the positions these
+      // nodes already occupy instead of 1..N, which would push them ahead of every rule.
+      const updates = computeSortOrderUpdates(
+        reorderedNodes,
+        (node) => node.id,
+        (node) => node.sortOrder
+      );
 
       if (updates.length > 0) {
         await handleReorder(updates);

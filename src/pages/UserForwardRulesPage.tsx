@@ -91,6 +91,7 @@ export const UserForwardRulesPage = () => {
     isDisabling,
     handlePageChange,
     handlePageSizeChange,
+    handleDragEnd,
   } = useUserForwardRulesPage();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -343,6 +344,8 @@ export const UserForwardRulesPage = () => {
                 rowSelection={rowSelection}
                 onRowSelectionChange={handleRowSelectionChange}
                 enableSelection={true}
+                enableDragSort={true}
+                onDragEnd={handleDragEnd}
               />
             )}
           </>

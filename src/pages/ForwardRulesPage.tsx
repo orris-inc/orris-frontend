@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/common/Too
 import { StatsPill, PageToolbar } from '@/components/admin';
 import { adminContentStyles } from '@/lib/ui-styles';
 import { usePageTitle } from '@/shared/hooks';
+import { computeSortOrderUpdates } from '@/shared/utils/sort-order-utils';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ForwardRuleListTable } from '@/features/forward-rules/components/ForwardRuleListTable';
 import { GroupedForwardRuleList } from '@/features/forward-rules/components/GroupedForwardRuleList';
@@ -425,13 +426,13 @@ export function ForwardRulesPage() {
       const [movedRule] = reorderedRules.splice(oldIndex, 1);
       reorderedRules.splice(newIndex, 0, movedRule);
 
-      const ruleOrders: { ruleId: string; sortOrder: number }[] = [];
-      reorderedRules.forEach((rule, index) => {
-        const newSortOrder = index + 1;
-        if (rule.sortOrder !== newSortOrder) {
-          ruleOrders.push({ ruleId: rule.id, sortOrder: newSortOrder });
-        }
-      });
+      // sortOrder is one sequence shared with direct nodes and admin values are written
+      // verbatim, so reuse the positions these rules already occupy instead of 1..N.
+      const ruleOrders = computeSortOrderUpdates(
+        reorderedRules,
+        (rule) => rule.id,
+        (rule) => rule.sortOrder
+      ).map(({ id, sortOrder }) => ({ ruleId: id, sortOrder }));
 
       if (ruleOrders.length > 0) {
         await handleReorder(ruleOrders);

@@ -16,7 +16,7 @@ import {
   Settings,
   ArrowRight,
 } from 'lucide-react';
-import { DataTable, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
+import { DraggableDataTable, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { Badge } from '@/components/common/Badge';
 import {
   DropdownMenu,
@@ -50,6 +50,9 @@ interface SubscriptionForwardRuleListProps {
   onEnabling?: boolean;
   onDisabling?: boolean;
   onDeleting?: boolean;
+  /** Drag-and-drop ordering, disabled when the list is not ordered by sortOrder */
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Chain nodes display component
@@ -172,6 +175,8 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
   onEdit,
   onDelete,
   onToggleStatus,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
   const { t } = useTranslation();
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -540,7 +545,7 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
 
   return (
     <>
-      <DataTable
+      <DraggableDataTable
         elevated
         columns={columns}
         data={rules}
@@ -554,6 +559,8 @@ export const SubscriptionForwardRuleList: React.FC<SubscriptionForwardRuleListPr
         getRowId={(row) => String(row.id)}
         enableContextMenu={true}
         contextMenuContent={renderContextMenuActions}
+        enableDragSort={enableDragSort}
+        onDragEnd={onDragEnd}
       />
 
       {/* Delete confirm dialog */}

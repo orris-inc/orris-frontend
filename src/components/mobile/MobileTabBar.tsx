@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ViewTransitionLink } from '@/components/common/ViewTransitionLink';

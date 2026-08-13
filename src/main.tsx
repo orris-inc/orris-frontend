@@ -6,8 +6,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
-// Radix Themes CSS must be imported before custom styles
-import '@radix-ui/themes/styles.css';
 import './index.css';
 
 // Lazy-loaded i18n: preload the active language before rendering

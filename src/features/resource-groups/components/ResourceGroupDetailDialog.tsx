@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/common/Ta
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { useGroupNodes, useGroupForwardAgents, useGroupForwardRules, useGroupMemberManagement } from '../hooks/useResourceGroups';
 import { AddMembersDialog } from './AddMembersDialog';
+import { SubscriptionOrderList } from './SubscriptionOrderList';
 import type { ResourceGroup } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
 
@@ -78,10 +79,14 @@ const DetailItem: React.FC<{
   );
 };
 
+/** Tabs of the detail dialog, also used to open it on a specific tab */
+export type ResourceGroupDetailTab = 'info' | 'nodes' | 'agents' | 'rules' | 'order';
+
 interface ResourceGroupDetailDialogProps {
   open: boolean;
   resourceGroup: ResourceGroup | null;
   plansMap: Record<string, SubscriptionPlan>;
+  defaultTab?: ResourceGroupDetailTab;
   onClose: () => void;
 }
 
@@ -89,6 +94,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   open,
   resourceGroup,
   plansMap,
+  defaultTab = 'info',
   onClose,
 }) => {
   const { t } = useTranslation();
@@ -258,9 +264,17 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
   const canBindNodes = planType !== 'forward';
   const canBindAgents = planType === 'forward';
   const canBindRules = planType !== 'forward';
+  // Subscription ordering merges direct nodes and forward rules into one sequence,
+  // so it only applies to plans that can bind both (Added: 2026-08-12)
+  const canOrderSubscription = canBindNodes && canBindRules;
 
   // Calculate tab count for grid layout (static mapping for Tailwind CSS)
-  const tabCount = 1 + (canBindNodes ? 1 : 0) + (canBindAgents ? 1 : 0) + (canBindRules ? 1 : 0);
+  const tabCount =
+    1 +
+    (canBindNodes ? 1 : 0) +
+    (canBindAgents ? 1 : 0) +
+    (canBindRules ? 1 : 0) +
+    (canOrderSubscription ? 1 : 0);
   const gridColsClass = tabCount === 2 ? 'grid-cols-2' : tabCount === 3 ? 'grid-cols-3' : 'grid-cols-4';
 
   return (
@@ -280,7 +294,7 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
           </DialogHeader>
 
           <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6">
-          <Tabs defaultValue="info" className="w-full">
+          <Tabs key={defaultTab} defaultValue={defaultTab} className="w-full">
             <TabsList className={`grid w-full ${gridColsClass}`}>
               <TabsTrigger value="info">{t('resourceGroups.tabs.basicInfo')}</TabsTrigger>
               {canBindNodes && (
@@ -296,6 +310,11 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
               {canBindRules && (
                 <TabsTrigger value="rules">
                   {t('resourceGroups.tabs.forwardRules')} ({rulesPagination.total})
+                </TabsTrigger>
+              )}
+              {canOrderSubscription && (
+                <TabsTrigger value="order">
+                  {t('resourceGroups.tabs.subscriptionOrder')}
                 </TabsTrigger>
               )}
             </TabsList>
@@ -708,6 +727,15 @@ export const ResourceGroupDetailDialog: React.FC<ResourceGroupDetailDialogProps>
                     )}
                   </div>
                 )}
+              </TabsContent>
+            )}
+
+            {canOrderSubscription && (
+              <TabsContent value="order" className="mt-4">
+                <SubscriptionOrderList
+                  groupId={resourceGroup.sid}
+                  enabled={open}
+                />
               </TabsContent>
             )}
           </Tabs>

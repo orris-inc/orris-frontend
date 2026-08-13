@@ -31,6 +31,7 @@ import {
   DeleteResourceGroupSheet,
   MobileResourceGroupManagement,
 } from '@/features/resource-groups/components';
+import type { ResourceGroupDetailTab } from '@/features/resource-groups/components/ResourceGroupDetailDialog';
 import { useResourceGroupsPage } from '@/features/resource-groups/hooks/useResourceGroups';
 import type { ResourceGroup, CreateResourceGroupRequest, UpdateResourceGroupRequest, ResourceGroupStatus } from '@/api/resource/types';
 import type { SubscriptionPlan } from '@/api/subscription/types';
@@ -95,6 +96,7 @@ export const ResourceGroupManagementPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailTab, setDetailTab] = useState<ResourceGroupDetailTab>('info');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedResourceGroup, setSelectedResourceGroup] = useState<ResourceGroup | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -106,6 +108,14 @@ export const ResourceGroupManagementPage = () => {
 
   const handleViewDetail = (resourceGroup: ResourceGroup) => {
     setSelectedResourceGroup(resourceGroup);
+    setDetailTab('info');
+    setDetailDialogOpen(true);
+  };
+
+  // Open the detail dialog straight on the subscription ordering tab
+  const handleManageOrder = (resourceGroup: ResourceGroup) => {
+    setSelectedResourceGroup(resourceGroup);
+    setDetailTab('order');
     setDetailDialogOpen(true);
   };
 
@@ -270,6 +280,7 @@ export const ResourceGroupManagementPage = () => {
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
           onViewDetail={handleViewDetail}
+          onManageOrder={handleManageOrder}
           onEdit={handleEdit}
           onDelete={handleDeleteClick}
           onToggleStatus={handleToggleStatus}
@@ -301,6 +312,7 @@ export const ResourceGroupManagementPage = () => {
         open={detailDialogOpen}
         resourceGroup={selectedResourceGroup}
         plansMap={plansMap}
+        defaultTab={detailTab}
         onClose={() => {
           setDetailDialogOpen(false);
           setSelectedResourceGroup(null);

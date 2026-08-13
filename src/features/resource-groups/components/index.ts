@@ -3,6 +3,7 @@ export { CreateResourceGroupDialog } from './CreateResourceGroupDialog';
 export { EditResourceGroupDialog } from './EditResourceGroupDialog';
 export { ResourceGroupDetailDialog } from './ResourceGroupDetailDialog';
 export { DeleteResourceGroupDialog } from './DeleteResourceGroupDialog';
+export { SubscriptionOrderList } from './SubscriptionOrderList';
 
 // Mobile Sheet components
 export { CreateResourceGroupSheet } from './CreateResourceGroupSheet';

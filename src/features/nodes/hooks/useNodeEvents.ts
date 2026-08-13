@@ -78,11 +78,15 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
   const queryClientRef = useRef(queryClient);
   queryClientRef.current = queryClient;
 
-  // Update node in all list caches - stable reference
+  // Update many nodes in all list caches with a single write per query - stable
+  // reference. Batch events would otherwise write once per node, producing one
+  // re-render each.
   // Uses startTransition to mark SSE updates as low priority,
   // preventing them from interrupting user interactions (e.g., hover states)
-  const updateNodeInCache = useCallback(
-    (nodeId: string, updater: (node: Node) => Node) => {
+  const updateNodesInCache = useCallback(
+    (updaters: Map<string, (node: Node) => Node>) => {
+      if (updaters.size === 0) return;
+
       const qc = queryClientRef.current;
       const queries = qc.getQueriesData<ListResponse<Node>>({
         queryKey: queryKeys.nodes.lists(),
@@ -91,13 +95,14 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
       queries.forEach(([queryKey, data]) => {
         if (!data?.items) return;
 
-        const updatedItems = data.items.map((node: Node) =>
-          node.id === nodeId ? updater(node) : node
-        );
-
-        const hasChange = data.items.some(
-          (node: Node, i: number) => node.id === nodeId && node !== updatedItems[i]
-        );
+        let hasChange = false;
+        const updatedItems = data.items.map((node: Node) => {
+          const updater = updaters.get(node.id);
+          if (!updater) return node;
+          const updated = updater(node);
+          if (updated !== node) hasChange = true;
+          return updated;
+        });
 
         if (hasChange) {
           // Wrap in startTransition to avoid interrupting user interactions
@@ -111,6 +116,14 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
       });
     },
     []
+  );
+
+  // Update a single node in all list caches - stable reference
+  const updateNodeInCache = useCallback(
+    (nodeId: string, updater: (node: Node) => Node) => {
+      updateNodesInCache(new Map([[nodeId, updater]]));
+    },
+    [updateNodesInCache]
   );
 
   // Handle incoming SSE events - stable reference
@@ -160,22 +173,27 @@ export function useNodeEvents(options: UseNodeEventsOptions = {}): UseNodeEvents
           const sseEvent: NodeSSEEvent = event;
           if (!isBatchNodeStatusEvent(sseEvent)) break;
           const batchEvent = sseEvent;
+          const lastSeenAt = new Date(batchEvent.timestamp * 1000).toISOString();
+
+          // Collect every node in the batch, then apply them in one cache write
+          const updaters = new Map<string, (node: Node) => Node>();
           Object.entries(batchEvent.agents).forEach(([nodeId, statusData]) => {
-            if (statusData.status) {
-              const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(statusData.status);
-              updateNodeInCache(nodeId, (node) => ({
-                ...node,
-                isOnline: true,
-                lastSeenAt: new Date(batchEvent.timestamp * 1000).toISOString(),
-                systemStatus: convertedStatus,
-              }));
-            }
+            if (!statusData.status) return;
+            const convertedStatus = convertSnakeToCamel<NodeSystemStatus>(statusData.status);
+            updaters.set(nodeId, (node) => ({
+              ...node,
+              isOnline: true,
+              lastSeenAt,
+              systemStatus: convertedStatus,
+            }));
           });
+
+          updateNodesInCache(updaters);
           break;
         }
       }
     },
-    [updateNodeInCache]
+    [updateNodeInCache, updateNodesInCache]
   );
 
   // Manual reconnect function

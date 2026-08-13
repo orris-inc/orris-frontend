@@ -14,7 +14,7 @@
 
 import { type ReactNode } from 'react';
 import { SmartTruncate } from '@/components/common/SmartTruncate';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { ListSkeleton } from './Skeleton';
 

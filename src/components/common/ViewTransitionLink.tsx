@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, forwardRef } from 'react';
-import { useLocation, useNavigate, type To } from 'react-router-dom';
+import { useLocation, useNavigate, type To } from 'react-router';
 import { supportsViewTransitions } from '@/hooks/useViewTransition';
 
 interface ViewTransitionLinkProps

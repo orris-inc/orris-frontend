@@ -527,7 +527,8 @@
       "basicInfo": "Basic Info",
       "nodes": "Nodes",
       "forwardAgents": "Forward Agents",
-      "forwardRules": "Forward Rules"
+      "forwardRules": "Forward Rules",
+      "subscriptionOrder": "Subscription Order"
     },
     "sections": {
       "identificationInfo": "Identification",
@@ -605,6 +606,14 @@
     "planTypes": {
       "node": "Node",
       "forward": "Forward"
+    },
+    "subscriptionOrder": {
+      "hint": "Drag to reorder the subscription. Direct nodes and forward rules share one sequence.",
+      "empty": "This resource group has no nodes or forward rules to order",
+      "typeOrigin": "Direct",
+      "typeForward": "Forward",
+      "dragHandle": "Drag to reorder",
+      "reorderSuccess": "Order updated"
     }
   },
   "nodeList": {
@@ -995,7 +1004,7 @@
         "region": "Region",
         "regionPlaceholder": "e.g., Hong Kong",
         "regionHint": "Geographic location of the node",
-        "sortOrderHint": "Lower values appear first in lists",
+        "sortOrderHint": "Lower values appear first; shares one sequence with forward rules",
         "tags": "Tags",
         "tagsPlaceholder": "premium, gaming, streaming",
         "tagsHint": "Comma-separated tags for categorization",
@@ -1581,8 +1590,8 @@
         "trafficMultiplierUpdateHint": "Empty keeps current, 0=auto",
         "multiplierAuto": "auto",
         "multiplierCustom": "custom",
-        "sortOrderPlaceholder": "e.g., 100",
-        "sortOrderHint": "Lower values appear first in the list",
+        "sortOrderPlaceholder": "Leave empty to append to the end",
+        "sortOrderHint": "Lower values appear first; shares one sequence with direct nodes. Leave empty to append to the end",
         "sortSmallFirst": "Smaller values appear first",
         "remarkPlaceholder": "Optional notes about this rule",
         "bindResourceGroups": "Bind Resource Groups",
@@ -4029,8 +4038,8 @@
       "noNodesAvailable": "No available nodes",
       "noNodesEmpty": "No nodes available",
       "ipVersion": "IP Version",
-      "sortOrderPlaceholder": "Default: 0",
-      "sortOrderHint": "Lower value means higher priority",
+      "sortOrderPlaceholder": "Leave empty to append to the end",
+      "sortOrderHint": "Lower values appear first; shares one sequence with direct nodes",
       "editRuleTitle": "Edit Rule",
       "forwardOrderAdjustable": "Forward order (drag to adjust)",
       "portPlaceholder": "Port",
@@ -4085,8 +4094,8 @@
       "externalRuleId": "External Rule ID",
       "externalRuleIdPlaceholder": "Source system rule identifier (optional)",
       "remarkPlaceholder": "Add remark",
-      "sortOrderPlaceholder": "Default: 0",
-      "sortOrderHint": "Lower value means higher priority",
+      "sortOrderPlaceholder": "Leave empty to append to the end",
+      "sortOrderHint": "Lower values appear first; shares one sequence with direct nodes",
       "encryptionMethod": "Encryption Method",
       "selectEncryptionMethod": "Select encryption method",
       "password": "Password",

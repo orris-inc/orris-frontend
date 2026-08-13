@@ -78,11 +78,15 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
   const queryClientRef = useRef(queryClient);
   queryClientRef.current = queryClient;
 
-  // Update agent in all list caches - stable reference
+  // Update many agents in all list caches with a single write per query - stable
+  // reference. Batch events would otherwise write once per agent, producing one
+  // re-render each.
   // Uses startTransition to mark SSE updates as low priority,
   // preventing them from interrupting user interactions (e.g., hover states)
-  const updateAgentInCache = useCallback(
-    (agentId: string, updater: (agent: ForwardAgent) => ForwardAgent) => {
+  const updateAgentsInCache = useCallback(
+    (updaters: Map<string, (agent: ForwardAgent) => ForwardAgent>) => {
+      if (updaters.size === 0) return;
+
       const qc = queryClientRef.current;
       const queries = qc.getQueriesData<ListResponse<ForwardAgent>>({
         queryKey: queryKeys.forwardAgents.lists(),
@@ -91,13 +95,14 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
       queries.forEach(([queryKey, data]) => {
         if (!data?.items) return;
 
-        const updatedItems = data.items.map((agent: ForwardAgent) =>
-          agent.id === agentId ? updater(agent) : agent
-        );
-
-        const hasChange = data.items.some(
-          (agent: ForwardAgent, i: number) => agent.id === agentId && agent !== updatedItems[i]
-        );
+        let hasChange = false;
+        const updatedItems = data.items.map((agent: ForwardAgent) => {
+          const updater = updaters.get(agent.id);
+          if (!updater) return agent;
+          const updated = updater(agent);
+          if (updated !== agent) hasChange = true;
+          return updated;
+        });
 
         if (hasChange) {
           // Wrap in startTransition to avoid interrupting user interactions
@@ -111,6 +116,14 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
       });
     },
     []
+  );
+
+  // Update a single agent in all list caches - stable reference
+  const updateAgentInCache = useCallback(
+    (agentId: string, updater: (agent: ForwardAgent) => ForwardAgent) => {
+      updateAgentsInCache(new Map([[agentId, updater]]));
+    },
+    [updateAgentsInCache]
   );
 
   // Handle incoming SSE events - stable reference
@@ -159,21 +172,26 @@ export function useForwardAgentEvents(options: UseForwardAgentEventsOptions = {}
           const sseEvent: AgentSSEEvent = event;
           if (!isBatchAgentStatusEvent(sseEvent)) break;
           const batchEvent = sseEvent;
+          const lastSeenAt = new Date(batchEvent.timestamp * 1000).toISOString();
+
+          // Collect every agent in the batch, then apply them in one cache write
+          const updaters = new Map<string, (agent: ForwardAgent) => ForwardAgent>();
           Object.entries(batchEvent.agents).forEach(([agentId, statusData]) => {
-            if (statusData.status) {
-              const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(statusData.status);
-              updateAgentInCache(agentId, (agent) => ({
-                ...agent,
-                lastSeenAt: new Date(batchEvent.timestamp * 1000).toISOString(),
-                systemStatus: convertedStatus,
-              }));
-            }
+            if (!statusData.status) return;
+            const convertedStatus = convertSnakeToCamel<AgentSystemStatus>(statusData.status);
+            updaters.set(agentId, (agent) => ({
+              ...agent,
+              lastSeenAt,
+              systemStatus: convertedStatus,
+            }));
           });
+
+          updateAgentsInCache(updaters);
           break;
         }
       }
     },
-    [updateAgentInCache]
+    [updateAgentInCache, updateAgentsInCache]
   );
 
   // Manual reconnect function

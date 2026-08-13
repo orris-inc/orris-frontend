@@ -31,6 +31,15 @@ import { getSubscription } from '@/api/subscription';
 // Export types for external use
 export type { SubscriptionForwardUsage };
 
+// Shape of the cached rule list page, used for optimistic reordering
+type PaginatedRules = {
+  items: ForwardRule[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
 // Cache time: 2 minutes for subscription forward rules data
 const STALE_TIME = 2 * 60 * 1000;
 
@@ -70,13 +79,15 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
   const { showSuccess, showError } = useNotificationStore();
   const { t } = useTranslation();
 
-  // Build query params
+  // Build query params - ordered by sort_order so drag-and-drop reflects the real order
   const params: ListSubscriptionForwardRulesParams = {
     page,
     pageSize,
     name: filters.name,
     protocol: filters.protocol,
     status: filters.status,
+    orderBy: 'sort_order',
+    order: 'asc',
   };
 
   // Query forward rule list
@@ -165,18 +176,42 @@ export const useSubscriptionForwardRules = (options: UseSubscriptionForwardRules
     },
   });
 
-  // Reorder forward rules
+  // Reorder forward rules with optimistic update.
+  // The backend reads the submitted values as relative order only (2026-08-12): the rules
+  // keep their positions in the subscription and just swap places among themselves, so
+  // dense indices are safe and the stored values will differ from what is sent.
   const reorderMutation = useMutation({
     mutationFn: (ruleOrders: Array<{ ruleId: string; sortOrder: number }>) =>
       reorderSubscriptionForwardRules(subscriptionId, { ruleOrders }),
+    onMutate: async (ruleOrders) => {
+      await queryClient.cancelQueries({ queryKey: subscriptionForwardRulesQueryKeys.lists() });
+      const queryKey = subscriptionForwardRulesQueryKeys.list(subscriptionId, params);
+      const previousData = queryClient.getQueryData<PaginatedRules>(queryKey);
+
+      queryClient.setQueryData<PaginatedRules>(queryKey, (old) => {
+        if (!old) return old;
+        const orderIndex = new Map(ruleOrders.map((o) => [o.ruleId, o.sortOrder]));
+        const items = [...old.items].sort(
+          (a, b) => (orderIndex.get(a.id) ?? a.sortOrder) - (orderIndex.get(b.id) ?? b.sortOrder)
+        );
+        return { ...old, items };
+      });
+
+      return { previousData, queryKey };
+    },
     onSuccess: () => {
       showSuccess(t('messages.ruleReorderSuccess'));
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(context.queryKey, context.previousData);
+      }
+      showError(handleApiError(error));
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: subscriptionForwardRulesQueryKeys.lists(),
       });
-    },
-    onError: (error) => {
-      showError(handleApiError(error));
     },
   });
 
@@ -348,6 +383,25 @@ export const useSubscriptionForwardRulesSection = (subscriptionId: string) => {
     setPage(1);
   };
 
+  // Drag-and-drop reorder. The subscription endpoint reads the values as relative order
+  // only, so dense indices cannot push these rules ahead of the direct nodes.
+  const handleDragEnd = async (
+    _activeId: string,
+    _overId: string,
+    oldIndex: number,
+    newIndex: number
+  ) => {
+    if (oldIndex === newIndex) return;
+
+    const reordered = [...rulesQuery.forwardRules];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    await rulesQuery.reorderForwardRules(
+      reordered.map((rule, index) => ({ ruleId: rule.id, sortOrder: index + 1 }))
+    );
+  };
+
   return {
     ...rulesQuery,
     usage: usageQuery.usage,
@@ -362,5 +416,6 @@ export const useSubscriptionForwardRulesSection = (subscriptionId: string) => {
     handlePageChange,
     handlePageSizeChange,
     handleFiltersChange,
+    handleDragEnd,
   };
 };

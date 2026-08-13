@@ -6,7 +6,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Edit, Power, MoreHorizontal, Trash2, Eye } from 'lucide-react';
+import { Edit, Power, MoreHorizontal, Trash2, Eye, ListOrdered } from 'lucide-react';
 import { DataTable, AdminBadge, TableHoverCardProvider, TableHoverCardList, DateTimeCell, type ColumnDef, type ResponsiveColumnMeta } from '@/components/admin';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { ResourceGroupMobileList } from './ResourceGroupMobileList';
@@ -37,6 +37,8 @@ interface ResourceGroupListTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   onViewDetail?: (resourceGroup: ResourceGroup) => void;
+  /** Open the subscription ordering of direct nodes and forward rules */
+  onManageOrder?: (resourceGroup: ResourceGroup) => void;
   onEdit: (resourceGroup: ResourceGroup) => void;
   onDelete: (resourceGroup: ResourceGroup) => void;
   onToggleStatus: (resourceGroup: ResourceGroup) => void;
@@ -53,6 +55,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
   onPageChange,
   onPageSizeChange,
   onViewDetail,
+  onManageOrder,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -68,6 +71,12 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         <ContextMenuItem onClick={() => onViewDetail(resourceGroup)}>
           <Eye className="mr-2 size-4" />
           {t('subscription.viewDetails')}
+        </ContextMenuItem>
+      )}
+      {onManageOrder && (
+        <ContextMenuItem onClick={() => onManageOrder(resourceGroup)}>
+          <ListOrdered className="mr-2 size-4" />
+          {t('resourceGroups.tabs.subscriptionOrder')}
         </ContextMenuItem>
       )}
       <ContextMenuItem onClick={() => onEdit(resourceGroup)}>
@@ -88,7 +97,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         {t('common.actions.delete')}
       </ContextMenuItem>
     </>
-  ), [t, onViewDetail, onEdit, onDelete, onToggleStatus]);
+  ), [t, onViewDetail, onManageOrder, onEdit, onDelete, onToggleStatus]);
 
   // Resource group dropdown menu content
   const renderDropdownMenuActions = useCallback((resourceGroup: ResourceGroup) => (
@@ -97,6 +106,12 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         <DropdownMenuItem onSelect={() => onViewDetail(resourceGroup)}>
           <Eye className="mr-2 size-4" />
           {t('subscription.viewDetails')}
+        </DropdownMenuItem>
+      )}
+      {onManageOrder && (
+        <DropdownMenuItem onSelect={() => onManageOrder(resourceGroup)}>
+          <ListOrdered className="mr-2 size-4" />
+          {t('resourceGroups.tabs.subscriptionOrder')}
         </DropdownMenuItem>
       )}
       <DropdownMenuItem onSelect={() => onEdit(resourceGroup)}>
@@ -117,7 +132,7 @@ export const ResourceGroupListTable: React.FC<ResourceGroupListTableProps> = ({
         {t('common.actions.delete')}
       </DropdownMenuItem>
     </>
-  ), [t, onViewDetail, onEdit, onDelete, onToggleStatus]);
+  ), [t, onViewDetail, onManageOrder, onEdit, onDelete, onToggleStatus]);
 
   const columns = useMemo<ColumnDef<ResourceGroup>[]>(() => [
     {

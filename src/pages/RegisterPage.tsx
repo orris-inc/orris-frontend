@@ -6,7 +6,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Fingerprint, Github, Check, UserX } from 'lucide-react';
@@ -155,7 +155,7 @@ const OrDivider = ({ text }: { text: string }) => (
 export const RegisterPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading: isAuthInitializing } = useAuthStore();
   const { register: registerUser, loginWithOAuth, isLoading, error, authError } = useAuth();
   const {
     isSupported: isPasskeySupported,
@@ -315,6 +315,16 @@ export const RegisterPage = () => {
     hintClassName: '[@media(max-height:982px)]:text-xs',
     className: '[@media(max-height:982px)]:h-10 [@media(max-height:982px)]:text-sm',
   } as const;
+
+  // Wait for the session check before showing the form, so an already
+  // authenticated user is redirected without the form flashing first.
+  if (isAuthInitializing) {
+    return (
+      <div className="flex min-h-viewport items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-viewport w-full flex">

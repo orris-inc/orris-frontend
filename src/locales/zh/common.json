@@ -527,7 +527,8 @@
       "basicInfo": "基本信息",
       "nodes": "节点",
       "forwardAgents": "转发Agent",
-      "forwardRules": "转发规则"
+      "forwardRules": "转发规则",
+      "subscriptionOrder": "订阅排序"
     },
     "sections": {
       "identificationInfo": "标识信息",
@@ -605,6 +606,14 @@
     "planTypes": {
       "node": "节点",
       "forward": "转发"
+    },
+    "subscriptionOrder": {
+      "hint": "拖动调整订阅中的展示顺序，直连节点与转发规则共用同一序列",
+      "empty": "该资源组暂无可排序的节点或转发规则",
+      "typeOrigin": "直连",
+      "typeForward": "转发",
+      "dragHandle": "拖动排序",
+      "reorderSuccess": "排序已更新"
     }
   },
   "nodeList": {
@@ -995,7 +1004,7 @@
         "region": "地区",
         "regionPlaceholder": "例如：香港",
         "regionHint": "节点的地理位置",
-        "sortOrderHint": "值越小越靠前",
+        "sortOrderHint": "值越小越靠前，与转发规则共用同一排序序列",
         "tags": "标签",
         "tagsPlaceholder": "高级, 游戏, 流媒体",
         "tagsHint": "逗号分隔",
@@ -1581,8 +1590,8 @@
         "trafficMultiplierUpdateHint": "留空保持现值，0=自动",
         "multiplierAuto": "自动",
         "multiplierCustom": "自定义",
-        "sortOrderPlaceholder": "例如：100",
-        "sortOrderHint": "数值越小排序越靠前",
+        "sortOrderPlaceholder": "留空则排在最后",
+        "sortOrderHint": "值越小越靠前，与直连节点共用同一排序序列；留空则排在最后",
         "sortSmallFirst": "数值越小越靠前",
         "remarkPlaceholder": "可选，关于此规则的备注",
         "bindResourceGroups": "绑定资源组",
@@ -4029,8 +4038,8 @@
       "noNodesAvailable": "暂无可用节点",
       "noNodesEmpty": "暂无节点",
       "ipVersion": "IP 版本",
-      "sortOrderPlaceholder": "留空默认 0",
-      "sortOrderHint": "值越小越靠前",
+      "sortOrderPlaceholder": "留空则排在最后",
+      "sortOrderHint": "值越小越靠前，与直连节点共用同一排序序列",
       "editRuleTitle": "编辑规则",
       "forwardOrderAdjustable": "转发顺序（可拖拽调整）",
       "portPlaceholder": "端口",
@@ -4085,8 +4094,8 @@
       "externalRuleId": "外部规则ID",
       "externalRuleIdPlaceholder": "来源系统的规则标识（可选）",
       "remarkPlaceholder": "备注信息",
-      "sortOrderPlaceholder": "留空默认 0",
-      "sortOrderHint": "值越小越靠前",
+      "sortOrderPlaceholder": "留空则排在最后",
+      "sortOrderHint": "值越小越靠前，与直连节点共用同一排序序列",
       "encryptionMethod": "加密方式",
       "selectEncryptionMethod": "选择加密方式",
       "password": "密码",

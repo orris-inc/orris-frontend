@@ -9,7 +9,7 @@ import { Edit, Trash2, Power, PowerOff, MoreHorizontal, Bot, Server, Settings, A
 import { CopyableAddress } from '@/components/common/CopyableAddress';
 import { SmartTruncate } from '@/components/common/SmartTruncate';
 import { formatBytes } from '@/shared/utils/format-utils';
-import { DataTable, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState } from '@/components/admin';
+import { DraggableDataTable, type ColumnDef, type ResponsiveColumnMeta, type RowSelectionState } from '@/components/admin';
 import type { OnChangeFn } from '@tanstack/react-table';
 import { Badge } from '@/components/common/Badge';
 import { Checkbox } from '@/components/common/Checkbox';
@@ -49,6 +49,9 @@ interface UserForwardRuleListProps {
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   enableSelection?: boolean;
+  /** Drag-and-drop ordering, disabled when the list is not ordered by sortOrder */
+  enableDragSort?: boolean;
+  onDragEnd?: (activeId: string, overId: string, oldIndex: number, newIndex: number) => void;
 }
 
 // Chain nodes display component
@@ -177,6 +180,8 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
   rowSelection,
   onRowSelectionChange,
   enableSelection = true,
+  enableDragSort = false,
+  onDragEnd,
 }) => {
   const { t } = useTranslation();
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -586,7 +591,7 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
 
   return (
     <>
-      <DataTable
+      <DraggableDataTable
         elevated
         columns={columns}
         data={rules}
@@ -602,6 +607,8 @@ export const UserForwardRuleList: React.FC<UserForwardRuleListProps> = ({
         contextMenuContent={renderContextMenuActions}
         rowSelection={rowSelection}
         onRowSelectionChange={onRowSelectionChange}
+        enableDragSort={enableDragSort}
+        onDragEnd={onDragEnd}
       />
 
       {/* Delete confirm dialog */}

@@ -56,6 +56,7 @@ import {
   useGroupMemberManagement,
 } from '../hooks/useResourceGroups';
 import { AddMembersDialog } from './AddMembersDialog';
+import { SubscriptionOrderList } from './SubscriptionOrderList';
 import type { ResourceGroup, ResourceGroupStatus } from '@/api/resource/types';
 import type { SubscriptionPlan, PlanType } from '@/api/subscription/types';
 
@@ -613,6 +614,18 @@ export const ResourceGroupDetailSheet = ({
                   active: status === 'enabled',
                 })}
               />
+            )}
+
+            {/* Subscription order - direct nodes and forward rules share one sequence */}
+            {showNodes && showRules && (
+              <div>
+                <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2 px-1">
+                  {t('resourceGroups.tabs.subscriptionOrder')}
+                </h3>
+                <div className="rounded-lg bg-card border border-border p-3">
+                  <SubscriptionOrderList groupId={group.sid} enabled={open} />
+                </div>
+              </div>
             )}
 
             {/* Timestamps - compact row */}

@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Self-hosted Inter (variable). Replaces the render-blocking cross-origin
+   stylesheet from rsms.me; the browser only downloads the subsets it needs. */
+@import "@fontsource-variable/inter";
 
 /* Configure dark mode to use class selector instead of media query */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -32,7 +35,7 @@
 
 @theme {
   /* ========== Typography - Inter Font (Tailwind UI Standard) ========== */
-  --font-sans: 'InterVariable', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Inter Variable', 'InterVariable', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   /* Inter OpenType features for better UI typography */

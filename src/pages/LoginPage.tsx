@@ -7,7 +7,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Check, Fingerprint } from 'lucide-react';
@@ -90,7 +90,7 @@ export const LoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLoading: isAuthInitializing } = useAuthStore();
   const { login, loginWithOAuth, isLoading, error, authError } = useAuth();
   const {
     isSupported: isPasskeySupported,
@@ -158,6 +158,16 @@ export const LoginPage = () => {
   };
 
   const showResendVerification = authError?.type === 'account_not_active';
+
+  // Wait for the session check before showing the form, so an already
+  // authenticated user is redirected without the form flashing first.
+  if (isAuthInitializing) {
+    return (
+      <div className="flex min-h-viewport items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-viewport w-full flex">

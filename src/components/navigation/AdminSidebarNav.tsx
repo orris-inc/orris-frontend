@@ -8,7 +8,7 @@
  * - Tooltip hints when collapsed
  */
 
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Tooltip,
