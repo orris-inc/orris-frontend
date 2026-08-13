@@ -2900,7 +2900,24 @@
     "clearOverride": "Clear Override",
     "usesPlanDefault": "Uses plan default when cleared",
     "dataLimitInGB": "Traffic limit in GB (leave empty for plan default)",
-    "dataUsedInGB": "Traffic used in GB"
+    "dataUsedInGB": "Traffic used in GB",
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "nodeOrder": "Delivered Order"
+    },
+    "nodeOrder": {
+      "hint": "Everything this subscription link delivers, in delivery order: every resource group of the plan, its system forward rules, and the subscriber’s own rules.",
+      "empty": "This subscription delivers no nodes",
+      "inactiveHint": "Subscription is {{status}}, so a client pulling the link receives no nodes",
+      "total": "{{count}} entries",
+      "modeAll": "All",
+      "modeOrigin": "Direct",
+      "modeForward": "Forward",
+      "typeOrigin": "Direct",
+      "typeForward": "Forward",
+      "scopeSystem": "System rule",
+      "scopeUser": "User rule"
+    }
   },
   "subscriptionLink": {
     "nodeMode": {

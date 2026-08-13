@@ -50,6 +50,7 @@ import { formatDate, isNeverExpiresDate } from '@/shared/utils/date-utils';
 import { formatTrafficUsage } from '@/shared/utils/format-utils';
 import { useNotificationStore } from '@/shared/stores/notification-store';
 import { cn } from '@/lib/utils';
+import { SubscriptionNodeOrderList } from './SubscriptionNodeOrderList';
 import type { Subscription, SubscriptionStatus, PlanType } from '@/api/subscription/types';
 import type { UserResponse } from '@/api/user/types';
 
@@ -522,6 +523,16 @@ export const SubscriptionDetailSheet: React.FC<SubscriptionDetailSheetProps> = (
                 </>
               )}
             </DetailSection>
+
+            {/* What this subscription actually delivers, in subscription link order */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1">
+                {t('subscription.tabs.nodeOrder')}
+              </h4>
+              <div className="rounded-xl bg-muted/30 border border-border/50 p-3">
+                <SubscriptionNodeOrderList subscriptionId={subscription.id} enabled={open} />
+              </div>
+            </div>
 
             {/* UUID */}
             <DetailSection title={t('subscription.identifyInfo')}>

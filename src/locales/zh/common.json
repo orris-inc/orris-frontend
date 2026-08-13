@@ -2900,7 +2900,24 @@
     "clearOverride": "清除覆盖",
     "usesPlanDefault": "清除后使用计划默认值",
     "dataLimitInGB": "流量限制（GB），留空使用计划默认值",
-    "dataUsedInGB": "已用流量（GB）"
+    "dataUsedInGB": "已用流量（GB）",
+    "tabs": {
+      "basicInfo": "基本信息",
+      "nodeOrder": "下发预览"
+    },
+    "nodeOrder": {
+      "hint": "该订阅链接实际下发的全部条目，按下发顺序；含套餐下所有资源组、系统转发规则与用户自建转发规则",
+      "empty": "该订阅当前不下发任何节点",
+      "inactiveHint": "订阅状态为{{status}}，客户端拉取时不会返回任何节点",
+      "total": "共 {{count}} 条",
+      "modeAll": "全部",
+      "modeOrigin": "直连",
+      "modeForward": "转发",
+      "typeOrigin": "直连",
+      "typeForward": "转发",
+      "scopeSystem": "系统规则",
+      "scopeUser": "用户规则"
+    }
   },
   "subscriptionLink": {
     "nodeMode": {
